@@ -2,9 +2,18 @@
 #define JOYSTICK_H
 #pragma systemFile
 
+typedef struct JoyButtons {
+
+} JoyButtons;
 
 
-#include "..\Libraries\Joystick.c"
+//Joystick data container
+typedef struct JoyData {
+	short buttons;
+} JoyData;
+
+void Joystick_Interpret();
+
 #endif // JOYSTICK_H
 
 /*

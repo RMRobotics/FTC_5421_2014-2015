@@ -1,8 +1,7 @@
-#ifndef JOYSTICK_C
-#define JOYSTICK_C
 #pragma systemFile
 #include "..\Headers\Joystick.h"
 
+//Library for standard joystick functions
 
-
-#endif // JOYSTICK_C
+void Joystick_Interpret() {
+}
