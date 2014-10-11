@@ -18,4 +18,5 @@
 task main()
 {
 	waitForStart();
+	motorSetSafePower(Motor_Mec_FR, 100);
 }
