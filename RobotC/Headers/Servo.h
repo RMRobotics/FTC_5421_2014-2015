@@ -1,8 +1,6 @@
 #ifndef SERVO_H
 #define SERVO_H
-
-//Number of non continuous rotation servos
-#define NUM_NONCONT_SERVOS 1
+#pragma systemFile
 
 //Continuous rotation servo constants
 #define SERVO_CONT_STOP 127
@@ -35,11 +33,14 @@ void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DE
 	//Defaults to no minimum/maximums
 	int minAngle = -1;
 	int maxAngle = 256;
-	int i;
-	for (i=NUM_NONCONT_SERVOS-1; i>=0; i--) { //TODO see if this causes performance issues
-		if (servoArray[i].servoID == currentServo) {
-			minAngle = servoArray[i].minAngle;
-			maxAngle = servoArray[i].maxAngle;
+	//Init counter to (length of servo array - 1)
+	int i = (sizeof(servoDefinitions)/sizeof(servoDefinitions[0])) - 1;
+
+	//TODO see if this causes performance issues
+	for (i=i; i>=0; i--) {
+		if (servoDefinitions[i].servoID == currentServo) {
+			minAngle = servoDefinitions[i].minAngle;
+			maxAngle = servoDefinitions[i].maxAngle;
 			break;
 		}
 	}
