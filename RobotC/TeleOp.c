@@ -16,9 +16,15 @@
 #include "Headers\Servo.h"
 #include "JoystickDriver.c"
 
+void initialize() {
+	initServos();
+}
+
 task main()
 {
+	initialize();
 	waitForStart();
+
 	motorSetSafePower(Motor_Mec_FR, 100);
 	servoSetAngle(Servo_Tube, 75);
 }
