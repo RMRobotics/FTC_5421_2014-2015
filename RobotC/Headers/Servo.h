@@ -23,8 +23,11 @@ typedef struct {
 static ServoData servoArray[NUM_NONCONT_SERVOS] = {{Servo_Tube, 15, 255}};
 
 void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
-	speed = (speed > SERVO_CONT_FORWARD) ? SERVO_CONT_FORWARD : speed;
-	speed = (speed < SERVO_CONT_REVERSE) ? SERVO_CONT_REVERSE : speed;
+	if (speed > SERVO_CONT_FORWARD) {
+		speed = SERVO_CONT_FORWARD;
+	} else if (speed < SERVO_CONT_REVERSE) {
+		speed = SERVO_CONT_REVERSE;
+	}
 	servo[currentServo] = speed;
 }
 
@@ -40,8 +43,12 @@ void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DE
 			break;
 		}
 	}
-	angle = (angle > maxAngle) ? maxAngle : angle;
-	angle = (angle < minAngle) ? minAngle : angle;
+	if (angle > maxAngle) {
+		//TODO DEBUG output "angle past maximum angle!"
+		angle = maxAngle;
+	} else if (angle < minAngle) {
+		angle = minAngle;
+	}
 	servoChangeRate[currentServo] = servoRate;
 	servo[currentServo] = angle;
 }
