@@ -3,7 +3,7 @@
 #pragma SystemFile
 
 //Pragmas
-#include "Headers\Pragmas.h"
+#include "Pragmas.h"
 
 //Number of motors
 #define NUM_MOTORS 4
