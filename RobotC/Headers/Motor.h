@@ -2,6 +2,9 @@
 #define MOTOR_H
 #pragma SystemFile
 
+//Pragmas
+#include "Pragmas.h"
+
 //Number of motors
 #define NUM_MOTORS 4
 
