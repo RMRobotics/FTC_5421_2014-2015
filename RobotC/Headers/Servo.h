@@ -11,14 +11,24 @@
 #define SERVO_DEFAULT_RATE 10
 
 //Structure for storing max/min angles of servos.
-typedef struct {
+typedef struct ServoData {
 	TServoIndex servoID;
 	int minAngle;
 	int maxAngle;
 } ServoData;
 
-//Array for setting max/min angles
-static ServoData servoArray[NUM_NONCONT_SERVOS] = {{Servo_Tube, 15, 255}};
+//Non continuous rotation servo array for setting max/min angles
+ServoData servoDefinitions[1];
+
+//Flag for seeing if servoDefinitions has been initialized
+bool servoDefsInitialized = false;
+
+void initServos() {
+	servoDefinitions[0].servoID = Servo_Tube;
+	servoDefinitions[0].minAngle = 15;
+	servoDefinitions[0].maxAngle = 255;
+	servoDefsInitialized = true;
+}
 
 void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
 	if (speed > SERVO_CONT_FORWARD) {
@@ -30,6 +40,11 @@ void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
 }
 
 void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DEFAULT_RATE) {
+	if (!servoDefsInitialized) {
+		//TODO DEBUG "noncontinuous rotation servos not initialized!"
+		return;
+	}
+
 	//Defaults to no minimum/maximums
 	int minAngle = -1;
 	int maxAngle = 256;
