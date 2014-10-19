@@ -53,9 +53,15 @@ typedef enum JoyTophat {
 	TOPHAT_NW = 7,
 } JoyTophat;
 
-//Updates ALL joystick states to last received joystick bluetooth message
-void updateJoyState() {
+//Updates 'joystick' struct to latest bluetooth message
+//For proper code encapsulation, this function should be here
+void joyUpdateJoystickSettings() {
 	getJoystickSettings(joystick);
+}
+
+//Returns pointer to 'joystick' struct
+TJoystick *joyGetJoystickPointer() {
+	return &joystick;
 }
 
 //Checks if button is pressed in joystick #(joyNum)
@@ -68,5 +74,4 @@ bool joyButtonPressed(int joyNum, JoyButtons joyButton) {
 		return (bool)joy2Btn((int)joyButton); //JoystickDriver defined function
 	}
 }
-
 #endif
