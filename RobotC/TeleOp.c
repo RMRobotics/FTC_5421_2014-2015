@@ -14,17 +14,20 @@
 
 #include "Headers\Motor.h"
 #include "Headers\Servo.h"
-#include "JoystickDriver.c"
+#include "Headers\JoyMecanumDrive.h"
 
 void initialize() {
 	initServos();
+	initMotors();
+	servoSetAngle(Servo_Tube, 75);
 }
 
-task main()
-{
+task main() {
 	initialize();
 	waitForStart();
-
-	motorSetSafePower(Motor_Mec_FR, 100);
-	servoSetAngle(Servo_Tube, 75);
+	while (true) {
+		joyUpdateJoystickSettings();
+		joymecdriveSetDesiredPowers(joyGetJoystickPointer());
+		motorSetActualPowerToDesired();
+	}
 }
