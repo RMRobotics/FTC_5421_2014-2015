@@ -27,7 +27,7 @@
 #include "JoystickDriver.c"
 
 //Enum to assign button numbers meaningful names
-typedef enum joyButtons {
+typedef enum JoyButtons {
 	BUTTON_X = 1,
 	BUTTON_A = 2,
 	BUTTON_B = 3,
@@ -38,11 +38,11 @@ typedef enum joyButtons {
 	BUTTON_RT = 8, //Right trigger
 	BUTTON_BACK = 9,
 	BUTTON_START = 10,
-}
+} JoyButtons;
 
 //Enum to assign tophat ("d-pad") numbers meaningful names
 //Uses compass directions
-typedef enum joyTophat {
+typedef enum JoyTophat {
 	TOPHAT_N = 0,
 	TOPHAT_NE = 1,
 	TOPHAT_E = 2,
@@ -51,7 +51,7 @@ typedef enum joyTophat {
 	TOPHAT_SW = 5,
 	TOPHAT_W = 6,
 	TOPHAT_NW = 7,
-}
+} JoyTophat;
 
 //Updates ALL joystick states to last received joystick bluetooth message
 void updateJoyState() {
@@ -61,11 +61,11 @@ void updateJoyState() {
 //Checks if button is pressed in joystick #(joyNum)
 //Note that joyNum will be interpreted as joystick #1 if passed 0,
 //and joystick #2 otherwise
-bool joyButtonPressed(int joyNum, joyButtons joyButton) {
+bool joyButtonPressed(int joyNum, JoyButtons joyButton) {
 	if(joyNum) { //C interprets an int as TRUE if int != 0
-		return joy1Btn((int)joyButton); //JoystickDriver defined function
+		return (bool)joy1Btn((int)joyButton); //JoystickDriver defined function
 	} else {
-		return joy2Btn((int)joyButton); //JoystickDriver defined function
+		return (bool)joy2Btn((int)joyButton); //JoystickDriver defined function
 	}
 }
 

@@ -29,8 +29,8 @@ void initMotors() {
 }
 
 void motorSetSafePower(tMotor currentMotor, int power) {
-	int maxPower = maxMotorPower[(int)tMotor];
-	int minPower = minMotorPower[(int)tMotor];
+	int maxPower = maxMotorPower[(int)currentMotor];
+	int minPower = minMotorPower[(int)currentMotor];
 	if (power > maxPower) {
 		power = maxPower;
 	} else if (power < -maxPower) {
