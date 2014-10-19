@@ -10,6 +10,9 @@
 //Servo default change rate constant
 #define SERVO_DEFAULT_RATE 10
 
+//Number of noncontinous rotation servos
+#define NUM_NONCONT_SERVOS 1
+
 //Structure for storing max/min angles of servos.
 typedef struct ServoData {
 	TServoIndex servoID;
@@ -18,7 +21,7 @@ typedef struct ServoData {
 } ServoData;
 
 //Non continuous rotation servo array for setting max/min angles
-ServoData servoDefinitions[1];
+static ServoData servoDefinitions[NUM_NONCONT_SERVOS];
 
 //Flag for seeing if servoDefinitions has been initialized
 bool servoDefsInitialized = false;
@@ -49,7 +52,7 @@ void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DE
 	int minAngle = -1;
 	int maxAngle = 256;
 	//Init counter to (length of servo array - 1)
-	int i = (sizeof(servoDefinitions)/sizeof(servoDefinitions[0])) - 1;
+	int i = NUM_NONCONT_SERVOS - 1;
 
 	//TODO see if this causes performance issues
 	for (i=i; i>=0; i--) {
