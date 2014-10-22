@@ -16,18 +16,21 @@
 #define MAX_NEVEREST_POWER 78
 #define MIN_STALL_POWER 15
 
+#define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
+
 //Arrays for storing power limits for each motor
-static int maxMotorPower[kNumbOfTotalMotors];
-static int minMotorPower[kNumbOfTotalMotors];
+static int maxMotorPower[MAX_NUM_MOTORS];
+static int minMotorPower[MAX_NUM_MOTORS];
 
 //Array for storing desired motor powers.
-static int desiredMotorPower[kNumbOfTotalMotors];
+static int desiredMotorPower[MAX_NUM_MOTORS];
 
 //Initialize motor definitions and state
 void initMotors() {
 	//memset used here to initialize default values
 	memset(maxMotorPower, 100, sizeof(maxMotorPower));
 	memset(minMotorPower, MIN_STALL_POWER, sizeof(minMotorPower));
+	memset(desiredMotorPower, 0, sizeof(desiredMotorPower));
 }
 
 //Private function, used to set desired power for motors
@@ -51,11 +54,9 @@ void motorSetDesiredSafePower(tMotor currentMotor, int power) {
 
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired() {
-	//TODO see if it is possible to replace this with a loop through tMotor enum
-	motor[Motor_Mec_BL] = desiredMotorPower[(int)Motor_Mec_BL];
-	motor[Motor_Mec_BR] = desiredMotorPower[(int)Motor_Mec_BR];
-	motor[Motor_Mec_FL] = desiredMotorPower[(int)Motor_Mec_FL];
-	motor[Motor_Mec_FR] = desiredMotorPower[(int)Motor_Mec_FR];
+	for (int i=0; i<MAX_NUM_MOTORS; i++) {
+		motor[i] = desiredMotorPower[i];
+	}
 }
 
 #endif
