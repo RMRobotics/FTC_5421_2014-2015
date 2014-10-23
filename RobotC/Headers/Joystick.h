@@ -53,6 +53,12 @@ typedef enum JoyTophat {
 	TOPHAT_NW = 7,
 } JoyTophat;
 
+//Enum for joystick numbers (first and second)
+typedef enum Joystick {
+	JOY1 = 0,
+	JOY2 = 1,
+} Joystick;
+
 //Updates 'joystick' struct to latest bluetooth message
 //For proper code encapsulation, this function should be here
 void joyUpdateJoystickSettings() {
@@ -67,7 +73,7 @@ TJoystick *joyGetJoystickPointer() {
 //Checks if button is pressed in joystick #(joyNum)
 //Note that joyNum will be interpreted as joystick #1 if passed 0,
 //and joystick #2 otherwise
-bool joyButtonPressed(int joyNum, JoyButtons joyButton) {
+bool joyButtonPressed(Joystick joyNum, JoyButtons joyButton) {
 	if(joyNum) { //C interprets an int as TRUE if int != 0
 		return (bool)joy1Btn((int)joyButton); //JoystickDriver defined function
 	} else {
