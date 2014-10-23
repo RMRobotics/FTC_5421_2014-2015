@@ -16,7 +16,7 @@
 #define MAX_NEVEREST_POWER 78
 #define MIN_STALL_POWER 15
 
-#define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
+#define MAX_NUM_MOTORS (int)kNumbOfRealMotors
 
 //Arrays for storing power limits for each motor
 static int maxMotorPower[MAX_NUM_MOTORS];

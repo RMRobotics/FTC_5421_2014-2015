@@ -10,10 +10,13 @@
 //  Left joystick controls strafing and forwards/backwards
 //  Right joystick (x-axis only) controls rotation
 void joymecdriveSetDesiredPowers(TJoystick *joyState) {
-	motorSetDesiredSafePower(Motor_Mec_FL, joyState->joy1_y1 + joyState->joy1_x2 + joyState->joy1_x1);
-	motorSetDesiredSafePower(Motor_Mec_BL, joyState->joy1_y1 + joyState->joy1_x2 - joyState->joy1_x1);
-	motorSetDesiredSafePower(Motor_Mec_BR, joyState->joy1_y1 - joyState->joy1_x2 + joyState->joy1_x1);
-	motorSetDesiredSafePower(Motor_Mec_FR, joyState->joy1_y1 - joyState->joy1_x2 - joyState->joy1_x2);
+	int joy1y1 = joyState->joy1_y1;
+	int joy1x2 = joyState->joy1_x2;
+	int joy1x1 = joyState->joy1_x1;
+	motorSetDesiredSafePower(Motor_Mec_FL, joy1y1 + joy1x2 + joy1x1);
+	motorSetDesiredSafePower(Motor_Mec_BL, joy1y1 + joy1x2 - joy1x1);
+	motorSetDesiredSafePower(Motor_Mec_BR, joy1y1 - joy1x2 + joy1x1);
+	motorSetDesiredSafePower(Motor_Mec_FR, joy1y1 - joy1x2 - joy1x1);
 }
 
 #endif
