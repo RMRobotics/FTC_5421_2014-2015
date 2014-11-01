@@ -40,9 +40,14 @@ typedef enum MecMotors {
 
 //Initialize motor definitions
 void initMotors() {
-	//memset used here to initialize default values
-	memset(maxMotorPower, 100, sizeof(maxMotorPower));
-	memset(minMotorPower, MIN_STALL_POWER, sizeof(minMotorPower));
+	//init maxMotorPower to 100
+	for (int i=0;i<(sizeof(maxMotorPower)/sizeof(int));i++) {
+		maxMotorPower[i] = 100;
+	}
+	//init minMotorPower to MIN_STALL_POWER
+	for (int i=0;i<(sizeof(minMotorPower)/sizeof(int));i++) {
+		minMotorPower[i] = MIN_STALL_POWER;
+	}
 }
 
 //Private function, used to set desired power for motors
