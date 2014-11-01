@@ -16,19 +16,10 @@
 #include "Headers\Servo.h"
 #include "Headers\JoyMecanumDrive.h"
 
-//Used for reference by other functions (since #pragma configs are forced to be here)
-//They're named after TMNT because Lisa.
-typedef enum MecMotors {
-	MecMotorFL = Donatello_FL,
-	MecMotorBL = Leonardo_BL,
-	MecMotorFR = Michelangelo_FR,
-	MecMotorBR = Raphael_BR,
-}
-
 void initialize() {
-	initServos();
+	//initServos();
 	initMotors();
-	servoSetAngle(Servo_Tube, 75);
+	//servoSetAngle(Servo_Tube, 75);
 }
 
 task main() {

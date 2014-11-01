@@ -25,6 +25,16 @@ static int minMotorPower[MAX_NUM_MOTORS];
 //Array for storing desired motor powers.
 static int desiredMotorPower[MAX_NUM_MOTORS];
 
+//Enum for referencing mecanum motors
+//They're named after TMNT because Lisa.
+//TODO place in config file. this is forced to be here because pragmas can't be included...
+typedef enum MecMotors {
+	MecMotor_FL = Donatello_FL,
+	MecMotor_BL = Leonardo_BL,
+	MecMotor_FR = Michelangelo_FR,
+	MecMotor_BR = Raphael_BR,
+} MecMotors;
+
 //Initialize motor definitions and state
 void initMotors() {
 	//memset used here to initialize default values
