@@ -22,8 +22,11 @@
 static int maxMotorPower[MAX_NUM_MOTORS];
 static int minMotorPower[MAX_NUM_MOTORS];
 
-//Array for storing desired motor powers.
-static int desiredMotorPower[MAX_NUM_MOTORS];
+//Struct definition for desired motor powers/encoder lengths
+typedef struct DesiredMotorVals {
+	int power[MAX_NUM_MOTORS];
+	int encoder[MAX_NUM_MOTORS];
+} DesiredMotorVals;
 
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
@@ -35,21 +38,20 @@ typedef enum MecMotors {
 	MecMotor_BR = Raphael_BR,
 } MecMotors;
 
-//Initialize motor definitions and state
+//Initialize motor definitions
 void initMotors() {
 	//memset used here to initialize default values
 	memset(maxMotorPower, 100, sizeof(maxMotorPower));
 	memset(minMotorPower, MIN_STALL_POWER, sizeof(minMotorPower));
-	memset(desiredMotorPower, 0, sizeof(desiredMotorPower));
 }
 
 //Private function, used to set desired power for motors
-static void motorSetDesiredPower (tMotor currentMotor, int power) {
-	desiredMotorPower[(int)currentMotor] = power;
+static void motorSetDesiredPower (DesiredMotorVals *desiredVals, tMotor currentMotor, int power) {
+	desiredVals->power[(int)currentMotor] = power;
 }
 
-//Used to set desired power, checked by max/min power limits
-void motorSetDesiredSafePower(tMotor currentMotor, int power) {
+//Returns power value after applying power bounds
+int motorBoundPower(tMotor currentMotor, int power) {
 	int maxPower = maxMotorPower[(int)currentMotor];
 	int minPower = minMotorPower[(int)currentMotor];
 	if (power > maxPower) {
@@ -59,13 +61,13 @@ void motorSetDesiredSafePower(tMotor currentMotor, int power) {
 	} else if (power > -minPower && power < minPower) { //in deadband
 		power = 0;
 	}
-	motorSetDesiredPower(currentMotor, power);
+	return power;
 }
 
 //Update actual motor values with desired motor values
-void motorSetActualPowerToDesired() {
+void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	for (int i=0; i<MAX_NUM_MOTORS; i++) {
-		motor[i] = desiredMotorPower[i];
+		motor[i] = desiredVals->power[i];
 	}
 }
 

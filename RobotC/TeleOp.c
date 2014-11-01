@@ -16,9 +16,14 @@
 #include "Headers\Servo.h"
 #include "Headers\JoyMecanumDrive.h"
 
+//Stores desired motor values
+DesiredMotorVals desiredMotorVals;
+
 void initialize() {
 	//initServos();
 	initMotors();
+	//Initialize to zeroes
+	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	//servoSetAngle(Servo_Tube, 75);
 }
 
@@ -27,7 +32,7 @@ task main() {
 	waitForStart();
 	while (true) {
 		joyUpdateJoystickSettings();
-		joymecdriveSetDesiredPowers(joyGetJoystickPointer());
-		motorSetActualPowerToDesired();
+		joymecdriveSetDesiredPowers(&desiredMotorVals, joyGetJoystickPointer());
+		motorSetActualPowerToDesired(desiredMotorVals);
 	}
 }
