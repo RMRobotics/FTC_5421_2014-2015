@@ -79,15 +79,43 @@ void dpadDrive(TJoystick *joyState) {
 	else if(tophat(TOPHAT_W, joyState)) {
 		motor[MotorFL] = -MAXSPEED;
 		motor[MotorBL] = MAXSPEED;
-		motor[MotorFR] = -MAXSPEED;
-		motor[MotorBR] = MAXSPEED;
+		motor[MotorFR] = MAXSPEED;
+		motor[MotorBR] = -MAXSPEED;
 	}
 	//Move right if dpad right
 	else if(tophat(TOPHAT_E, joyState)) {
 		motor[MotorFL] = MAXSPEED;
 		motor[MotorBL] = -MAXSPEED;
-		motor[MotorFR] = MAXSPEED;
+		motor[MotorFR] = -MAXSPEED;
+		motor[MotorBR] = MAXSPEED;
+	//Move NE if dpad NE
+	else if(tophat(TOPHAT_NE, joyState)) {
+		motor[MotorFL] = MAXSPEED;
+		motor[MotorBL] = 0;
+		motor[MotorFR] = 0;
+		motor[MotorBR] = MAXSPEED;
+	}
+	//Move SE if dpad SE
+	else if(tophat(TOPHAT_SE, joyState)) {
+		motor[MotorFL] = 0;
+		motor[MotorBL] = -MAXSPEED;
+		motor[MotorFR] = 0;
 		motor[MotorBR] = -MAXSPEED;
+	}
+	//Move SW if dpad SW
+	else if(tophat(TOPHAT_SW, joyState)) {
+		motor[MotorFL] = -MAXSPEED;
+		motor[MotorBL] = 0;
+		motor[MotorFR] = -MAXSPEED;
+		motor[MotorBR] = 0;
+	}
+	//Move NW if dpad NW
+	else if(tophat(TOPHAT_NW, joyState)) {
+		motor[MotorFL] = 0;
+		motor[MotorBL] = MAXSPEED;
+		motor[MotorFR] = MAXSPEED;
+		motor[MotorBR] = 0;
+	}
 	} else {
 		motor[MotorFL] = 0;
 		motor[MotorBL] = 0;
