@@ -88,6 +88,7 @@ void dpadDrive(TJoystick *joyState) {
 		motor[MotorBL] = -MAXSPEED;
 		motor[MotorFR] = -MAXSPEED;
 		motor[MotorBR] = MAXSPEED;
+	}
 	//Move NE if dpad NE
 	else if(tophat(TOPHAT_NE, joyState)) {
 		motor[MotorFL] = MAXSPEED;
@@ -115,7 +116,6 @@ void dpadDrive(TJoystick *joyState) {
 		motor[MotorBL] = MAXSPEED;
 		motor[MotorFR] = MAXSPEED;
 		motor[MotorBR] = 0;
-	}
 	} else {
 		motor[MotorFL] = 0;
 		motor[MotorBL] = 0;
