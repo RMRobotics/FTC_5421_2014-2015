@@ -95,6 +95,8 @@
 //  rotation: float value from -1 to 1
 void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
 												 float speed, float rotation) {
+	//TODO check parameter fit constraints
+
 	//Holds cosine value for FL and BR power calculations
   float cosFLBR = cosDegrees(45 - (float)angle);
   //Holds cosine value for FR and BL power calculations
@@ -120,5 +122,13 @@ void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
 	desiredMotorVals->power[MecMotor_BL] = (int)scaledPowRotBL;
 	desiredMotorVals->power[MecMotor_FR] = (int)scaledPowRotFR;
 	desiredMotorVals->power[MecMotor_BR] = (int)scaledPowRotBR;
+}
+
+//Zero all mecanum motors
+void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
+	desiredMotorVals->power[MecMotor_FL] = 0;
+	desiredMotorVals->power[MecMotor_BL] = 0;
+	desiredMotorVals->power[MecMotor_FR] = 0;
+	desiredMotorVals->power[MecMotor_BR] = 0;
 }
 #endif
