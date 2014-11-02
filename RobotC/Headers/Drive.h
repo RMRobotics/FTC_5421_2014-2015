@@ -98,9 +98,9 @@ void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
 	//TODO check parameter fit constraints
 
 	//Holds cosine value for FL and BR power calculations
-  float cosFLBR = cosDegrees(45 - (float)angle);
+  float cosFLBR = cosDegrees(45.0 - (float)angle);
   //Holds cosine value for FR and BL power calculations
-  float cosFRBL = cosDegrees(45 + (float)angle);
+  float cosFRBL = cosDegrees(45.0 + (float)angle);
   //Holds max drive power
   float maxDPower = (float) motorGetMaxDrivePower();
 
