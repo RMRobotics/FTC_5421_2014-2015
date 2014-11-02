@@ -33,6 +33,6 @@ task main() {
 	while (true) {
 		joyUpdateJoystickSettings();
 		joymecdriveSetDesiredPowers(&desiredMotorVals, joyGetJoystickPointer());
-		motorSetActualPowerToDesired(desiredMotorVals);
+		motorSetActualPowerToDesired(&desiredMotorVals);
 	}
 }
