@@ -31,15 +31,16 @@ typedef struct DesiredMotorVals {
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
 //TODO place in config file. this is forced to be here because pragmas can't be included...
-typedef enum MecMotors {
+typedef enum MecMotor {
 	MecMotor_FL = Donatello_FL,
 	MecMotor_BL = Leonardo_BL,
 	MecMotor_FR = Michelangelo_FR,
 	MecMotor_BR = Raphael_BR,
-} MecMotors;
+} MecMotor;
 
 //Initialize motor definitions
 void motorInit() {
+	//VOLATILE
 	//init maxMotorPower to 100
 	for (int i=0;i<(sizeof(maxMotorPower)/sizeof(int));i++) {
 		maxMotorPower[i] = 100;
@@ -78,9 +79,13 @@ int motorGetMaxDrivePower() {
 
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
-	for (int i=0; i<MAX_NUM_MOTORS; i++) {
-		motor[(tMotor)i] = motorBoundPower((tMotor)i, desiredVals->power[i]);
-	}
+	//Kludgey code, but it works
+  //VOLATILE
+	motor[MecMotor_FL] = motorBoundPower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_BR]);
+	motor[MecMotor_FR] = motorBoundPower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_BR]);
+	motor[MecMotor_BL] = motorBoundPower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BR]);
+	motor[MecMotor_BR] = motorBoundPower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
+
 }
 
 #endif
