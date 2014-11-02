@@ -81,9 +81,9 @@ int motorGetMaxDrivePower() {
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	//Kludgey code, but it works
   //VOLATILE
-	motor[MecMotor_FL] = motorBoundPower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_BR]);
-	motor[MecMotor_FR] = motorBoundPower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_BR]);
-	motor[MecMotor_BL] = motorBoundPower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BR]);
+	motor[MecMotor_FL] = motorBoundPower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
+	motor[MecMotor_FR] = motorBoundPower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
+	motor[MecMotor_BL] = motorBoundPower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
 	motor[MecMotor_BR] = motorBoundPower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
 
 }

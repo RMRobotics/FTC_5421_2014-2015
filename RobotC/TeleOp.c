@@ -2,8 +2,8 @@
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Motor,  mtr_S1_C1_1,     Michelangelo_FR, tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, encoder)
-#pragma config(Motor,  mtr_S1_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S1_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C2_2,     Raphael_BR,    tmotorTetrix, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C2_1,     Leonardo_BL,   tmotorTetrix, PIDControl, encoder)
 #pragma config(Servo,  srvo_S1_C3_1,    Servo_Tube,           tServoStandard)
 #pragma config(Servo,  srvo_S1_C3_2,    servo2,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_3,    servo3,               tServoNone)
@@ -15,6 +15,7 @@
 #include "Headers\Motor.h"
 #include "Headers\Servo.h"
 #include "Headers\JoyMecanumDrive.h"
+#include "Headers\Drive.h"
 
 //Stores desired motor values
 DesiredMotorVals desiredMotorVals;
@@ -33,6 +34,7 @@ task main() {
 	while (true) {
 		joyUpdateJoystickSettings();
 		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
+		//driveSetMecMotorPolarDegrees(&desiredMotorVals, 90, 1.0, 0);
 		motorSetActualPowerToDesired(&desiredMotorVals);
 	}
 }

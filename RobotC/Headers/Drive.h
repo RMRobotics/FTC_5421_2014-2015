@@ -110,7 +110,7 @@ void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
   float unscaledPowBefRotBR = unscaledPowBefRotFL;
 
 	float maxPowBeforeRot = helpFindMaxAbsFloat(unscaledPowBefRotFL, unscaledPowBefRotBL);
-	float multiplier = maxDPower / maxPowBeforeRot;
+	float multiplier = maxDPower * speed / maxPowBeforeRot;
 	float scaledRot = rotation * maxDPower;
 
 	float scaledPowRotFL = (unscaledPowBefRotFL * multiplier) + scaledRot;
