@@ -26,7 +26,7 @@ static ServoData servoDefinitions[NUM_NONCONT_SERVOS];
 //Flag for seeing if servoDefinitions has been initialized
 bool servoDefsInitialized = false;
 
-void initServos() {
+void servoInit() {
 	servoDefinitions[0].servoID = Servo_Tube;
 	servoDefinitions[0].minAngle = 15;
 	servoDefinitions[0].maxAngle = 255;

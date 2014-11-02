@@ -39,7 +39,7 @@ typedef enum MecMotors {
 } MecMotors;
 
 //Initialize motor definitions
-void initMotors() {
+void motorInit() {
 	//init maxMotorPower to 100
 	for (int i=0;i<(sizeof(maxMotorPower)/sizeof(int));i++) {
 		maxMotorPower[i] = 100;

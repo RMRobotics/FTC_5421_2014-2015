@@ -20,8 +20,8 @@
 DesiredMotorVals desiredMotorVals;
 
 void initialize() {
-	//initServos();
-	initMotors();
+	//servoInit();
+	motorInit();
 	//Initialize to zeroes
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	//servoSetAngle(Servo_Tube, 75);
