@@ -61,8 +61,8 @@ static void motorSetDesiredPower (DesiredMotorVals *desiredVals, tMotor currentM
 	desiredVals->power[(int)currentMotor] = power;
 }
 
-//Returns power value after applying power bounds
-int motorBoundPower(tMotor currentMotor, int power) {
+//Private function, returns power value after applying power bounds
+static int motorBoundPower(tMotor currentMotor, int power) {
 	int maxPower = maxMotorPower[(int)currentMotor];
 	int minPower = minMotorPower[(int)currentMotor];
 	if (power > maxPower) {
@@ -84,7 +84,7 @@ int motorGetMaxDrivePower() {
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	for (int i=0; i<MAX_NUM_MOTORS; i++) {
-		motor[(tMotor)i] = desiredVals->power[i];
+		motor[(tMotor)i] = motorBoundPower((tMotor)i, desiredVals->power[i]);
 	}
 }
 
