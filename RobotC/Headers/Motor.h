@@ -56,11 +56,6 @@ void motorInit() {
 	}
 }
 
-//Private function, used to set desired power for motors
-static void motorSetDesiredPower (DesiredMotorVals *desiredVals, tMotor currentMotor, int power) {
-	desiredVals->power[(int)currentMotor] = power;
-}
-
 //Private function, returns power value after applying power bounds
 static int motorBoundPower(tMotor currentMotor, int power) {
 	int maxPower = maxMotorPower[(int)currentMotor];
