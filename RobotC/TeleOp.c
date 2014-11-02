@@ -32,7 +32,7 @@ task main() {
 	waitForStart();
 	while (true) {
 		joyUpdateJoystickSettings();
-		joymecdriveSetDesiredPowers(&desiredMotorVals, joyGetJoystickPointer());
+		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
 		motorSetActualPowerToDesired(&desiredMotorVals);
 	}
 }

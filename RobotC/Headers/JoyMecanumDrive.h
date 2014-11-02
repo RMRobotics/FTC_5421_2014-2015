@@ -9,7 +9,7 @@
 //This uses mecanum drive in arcade style.
 //  Left joystick controls strafing and forwards/backwards
 //  Right joystick (x-axis only) controls rotation
-void joymecdriveSetDesiredPowers(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	int joy1y1 = joyState->joy1_y1;
 	int joy1x2 = joyState->joy1_x2;
 	int joy1x1 = joyState->joy1_x1;
