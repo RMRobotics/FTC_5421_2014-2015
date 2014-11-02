@@ -16,7 +16,7 @@
 #define MAX_NEVEREST_POWER 78
 #define MIN_STALL_POWER 15
 
-#define MAX_NUM_MOTORS (int)kNumbOfRealMotors
+#define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
 
 //Arrays for storing power limits for each motor
 static int maxMotorPower[MAX_NUM_MOTORS];
@@ -44,6 +44,12 @@ void motorInit() {
 	for (int i=0;i<(sizeof(maxMotorPower)/sizeof(int));i++) {
 		maxMotorPower[i] = 100;
 	}
+	//set drive max motor powers
+	maxMotorPower[(tMotor)MecMotor_FL] = MAX_NEVEREST_POWER;
+	maxMotorPower[(tMotor)MecMotor_BL] = MAX_NEVEREST_POWER;
+	maxMotorPower[(tMotor)MecMotor_FR] = MAX_NEVEREST_POWER;
+	maxMotorPower[(tMotor)MecMotor_BR] = MAX_NEVEREST_POWER;
+
 	//init minMotorPower to MIN_STALL_POWER
 	for (int i=0;i<(sizeof(minMotorPower)/sizeof(int));i++) {
 		minMotorPower[i] = MIN_STALL_POWER;
@@ -69,10 +75,16 @@ int motorBoundPower(tMotor currentMotor, int power) {
 	return power;
 }
 
+//Returns maximum power for drive motors
+int motorGetMaxDrivePower() {
+	//Pick one of the four drive motors
+	return maxMotorPower[MecMotor_FL];
+}
+
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	for (int i=0; i<MAX_NUM_MOTORS; i++) {
-		motor[i] = desiredVals->power[i];
+		motor[(tMotor)i] = desiredVals->power[i];
 	}
 }
 
