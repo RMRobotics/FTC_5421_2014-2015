@@ -16,6 +16,15 @@ float helpFindMaxAbsFloat(float a, float b, float c, float d) {
 	return max;
 }
 
+
+int helpRoundFloat(float x) {
+	if (x > 0) {
+		return (int)(x+0.5);
+	} else {
+		return (int)(x-0.5);
+	}
+}
+
 void drive(int angle, float speed, float rotation) {
 	//TODO check parameter fit constraints
 
@@ -26,27 +35,33 @@ void drive(int angle, float speed, float rotation) {
 	//Holds max power
 	float maxPow = 100.0;
 
-	//Formulae (from above)
-	float unscaledPowFL = (speed * cosFLBR) + rotation;
-	float unscaledPowBL = (speed * cosFRBL) + rotation;
-	float unscaledPowFR = (speed * cosFRBL) - rotation;
-	float unscaledPowBR = (speed * cosFLBR) - rotation;
-
+	//Formulae 
+	float unscaledPowBefRotFL = (speed * cosFLBR); 
+	float unscaledPowBefRotBL = (speed * cosFRBL); 
+	float unscaledPowBefRotFR = unscaledPowBefRotBL; 
+	float unscaledPowBefRotBR = unscaledPowBefRotFL; 
+  
+	//Scale and add rotation 
+	float absHighestPowBefRot = helpFindMaxAbsFloat(unscaledPowBefRotFL, unscaledPowBefRotBL, 0, 0);
+	float scaledRotation = rotation * absHighestPowBefRot;
+	float unscaledPowFL = unscaledPowBefRotFL + scaledRotation; 
+	float unscaledPowBL = unscaledPowBefRotBL + scaledRotation; 
+	float unscaledPowFR = unscaledPowBefRotFR - scaledRotation; 
+	float unscaledPowBR = unscaledPowBefRotBR - scaledRotation; 
+  
 	//Scale to maxPower
-	float absHighestPow = helpFindMaxAbsFloat(unscaledPowFL, unscaledPowBL,
-						  unscaledPowFR, unscaledPowBR);
+	float absHighestPow = helpFindMaxAbsFloat(unscaledPowFL, unscaledPowBL, unscaledPowFR, unscaledPowBR);
 	float multiplier = maxPow / absHighestPow;
-	printf("Multi: %f", multiplier);
 
 	float scaledPowFL = unscaledPowFL * multiplier;
 	float scaledPowBL = unscaledPowBL * multiplier;
 	float scaledPowFR = unscaledPowFR * multiplier;
 	float scaledPowBR = unscaledPowBR * multiplier;
 
-	printf("Scaled Power FL: %f\n", scaledPowFL);
-	printf("Scaled Power BL: %f\n", scaledPowBL);
-	printf("Scaled Power FR: %f\n", scaledPowFR);
-	printf("Scaled Power BR: %f\n", scaledPowBR);
+	printf("Scaled Power FL: %d\n", helpRoundFloat(scaledPowFL));
+	printf("Scaled Power BL: %d\n", helpRoundFloat(scaledPowBL));
+	printf("Scaled Power FR: %d\n", helpRoundFloat(scaledPowFR));
+	printf("Scaled Power BR: %d\n", helpRoundFloat(scaledPowBR));
 }
 
 int angle(int x, int y) {
@@ -69,6 +84,7 @@ int angle(int x, int y) {
 	}
 	return angle;
 }
+
 
 int main() {
 	for (int i=0; i<360; i+=15) {
