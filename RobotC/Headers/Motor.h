@@ -4,11 +4,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /*A note on array indexing:
-  Arrays can be accessed by converting the tMotor enum to an int to get the array
-  index. Here's the rationale for determining array size.
-  Although FTC caps the number of motors to 8 12v DC motors + 3 NXT motors,
-  RobotC caps it to kNumbOfTotalMotors. We have no idea how RobotC generates the tMotor
-  enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
+Arrays can be accessed by converting the tMotor enum to an int to get the array
+index. Here's the rationale for determining array size.
+Although FTC caps the number of motors to 8 12v DC motors + 3 NXT motors,
+RobotC caps it to kNumbOfTotalMotors. We have no idea how RobotC generates the tMotor
+enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 */
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,8 +18,8 @@
 #define MAX_NORMAL_POWER 100
 #define MIN_NORMAL_POWER 15
 
-//Used as reference point for max power. All external functions should use this and
-//0 for minimum reference point.
+/*Used as reference point for max power. All external functions should use this and
+  0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
 #define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
@@ -70,8 +70,8 @@ void motorInit() {
 	minMotorPower[(tMotor)MecMotor_BR] = MIN_NEVEREST_POWER;
 }
 
-//Private function, returns power value after scaling power
-//to fit motor constraints
+/*Private function, returns power value after scaling power
+  to fit motor constraints */
 static int motorScalePower(tMotor currentMotor, int power) {
 	int maxPower = maxMotorPower[(int)currentMotor];
 	int minPower = minMotorPower[(int)currentMotor];
@@ -95,7 +95,7 @@ int motorGetMaxReferencePower() {
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	//Kludgey code, but it works
-  //VOLATILE
+	//VOLATILE
 	motor[MecMotor_FL] = motorScalePower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
 	motor[MecMotor_FR] = motorScalePower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
 	motor[MecMotor_BL] = motorScalePower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);

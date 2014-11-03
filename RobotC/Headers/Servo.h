@@ -36,7 +36,7 @@ void servoInit() {
 void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
 	if (speed > SERVO_CONT_FORWARD) {
 		speed = SERVO_CONT_FORWARD;
-	} else if (speed < SERVO_CONT_REVERSE) {
+		} else if (speed < SERVO_CONT_REVERSE) {
 		speed = SERVO_CONT_REVERSE;
 	}
 	servo[currentServo] = speed;
@@ -65,7 +65,7 @@ void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DE
 	if (angle > maxAngle) {
 		//TODO DEBUG output "angle past maximum angle!"
 		angle = maxAngle;
-	} else if (angle < minAngle) {
+		} else if (angle < minAngle) {
 		angle = minAngle;
 	}
 	servoChangeRate[currentServo] = servoRate;

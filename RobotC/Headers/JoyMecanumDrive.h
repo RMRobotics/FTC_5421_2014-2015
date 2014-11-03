@@ -9,10 +9,10 @@
 //Joystick constants
 #define DEADBAND 10
 
-//This function interprets a TJoystick struct and sets desired motor powers.
-//This uses mecanum drive in arcade style.
-//  Left joystick controls strafing and forwards/backwards
-//  Right joystick (x-axis only) controls rotation
+/*This function interprets a TJoystick struct and sets desired motor powers.
+  This uses mecanum drive in arcade style.
+  Left joystick controls strafing and forwards/backwards
+  Right joystick (x-axis only) controls rotation */
 void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	//////////////
 	//DRIVE CODE//
@@ -44,22 +44,22 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 		//We want to transform this into an angle from positive y-axis from 0 to 360
 		if (angle >= 0 && angle <= 90) {
 			//First quadrant, find angle to y-axis
-    	angle = 90 - angle;
-    } else if (angle > 90 && angle <= 180) {
-    	//Second quadrant, find angle to y-axis and subtract from 360: 360-(angle-90) = 450 - angle
-    	angle = 450 - angle;
-    } else if (angle < 0 && angle >= -90) {
-    	//Fourth quadrant, add 90 to abs(angle)
-    	angle = abs(angle) + 90;
-    } else {
-    	//Third quadrant, add 90 to abs(angle)
-   		angle = abs(angle) + 90;
-    }
+			angle = 90 - angle;
+			} else if (angle > 90 && angle <= 180) {
+			//Second quadrant, find angle to y-axis and subtract from 360: 360-(angle-90) = 450 - angle
+			angle = 450 - angle;
+			} else if (angle < 0 && angle >= -90) {
+			//Fourth quadrant, add 90 to abs(angle)
+			angle = abs(angle) + 90;
+			} else {
+			//Third quadrant, add 90 to abs(angle)
+			angle = abs(angle) + 90;
+		}
 		speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2)));
 		rotation = ((float) joy1x2) / 127.0;
 		driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, rotation);
-	} else {
-	  driveZeroMecMotor(desiredMotorVals);
+		} else {
+		driveZeroMecMotor(desiredMotorVals);
 	}
 
 	/////////

@@ -40,8 +40,9 @@ typedef enum JoyButtons {
 	BUTTON_START = 10,
 } JoyButtons;
 
-//Enum to assign tophat ("d-pad") numbers meaningful names
-//Uses compass directions
+/*Enum to assign tophat ("d-pad") numbers meaningful names
+  Uses compass directions
+*/
 typedef enum JoyTophat {
 	TOPHAT_N = 0,
 	TOPHAT_NE = 1,
@@ -59,24 +60,25 @@ typedef enum Joystick {
 	JOY2 = 1,
 } Joystick;
 
-//Updates 'joystick' struct to latest bluetooth message
-//For proper code encapsulation, this function should be here
+/*Updates 'joystick' struct to latest bluetooth message
+	For proper code encapsulation, this function should be here
+*/
 void joyUpdateJoystickSettings() {
 	getJoystickSettings(joystick);
 }
 
-//Returns pointer to 'joystick' struct
+/*Returns pointer to 'joystick' struct */
 TJoystick *joyGetJoystickPointer() {
 	return &joystick;
 }
 
-//Checks if button is pressed in joystick #(joyNum)
-//Note that joyNum will be interpreted as joystick #1 if passed 0,
-//and joystick #2 otherwise
+/*Checks if button is pressed in joystick #(joyNum)
+  Note that joyNum will be interpreted as joystick #1 if passed 0,
+  and joystick #2 otherwise */
 bool joyButtonPressed(Joystick joyNum, JoyButtons joyButton) {
 	if(joyNum) { //C interprets an int as TRUE if int != 0
 		return (bool)joy1Btn((int)joyButton); //JoystickDriver defined function
-	} else {
+		} else {
 		return (bool)joy2Btn((int)joyButton); //JoystickDriver defined function
 	}
 }

@@ -139,33 +139,33 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-//Set desired motor values based on polar coordinates and rotation:
-//  angle: int value of angle IN DEGREES from 0 to 360
-//  powerRatio: float value from 0 to 1
-//  rotationRatio: float value from -1 to 1
+/*Set desired motor values based on polar coordinates and rotation:
+  angle: int value of angle IN DEGREES from 0 to 360
+  powerRatio: float value from 0 to 1
+  rotationRatio: float value from -1 to 1 */
 void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
-												 float powerRatio, float rotationRatio) {
+float powerRatio, float rotationRatio) {
 	//TODO check parameter fit constraints
 
 	//Holds max motor powers
 	float maxPowFLBR = cosDegrees(45.0 - (float)angle);
 	float maxPowFRBL = cosDegrees(45.0 + (float)angle);
 
-  float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * abs(maxPowFLBR));
+	float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * abs(maxPowFLBR));
 	float powBL = (powerRatio * maxPowFRBL) + (rotationRatio * abs(maxPowFRBL));
 	float powFR = (powerRatio * maxPowFRBL) - (rotationRatio * abs(maxPowFRBL));
 	float powBR = (powerRatio * maxPowFLBR) - (rotationRatio * abs(maxPowFLBR));
 
-  //Cap motor values
-  powFL = helpFindSign(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
-  powBL = helpFindSign(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
-  powFR = helpFindSign(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
-  powBR = helpFindSign(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
+	//Cap motor values
+	powFL = helpFindSign(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
+	powBL = helpFindSign(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
+	powFR = helpFindSign(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
+	powBR = helpFindSign(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
-  //Holds max reference power
-  float maxRefPow = (float) motorGetMaxReferencePower();
+	//Holds max reference power
+	float maxRefPow = (float) motorGetMaxReferencePower();
 
-  //Scale to max reference power
+	//Scale to max reference power
 	float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
 	float multiplier = maxRefPow / absHighestPow;
 

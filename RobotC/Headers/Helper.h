@@ -1,8 +1,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-//Helper function for calculating ABSOLUTE maximum of two floats
-//Will return maximum absolute value (ignores sign)
+/*Helper function for calculating ABSOLUTE maximum of two floats
+  Will return maximum absolute value (ignores sign) */
 float helpFindMaxAbsFloat(float a, float b) {
 	float aAbs = abs(a);
 	float bAbs = abs(b);
