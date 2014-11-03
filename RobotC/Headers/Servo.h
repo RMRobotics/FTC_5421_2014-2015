@@ -2,78 +2,97 @@
 #define SERVO_H
 #pragma systemFile
 
+////////////////////////////////////////////////////////////////////////////////////////
+/*A note on array indexing:
+Arrays can be accessed by converting the tServoindex enum to an int to get the array
+index. Here's the rationale for determining array size.
+RobotC caps the # of servos to kNumbOfRealServos. We have no idea how RobotC generates the
+tServoIndex enum, so assume the worst and make the size of the array kNumbOfRealServos.
+*/
+////////////////////////////////////////////////////////////////////////////////////////
+
 //Continuous rotation servo constants
 #define SERVO_CONT_STOP 127
 #define SERVO_CONT_REVERSE 0
 #define SERVO_CONT_FORWARD 255
 
+//Non continuous rotation servo max
+#define MAX_NONCONT_ANGLE 255
+
 //Servo default change rate constant
 #define SERVO_DEFAULT_RATE 10
 
-//Number of noncontinous rotation servos
-#define NUM_NONCONT_SERVOS 1
+//Maximum number of servos
+#define MAX_NUM_SERVOS (int)kNumbOfRealServos
 
-//Structure for storing max/min angles of servos.
+//Structure for storing max/min values of servos and servo type
 typedef struct ServoData {
-	TServoIndex servoID;
-	int minAngle;
-	int maxAngle;
+	bool isContinuous; //if it is continuous rotation, set to true
+	int minValue;
+	int maxValue;
 } ServoData;
 
-//Non continuous rotation servo array for setting max/min angles
-static ServoData servoDefinitions[NUM_NONCONT_SERVOS];
+//Servo array for storing all servos
+static ServoData servoDefinitions[MAX_NUM_SERVOS];
 
 //Flag for seeing if servoDefinitions has been initialized
 bool servoDefsInitialized = false;
 
 void servoInit() {
-	servoDefinitions[0].servoID = Servo_Tube;
-	servoDefinitions[0].minAngle = 15;
-	servoDefinitions[0].maxAngle = 255;
+	//Initialize all servos as if they were non continuous
+	for (int i=0; i < MAX_NUM_SERVOS; i++) {
+		servoDefinitions[i].isContinuous = false;
+		servoDefinitions[i].minValue = 0;
+		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
+	}
+
+	servoDefinitions[Servo_Tube].isContinuous = true;
+	servoDefinitions[Servo_Tube].minValue = 15;
+	servoDefinitions[Servo_Tube].maxValue = 255;
 	servoDefsInitialized = true;
 }
 
 /*Sets speed for a continuous rotation servo. If given servo is a
   non-continuous rotation servo, then it debugs and does nothing. */
-void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
-	if (speed > SERVO_CONT_FORWARD) {
-		speed = SERVO_CONT_FORWARD;
-		} else if (speed < SERVO_CONT_REVERSE) {
-		speed = SERVO_CONT_REVERSE;
+void servoSetCont(TServoIndex currentServo, int speed) {
+	if (!servoDefsInitialized) {
+		//TODO DEBUG "servodefs not initialized!"
+		return;
 	}
-	servo[currentServo] = speed;
+	if (servoDefinitions[currentServo].isContinuous) {
+		if (speed > SERVO_CONT_FORWARD) {
+			speed = SERVO_CONT_FORWARD;
+			} else if (speed < SERVO_CONT_REVERSE) {
+			speed = SERVO_CONT_REVERSE;
+		}
+		servo[currentServo] = speed;
+	} else {
+		//TODO DEBUG "Attempting to send continuous speed to non continuous servo!"
+	}
 }
 
 /*Sets angle for a non-continuous rotation servo. If given servo is
   a continuous rotation servo, then it debugs and does nothing. */
-void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DEFAULT_RATE) {
+void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_DEFAULT_RATE) {
 	if (!servoDefsInitialized) {
-		//TODO DEBUG "noncontinuous rotation servos not initialized!"
+		//TODO DEBUG "servodefs not initialized!"
 		return;
 	}
-
-	//Defaults to no minimum/maximums
-	int minAngle = -1;
-	int maxAngle = 256;
-	//Init counter to (length of servo array - 1)
-	int i = NUM_NONCONT_SERVOS - 1;
-
-	//TODO see if this causes performance issues
-	for (i=i; i>=0; i--) {
-		if (servoDefinitions[i].servoID == currentServo) {
-			minAngle = servoDefinitions[i].minAngle;
-			maxAngle = servoDefinitions[i].maxAngle;
-			break;
-		}
-	}
-	if (angle > maxAngle) {
-		//TODO DEBUG output "angle past maximum angle!"
-		angle = maxAngle;
+	if (!servoDefinitions[currentServo].isContinuous) {
+		int maxAngle = servoDefinitions[currentServo].maxValue;
+		int minAngle = servoDefinitions[currentServo].minValue;
+		if (angle > maxAngle) {
+			//TODO DEBUG output "angle past maximum angle!"
+			angle = maxAngle;
 		} else if (angle < minAngle) {
-		angle = minAngle;
+			//TODO DEBUG output "angle past minimum angle!"
+			angle = minAngle;
+		}
+		servoChangeRate[currentServo] = servoRate;
+		servo[currentServo] = angle;
+	} else  { //Continuous rotation servo
+		//TODO DEBUG output "Trying to send noncontinuous value to continuous rotation servo!
 	}
-	servoChangeRate[currentServo] = servoRate;
-	servo[currentServo] = angle;
 }
 
 #endif
