@@ -22,11 +22,16 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
-#define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
+#define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
 
-//Arrays for storing power limits for each motor
-static int maxMotorPower[MAX_NUM_MOTORS];
-static int minMotorPower[MAX_NUM_MOTORS];
+//Struct for storing motor power limits for each motor
+typedef struct MotorData {
+	int maxPower;
+	int minPower;
+} MotorData;
+
+//Array for storing MotorData for each motor
+static MotorData motorDefinitions[MAX_NUM_MOTORS];
 
 //Struct definition for desired motor powers/encoder lengths
 typedef struct DesiredMotorVals {
@@ -45,39 +50,54 @@ typedef enum MecMotor {
 	MecMotor_BR = Raphael_BR,
 } MecMotor;
 
+//Returns max reference power
+int motorGetMaxReferencePower() {
+	return MAX_REFERENCE_POWER;
+}
+
+//Flag for seeing if motor definitions have been initialized
+bool motorDefsInitialized = false;
+
 //Initialize motor definitions
 void motorInit() {
 	//VOLATILE
-	//init maxMotorPower to 100
-	for (int i=0;i<(sizeof(maxMotorPower)/sizeof(int));i++) {
-		maxMotorPower[i] = 100;
+	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
+	for (int i=0;i<MAX_NUM_MOTORS;i++) {
+		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
+		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
 	}
 	//set drive max motor powers
-	maxMotorPower[(tMotor)MecMotor_FL] = MAX_NEVEREST_POWER;
-	maxMotorPower[(tMotor)MecMotor_BL] = MAX_NEVEREST_POWER;
-	maxMotorPower[(tMotor)MecMotor_FR] = MAX_NEVEREST_POWER;
-	maxMotorPower[(tMotor)MecMotor_BR] = MAX_NEVEREST_POWER;
-
-	//init minMotorPower to MIN_STALL_POWER
-	for (int i=0;i<(sizeof(minMotorPower)/sizeof(int));i++) {
-		minMotorPower[i] = MIN_NORMAL_POWER;
-	}
+	motorDefinitions[MecMotor_FL].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BL].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_FR].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BR].maxPower = MAX_NEVEREST_POWER;
 
 	//set drive min motor powers
-	minMotorPower[(tMotor)MecMotor_FL] = MIN_NEVEREST_POWER;
-	minMotorPower[(tMotor)MecMotor_BL] = MIN_NEVEREST_POWER;
-	minMotorPower[(tMotor)MecMotor_FR] = MIN_NEVEREST_POWER;
-	minMotorPower[(tMotor)MecMotor_BR] = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_FL].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BL].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_FR].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
+
+	motorDefsInitialized = true;
 }
 
 /*Private function, returns power value after scaling power
-  to fit motor constraints */
+  to fit motor constraints. If definitions have not been
+  initialized, debug and assume normal motor. */
 static int motorScalePower(tMotor currentMotor, int power) {
-	int maxPower = maxMotorPower[(int)currentMotor];
-	int minPower = minMotorPower[(int)currentMotor];
+	int maxPower;
+	int minPower;
+	if (!motorDefsInitialized) {
+		//TODO DEBUG "assuming normal motor speeds!"
+		maxPower = MAX_NORMAL_POWER;
+		minPower = MIN_NORMAL_POWER;
+	} else {
+		maxPower = motorDefinitions[currentMotor].maxPower;
+		minPower = motorDefinitions[currentMotor].minPower;
+	}
 
 	//Scale power
-	float scaledPower = (float) power * ((float) maxPower / (float) MAX_REFERENCE_POWER);
+	float scaledPower = (float) power * ((float) maxPower / (float) motorGetMaxReferencePower());
 
 	//Bound power
 	if (scaledPower > -minPower && scaledPower < minPower) { //in deadband
@@ -85,11 +105,6 @@ static int motorScalePower(tMotor currentMotor, int power) {
 	}
 
 	return (int) power;
-}
-
-//Returns max reference power
-int motorGetMaxReferencePower() {
-	return MAX_REFERENCE_POWER;
 }
 
 //Update actual motor values with desired motor values
