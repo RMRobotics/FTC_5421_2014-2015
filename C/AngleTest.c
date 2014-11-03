@@ -5,15 +5,15 @@
 
 //Helper function for calculating ABSOLUTE maximum of a list of floats
 //This function ignores sign
-float helpFindMaxAbsFloat(float a, float b) {
-	float values[] = {a, b};
+float helpFindMaxAbsFloat(float a, float b, float c, float d) {
+	float values[] = {a, b, c, d};
 	float max = a;
-	for (int z=1; z<2; z++) {
+	for (int z=1; z<(sizeof(values)/sizeof(float)); z++) {
 		if (fabs(values[z]) > max) {
-			max = values[z];
+			max = fabs(values[z]);
 		}
 	}
-	return fabs(max);
+	return max;
 }
 
 void drive(int angle, float speed, float rotation) {
