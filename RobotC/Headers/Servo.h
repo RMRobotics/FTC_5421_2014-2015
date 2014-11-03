@@ -33,6 +33,8 @@ void servoInit() {
 	servoDefsInitialized = true;
 }
 
+/*Sets speed for a continuous rotation servo. If given servo is a
+  non-continuous rotation servo, then it debugs and does nothing. */
 void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
 	if (speed > SERVO_CONT_FORWARD) {
 		speed = SERVO_CONT_FORWARD;
@@ -42,6 +44,8 @@ void servoSetContinuousSpeed(TServoIndex currentServo, int speed) {
 	servo[currentServo] = speed;
 }
 
+/*Sets angle for a non-continuous rotation servo. If given servo is
+  a continuous rotation servo, then it debugs and does nothing. */
 void servoSetAngle(TServoIndex currentServo, int angle, int servoRate = SERVO_DEFAULT_RATE) {
 	if (!servoDefsInitialized) {
 		//TODO DEBUG "noncontinuous rotation servos not initialized!"
