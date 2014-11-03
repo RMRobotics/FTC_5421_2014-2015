@@ -3,60 +3,79 @@
 
 #define M_PI 3.141592654
 
-//Helper function for calculating ABSOLUTE maximum of a list of floats
-//This function ignores sign
-float helpFindMaxAbsFloat(float a, float b, float c, float d) {
-	float values[] = {a, b, c, d};
-	float max = a;
-	for (int z=1; z<(sizeof(values)/sizeof(float)); z++) {
-		if (fabs(values[z]) > max) {
-			max = fabs(values[z]);
-		}
+//Helper function for calculating ABSOLUTE maximum of two floats
+//Will return maximum absolute value (ignores sign)
+float helpFindMaxAbsFloat(float a, float b) {
+	float aAbs = fabs(a);
+	float bAbs = fabs(b);
+	if (aAbs > bAbs) {
+		return aAbs;
+	} else {
+		return bAbs;
 	}
-	return max;
+}
+
+//Helper function for calculating ABSOLUTE minimum of two floats
+//Will return minimum absolute value (ignores sign)
+float helpFindMinAbsFloat(float a, float b) {
+	float aAbs = fabs(a);
+	float bAbs = fabs(b);
+	if (aAbs < bAbs) {
+		return aAbs;
+	} else {
+		return bAbs;
+	}
+}
+
+//Returns sign of float
+int helpFindSign(float x) {
+	if (x > 0.0) {
+		return 1;
+	} else if (x < 0.0) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 
 int helpRoundFloat(float x) {
-	if (x > 0) {
+	if (x > 0.0) {
 		return (int)(x+0.5);
 	} else {
 		return (int)(x-0.5);
 	}
 }
 
-void drive(int angle, float speed, float rotation) {
+void drive(int angle, float powerRatio, float rotationRatio) {
 	//TODO check parameter fit constraints
 
-	//Holds cosine value for FL and BR power calculations
-	float cosFLBR = cos((45.0 - (float)angle) * M_PI / 180.0);
-	//Holds cosine value for FR and BL power calculations
-	float cosFRBL = cos((45.0 + (float)angle) * M_PI / 180.0);
-	//Holds max power
-	float maxPow = 100.0;
-
-	//Formulae 
-	float unscaledPowBefRotFL = (speed * cosFLBR); 
-	float unscaledPowBefRotBL = (speed * cosFRBL); 
-	float unscaledPowBefRotFR = unscaledPowBefRotBL; 
-	float unscaledPowBefRotBR = unscaledPowBefRotFL; 
+	//Holds max motor powers
+	float maxPowFLBR = cos((45.0 - (float)angle) * M_PI / 180.0);
+	float maxPowFRBL = cos((45.0 + (float)angle) * M_PI / 180.0);
+ 
+	float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * fabs(maxPowFLBR));
+	float powBL = (powerRatio * maxPowFRBL) + (rotationRatio * fabs(maxPowFRBL));
+	float powFR = (powerRatio * maxPowFRBL) - (rotationRatio * fabs(maxPowFRBL));
+	float powBR = (powerRatio * maxPowFLBR) - (rotationRatio * fabs(maxPowFLBR));
   
-	//Scale and add rotation 
-	float absHighestPowBefRot = helpFindMaxAbsFloat(unscaledPowBefRotFL, unscaledPowBefRotBL, 0, 0);
-	float scaledRotation = rotation * absHighestPowBefRot;
-	float unscaledPowFL = unscaledPowBefRotFL + scaledRotation; 
-	float unscaledPowBL = unscaledPowBefRotBL + scaledRotation; 
-	float unscaledPowFR = unscaledPowBefRotFR - scaledRotation; 
-	float unscaledPowBR = unscaledPowBefRotBR - scaledRotation; 
-  
-	//Scale to maxPower
-	float absHighestPow = helpFindMaxAbsFloat(unscaledPowFL, unscaledPowBL, unscaledPowFR, unscaledPowBR);
-	float multiplier = maxPow / absHighestPow;
+	//Cap motor values 
+	powFL = helpFindSign(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
+	powBL = helpFindSign(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
+	powFR = helpFindSign(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
+	powBR = helpFindSign(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
-	float scaledPowFL = unscaledPowFL * multiplier;
-	float scaledPowBL = unscaledPowBL * multiplier;
-	float scaledPowFR = unscaledPowFR * multiplier;
-	float scaledPowBR = unscaledPowBR * multiplier;
+	//Holds max reference power
+	float maxRefPow = 100.0;
+    
+	//Scale to max reference power
+	float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
+	float multiplier = maxRefPow / absHighestPow;
+
+	float scaledPowFL = powFL * multiplier;
+	float scaledPowBL = powBL * multiplier;
+	float scaledPowFR = powFR * multiplier;
+	float scaledPowBR = powBR * multiplier;
 
 	printf("Scaled Power FL: %d\n", helpRoundFloat(scaledPowFL));
 	printf("Scaled Power BL: %d\n", helpRoundFloat(scaledPowBL));
@@ -92,7 +111,7 @@ int main() {
 		int y = sin(i * M_PI / 180.0) * 10.0;
 		int angleVal = angle(x, y);
 		printf("Angle for X:%d, Y:%d = %d\n", x, y, angleVal);
-		drive(angleVal, 1.0, 0.0);
+		drive(angleVal, 1.0, 1.0);
 	}
 	return 0;
 }
