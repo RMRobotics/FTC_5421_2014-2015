@@ -40,16 +40,14 @@
         in direction of mecanum wheel) = speed * cos(T)
             = 1.0 * cos(45) = cos(45)
 
-        Note that this gives a relative_power < 1.0 for going straight! All four
-        mecmotors would be set to cos(45) in this scenario, so we need to scale.
+        Add rotation:
+        		= cos(45) + 1.0 = relative_FL_power
+
+        Note that this is not final power! The highest mecmotor would be set to cos(45) + 1.0
+        in this scenario, so we need to scale by the absolute highest power of the four motors.
         We will assume max_power = 100:
-            full_power = (max_power/(max_of_mecmotors_b4_rotation)) * 1.0 = 100
-
-        Add scaled rotation:
-            = 100 + rotation*max_power = 200
-
-        We can do this because we bound the power in motorSetActualToDesired (so
-        in reality this would translate to 100).
+            full_FL_power = (max_power/(abs_highest_power_of_four_motors)) * relative_FL_power
+              = (100 / (cos(45)+1.0)) * (cos(45)+1.0) = 100
 
       Generalization:
       	A: Target vector
@@ -67,13 +65,15 @@
         Projection of A onto B = speed * cos(T)
           = speed * cos(90 - a - 45) = speed * cos(45 - a)
 
-        power = ((max_power/(max_of_mecmotors_b4_rotation)) * speed * cos(45-a)) + (rotation * max_power)
+        power = speed * cos(45-a)) + rotation
 
-   By the same reasoning, we get the following four formulas for power:
-      MotorMec_FL = (speed * cos(45 - a) * (max_power/(max_of_mecmotors_b4_rotation))) + (rotation * max_power)
-      MotorMec_BL = (speed * cos(45 + a) * (max_power/(max_of_mecmotors_b4_rotation))) + (rotation * max_power)
-      MotorMec_FR = (speed * cos(45 + a) * (max_power/(max_of_mecmotors_b4_rotation))) - (rotation * max_power)
-      MotorMec_BR = (speed * cos(45 - a) * (max_power/(max_of_mecmotors_b4_rotation))) - (rotation * max_power)
+   By the same reasoning, we get the following four formulas for relative_power:
+      MotorMec_FL = (speed * cos(45 - a) + rotation
+      MotorMec_BL = (speed * cos(45 + a) + rotation
+      MotorMec_FR = (speed * cos(45 + a) - rotation
+      MotorMec_BR = (speed * cos(45 - a) - rotation
+
+   Then scale all powers by: max_power/abs_highest_power_of_four_motors
 
    Remember to check your int/float conversions!
 
@@ -101,27 +101,29 @@ void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
   float cosFLBR = cosDegrees(45.0 - (float)angle);
   //Holds cosine value for FR and BL power calculations
   float cosFRBL = cosDegrees(45.0 + (float)angle);
-  //Holds max drive power
-  float maxDPower = (float) motorGetMaxDrivePower();
+  //Holds max power
+  float maxPow = (float) motorGetMaxReferencePower();
 
-	float unscaledPowBefRotFL = maxDPower * cosFLBR;
-	float unscaledPowBefRotBL = maxDPower * cosFRBL;
-	float unscaledPowBefRotFR = unscaledPowBefRotBL;
-  float unscaledPowBefRotBR = unscaledPowBefRotFL;
+  //Formulae (from above)
+	float unscaledPowFL = (speed * cosFLBR) + rotation;
+	float unscaledPowBL = (speed * cosFRBL) + rotation;
+	float unscaledPowFR = (speed * cosFRBL) - rotation;
+  float unscaledPowBR = (speed * cosFLBR) - rotation;
 
-	float maxPowBeforeRot = helpFindMaxAbsFloat(unscaledPowBefRotFL, unscaledPowBefRotBL);
-	float multiplier = maxDPower * speed / maxPowBeforeRot;
-	float scaledRot = rotation * maxDPower;
+  //Scale to maxPower
+	float absHighestPow = helpFindMaxAbsFloat(unscaledPowFL, unscaledPowBL,
+																							unscaledPowFR, unscaledPowBR);
+	float multiplier = maxPow / absHighestPow;
 
-	float scaledPowRotFL = (unscaledPowBefRotFL * multiplier) + scaledRot;
-	float scaledPowRotBL = (unscaledPowBefRotBL * multiplier) + scaledRot;
-	float scaledPowRotFR = (unscaledPowBefRotFR * multiplier) - scaledRot;
-	float scaledPowRotBR = (unscaledPowBefRotBR * multiplier) - scaledRot;
+	float scaledPowFL = unscaledPowFL * multiplier;
+	float scaledPowBL = unscaledPowBL * multiplier;
+	float scaledPowFR = unscaledPowFR * multiplier;
+	float scaledPowBR = unscaledPowBR * multiplier;
 
-	desiredMotorVals->power[MecMotor_FL] = (int)scaledPowRotFL;
-	desiredMotorVals->power[MecMotor_BL] = (int)scaledPowRotBL;
-	desiredMotorVals->power[MecMotor_FR] = (int)scaledPowRotFR;
-	desiredMotorVals->power[MecMotor_BR] = (int)scaledPowRotBR;
+	desiredMotorVals->power[MecMotor_FL] = (int)scaledPowFL;
+	desiredMotorVals->power[MecMotor_BL] = (int)scaledPowBL;
+	desiredMotorVals->power[MecMotor_FR] = (int)scaledPowFR;
+	desiredMotorVals->power[MecMotor_BR] = (int)scaledPowBR;
 }
 
 //Zero all mecanum motors

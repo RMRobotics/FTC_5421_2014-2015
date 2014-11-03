@@ -14,7 +14,13 @@
 
 //Constants to keep PID working and counter stalling regardless of battery level
 #define MAX_NEVEREST_POWER 78
-#define MIN_STALL_POWER 15
+#define MIN_NEVEREST_POWER 10
+#define MAX_NORMAL_POWER 100
+#define MIN_NORMAL_POWER 15
+
+//Used as reference point for max power. All external functions should use this and
+//0 for minimum reference point.
+#define MAX_REFERENCE_POWER 100
 
 #define MAX_NUM_MOTORS (int)kNumbOfTotalMotors
 
@@ -31,6 +37,7 @@ typedef struct DesiredMotorVals {
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
 //TODO place in config file. this is forced to be here because pragmas can't be included...
+//VOLATILE
 typedef enum MecMotor {
 	MecMotor_FL = Donatello_FL,
 	MecMotor_BL = Leonardo_BL,
@@ -53,38 +60,46 @@ void motorInit() {
 
 	//init minMotorPower to MIN_STALL_POWER
 	for (int i=0;i<(sizeof(minMotorPower)/sizeof(int));i++) {
-		minMotorPower[i] = MIN_STALL_POWER;
+		minMotorPower[i] = MIN_NORMAL_POWER;
 	}
+
+	//set drive min motor powers
+	minMotorPower[(tMotor)MecMotor_FL] = MIN_NEVEREST_POWER;
+	minMotorPower[(tMotor)MecMotor_BL] = MIN_NEVEREST_POWER;
+	minMotorPower[(tMotor)MecMotor_FR] = MIN_NEVEREST_POWER;
+	minMotorPower[(tMotor)MecMotor_BR] = MIN_NEVEREST_POWER;
 }
 
-//Private function, returns power value after applying power bounds
-static int motorBoundPower(tMotor currentMotor, int power) {
+//Private function, returns power value after scaling power
+//to fit motor constraints
+static int motorScalePower(tMotor currentMotor, int power) {
 	int maxPower = maxMotorPower[(int)currentMotor];
 	int minPower = minMotorPower[(int)currentMotor];
-	if (power > maxPower) {
-		power = maxPower;
-	} else if (power < -maxPower) {
-		power = -maxPower;
-	} else if (power > -minPower && power < minPower) { //in deadband
-		power = 0;
+
+	//Scale power
+	float scaledPower = (float) power * ((float) maxPower / (float) MAX_REFERENCE_POWER);
+
+	//Bound power
+	if (scaledPower > -minPower && scaledPower < minPower) { //in deadband
+		scaledPower = 0;
 	}
-	return power;
+
+	return (int) power;
 }
 
-//Returns maximum power for drive motors
-int motorGetMaxDrivePower() {
-	//Pick one of the four drive motors
-	return maxMotorPower[MecMotor_FL];
+//Returns max reference power
+int motorGetMaxReferencePower() {
+	return MAX_REFERENCE_POWER;
 }
 
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	//Kludgey code, but it works
   //VOLATILE
-	motor[MecMotor_FL] = motorBoundPower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
-	motor[MecMotor_FR] = motorBoundPower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
-	motor[MecMotor_BL] = motorBoundPower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
-	motor[MecMotor_BR] = motorBoundPower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
+	motor[MecMotor_FL] = motorScalePower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
+	motor[MecMotor_FR] = motorScalePower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
+	motor[MecMotor_BL] = motorScalePower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
+	motor[MecMotor_BR] = motorScalePower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
 
 }
 
