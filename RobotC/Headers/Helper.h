@@ -25,8 +25,8 @@ float helpFindMinAbsFloat(float a, float b) {
 	}
 }
 
-//Returns sign of float
-int helpFindSign(float x) {
+//Returns sign of int
+int helpFindSign(int x) {
 	if (x > 0.0) {
 		return 1;
 	} else if (x < 0.0) {
