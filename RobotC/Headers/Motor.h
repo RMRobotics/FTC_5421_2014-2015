@@ -25,7 +25,7 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define MAX_REFERENCE_POWER 100
 
 //Slew rate for scaling values (amount to add per loop). Percentage.
-#define MOTOR_SLEW_RATE 0.05
+#define MOTOR_SLEW_RATE 5
 
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
 
@@ -106,7 +106,7 @@ static int motorScalePower(tMotor currentMotor, int power) {
 
 		//Scale power
 		float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
-												(float)(maxPower-minPower)) + minPower;
+												(float)(maxPower-minPower)) + (helpFindSign(power) * minPower);
 	}
 	return (int) power;
 }
@@ -140,11 +140,26 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	int scaledSlewFR = motorScalePower((tMotor)MecMotor_FR, MOTOR_SLEW_RATE);
 	int scaledSlewBR = motorScalePower((tMotor)MecMotor_BR, MOTOR_SLEW_RATE);
 
+	writeDebugStreamLine("Desired: %d, %d, %d, %d", scaledFL, scaledBL, scaledFR, scaledBR);
+
+	//Find differences between motor and desired
+	int diffFL = scaledFL - motor[MecMotor_FL];
+	int diffBL = scaledBL - motor[MecMotor_BL];
+	int diffFR = scaledFR - motor[MecMotor_FR];
+	int diffBR = scaledBR - motor[MecMotor_BR];
+
 	//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
-	int rateFL = helpFindSign(scaledFL) * (int)helpFindMinAbsFloat((motor[MecMotor_FL] - scaledFL), scaledSlewFL);
-	int rateBL = helpFindSign(scaledBL) * (int)helpFindMinAbsFloat((motor[MecMotor_BL] - scaledBL), scaledSlewBL);
-	int rateFR = helpFindSign(scaledFR) * (int)helpFindMinAbsFloat((motor[MecMotor_FR] - scaledFR), scaledSlewFR);
-	int rateBR = helpFindSign(scaledBR) * (int)helpFindMinAbsFloat((motor[MecMotor_BR] - scaledBR), scaledSlewBR);
+	//Make sure to keep the sign of the change
+	int rateFL = helpFindSign(diffFL) * (int)helpFindMinAbsFloat(diffFL, scaledSlewFL);
+	int rateBL = helpFindSign(diffBL) * (int)helpFindMinAbsFloat(diffBL, scaledSlewBL);
+	int rateFR = helpFindSign(diffFR) * (int)helpFindMinAbsFloat(diffFR, scaledSlewFR);
+	int rateBR = helpFindSign(diffBR) * (int)helpFindMinAbsFloat(diffBR, scaledSlewBR);
+
+	writeDebugStreamLine("FL: %d, BL: %d, FR: %d, BR: %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
+	writeDebugStreamLine("Rate FL: %d", rateFL);
+	writeDebugStreamLine("Rate BL: %d", rateBL);
+	writeDebugStreamLine("Rate FR: %d", rateFR);
+	writeDebugStreamLine("Rate BR: %d", rateBR);
 
 	//Update motors
 	motor[MecMotor_FL] = motor[MecMotor_FL] + rateFL;

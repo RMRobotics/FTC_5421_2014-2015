@@ -147,6 +147,8 @@ void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
 float powerRatio, float rotationRatio) {
 	//TODO check parameter fit constraints
 
+	writeDebugStreamLine("Drive power: %f", powerRatio);
+
 	//Holds max motor powers
 	float maxPowFLBR = cosDegrees(45.0 - (float)angle);
 	float maxPowFRBL = cosDegrees(45.0 + (float)angle);
@@ -156,11 +158,13 @@ float powerRatio, float rotationRatio) {
 	float powFR = (powerRatio * maxPowFRBL) - (rotationRatio * abs(maxPowFRBL));
 	float powBR = (powerRatio * maxPowFLBR) - (rotationRatio * abs(maxPowFLBR));
 
+	writeDebugStreamLine("Relative power: %f, %f, %f, %f", powFL, powBL, powFR, powBR);
+
 	//Cap motor values
-	powFL = helpFindSign(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
-	powBL = helpFindSign(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
-	powFR = helpFindSign(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
-	powBR = helpFindSign(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
+	powFL = helpFindSign(helpRoundFloat(powFL)) * helpFindMinAbsFloat(powFL, maxPowFLBR);
+	powBL = helpFindSign(helpRoundFloat(powBL)) * helpFindMinAbsFloat(powBL, maxPowFRBL);
+	powFR = helpFindSign(helpRoundFloat(powFR)) * helpFindMinAbsFloat(powFR, maxPowFRBL);
+	powBR = helpFindSign(helpRoundFloat(powBR)) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
 	//Holds max reference power
 	float maxRefPow = (float) motorGetMaxReferencePower();
@@ -178,6 +182,9 @@ float powerRatio, float rotationRatio) {
 	desiredMotorVals->power[MecMotor_BL] = helpRoundFloat(scaledPowBL);
 	desiredMotorVals->power[MecMotor_FR] = helpRoundFloat(scaledPowFR);
 	desiredMotorVals->power[MecMotor_BR] = helpRoundFloat(scaledPowBR);
+
+	//Drive debug
+	writeDebugStreamLine("Drive: %f, %f, %f, %f", scaledPowFL, scaledPowBL, scaledPowFR, scaledPowBR);
 }
 
 //Zero all mecanum motors

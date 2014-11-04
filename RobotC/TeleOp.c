@@ -32,7 +32,8 @@ task main() {
 	while (true) {
 		joyUpdateJoystickSettings();
 		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
-		//driveSetMecMotorPolarDegrees(&desiredMotorVals, 90, 1.0, 0);
+		//driveSetMecMotorPolarDegrees(&desiredMotorVals, 90, 1.0, 1.0);
 		motorSetActualPowerToDesired(&desiredMotorVals);
+		writeDebugStreamLine("------");
 	}
 }
