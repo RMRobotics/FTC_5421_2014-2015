@@ -2,6 +2,8 @@
 #define MOTOR_H
 #pragma systemFile
 
+#include "Helper.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////
 /*A note on array indexing:
 Arrays can be accessed by converting the tMotor enum to an int to get the array
@@ -82,29 +84,42 @@ void motorInit() {
 }
 
 /*Private function, returns power value after scaling power
-  to fit motor constraints. If definitions have not been
-  initialized, debug and assume normal motor. */
+  to fit motor constraints. Expects values from 0 to
+  motorGetMaxReferencePower().
+  If definitions have not been initialized, debug and assume
+  normal motor. */
 static int motorScalePower(tMotor currentMotor, int power) {
-	int maxPower;
-	int minPower;
-	if (!motorDefsInitialized) {
-		//TODO DEBUG "assuming normal motor speeds!"
-		maxPower = MAX_NORMAL_POWER;
-		minPower = MIN_NORMAL_POWER;
-	} else {
-		maxPower = motorDefinitions[currentMotor].maxPower;
-		minPower = motorDefinitions[currentMotor].minPower;
+	if (power != 0) { //Scaling assumes non zero power
+		int maxPower;
+		int minPower;
+		if (!motorDefsInitialized) {
+			//TODO DEBUG "assuming normal motor speeds!"
+			maxPower = MAX_NORMAL_POWER;
+			minPower = MIN_NORMAL_POWER;
+		} else {
+			maxPower = motorDefinitions[currentMotor].maxPower;
+			minPower = motorDefinitions[currentMotor].minPower;
+		}
+
+		//Scale power
+		float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
+												(float)(maxPower-minPower)) + minPower;
 	}
-
-	//Scale power
-	float scaledPower = (float) power * ((float) maxPower / (float) motorGetMaxReferencePower());
-
-	//Bound power
-	if (scaledPower > -minPower && scaledPower < minPower) { //in deadband
-		scaledPower = 0;
-	}
-
 	return (int) power;
+}
+
+/*Bounds power to fit motor constraints.
+	Does NOT scale power */
+static int motorBoundPower(tMotor currentMotor, int power) {
+	int boundPower = power;
+	int minPower = motorDefinitions[currentMotor].minPower;
+	int maxPower = motorDefinitions[currentMotor].maxPower;
+	if (abs(power) < minPower) { //in deadband
+		boundPower = 0;
+	} else if (abs(power) > maxPower) {
+		boundPower = helpFindSign(boundPower) * maxPower;
+	}
+	return boundPower;
 }
 
 //Update actual motor values with desired motor values
