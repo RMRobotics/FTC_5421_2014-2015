@@ -24,6 +24,9 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
+//Slew rate for scaling values (amount to add per loop). Percentage.
+#define MOTOR_SLEW_RATE 0.05
+
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
 
 //Struct for storing motor power limits for each motor
@@ -60,7 +63,7 @@ int motorGetMaxReferencePower() {
 //Flag for seeing if motor definitions have been initialized
 bool motorDefsInitialized = false;
 
-//Initialize motor definitions
+//Initialize motor definitions, preprocess slew rates
 void motorInit() {
 	//VOLATILE
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
@@ -126,11 +129,28 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	//Kludgey code, but it works
 	//VOLATILE
-	motor[MecMotor_FL] = motorScalePower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
-	motor[MecMotor_FR] = motorScalePower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
-	motor[MecMotor_BL] = motorScalePower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
-	motor[MecMotor_BR] = motorScalePower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
 
+	//Scale all powers
+	int scaledFL = motorScalePower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
+	int scaledBL = motorScalePower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
+	int scaledFR = motorScalePower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
+	int scaledBR = motorScalePower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
+	int scaledSlewFL = motorScalePower((tMotor)MecMotor_FL, MOTOR_SLEW_RATE);
+	int scaledSlewBL = motorScalePower((tMotor)MecMotor_BL, MOTOR_SLEW_RATE);
+	int scaledSlewFR = motorScalePower((tMotor)MecMotor_FR, MOTOR_SLEW_RATE);
+	int scaledSlewBR = motorScalePower((tMotor)MecMotor_BR, MOTOR_SLEW_RATE);
+
+	//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
+	int rateFL = helpFindSign(scaledFL) * (int)helpFindMinAbsFloat((motor[MecMotor_FL] - scaledFL), scaledSlewFL);
+	int rateBL = helpFindSign(scaledBL) * (int)helpFindMinAbsFloat((motor[MecMotor_BL] - scaledBL), scaledSlewBL);
+	int rateFR = helpFindSign(scaledFR) * (int)helpFindMinAbsFloat((motor[MecMotor_FR] - scaledFR), scaledSlewFR);
+	int rateBR = helpFindSign(scaledBR) * (int)helpFindMinAbsFloat((motor[MecMotor_BR] - scaledBR), scaledSlewBR);
+
+	//Update motors
+	motor[MecMotor_FL] = motor[MecMotor_FL] + rateFL;
+	motor[MecMotor_BL] = motor[MecMotor_BL] + rateBL;
+	motor[MecMotor_FR] = motor[MecMotor_FR] + rateFR;
+	motor[MecMotor_BR] = motor[MecMotor_BR] + rateBR;
 }
 
 #endif
