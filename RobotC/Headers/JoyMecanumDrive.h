@@ -55,7 +55,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 			//Third quadrant, add 90 to abs(angle)
 			angle = abs(angle) + 90;
 		}
-		speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2)));
+		speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2))) / 127.0;
 		rotation = ((float) joy1x2) / 127.0;
 		driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, rotation);
 		} else {
