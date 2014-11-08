@@ -35,7 +35,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 	int angle = 0;
 	float speed = 0.0;
 	float rotation = 0.0;
-
+	eraseDisplay();
 	//Deadband check
 	if (abs(joy1y1) >= DEADBAND || abs(joy1x1) >= DEADBAND || abs(joy1x2) >= DEADBAND) {
 		//We use atan2 because we want the actual angle, not the reference angle
@@ -57,8 +57,11 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 		}
 		speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2))) / 127.0;
 		rotation = ((float) joy1x2) / 127.0;
+		displayString(1, "X1: %d, Y1: %d, X2: %d", joy1x1, joy1y1, joy1x2);
+		displayString(2, "Angle: %d, Speed: %f, Rotation: %f", angle, speed, rotation);
 		driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, rotation);
 		} else {
+		displayString(1, "Zeroing motors");
 		driveZeroMecMotor(desiredMotorVals);
 	}
 
