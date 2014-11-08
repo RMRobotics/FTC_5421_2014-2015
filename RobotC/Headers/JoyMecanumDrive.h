@@ -39,29 +39,12 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 	//Deadband check
 	if (abs(joy1y1) >= DEADBAND || abs(joy1x1) >= DEADBAND || abs(joy1x2) >= DEADBAND) {
 		//We use atan2 because we want the actual angle, not the reference angle
-		angle = (int) radiansToDegrees((atan2(joy1y1,joy1x1)));
-		//Atan2 returns angle from positive x-axis, up to +180 or -180
-		//We want to transform this into an angle from positive y-axis from 0 to 360
-		if (angle >= 0 && angle <= 90) {
-			//First quadrant, find angle to y-axis
-			angle = 90 - angle;
-			} else if (angle > 90 && angle <= 180) {
-			//Second quadrant, find angle to y-axis and subtract from 360: 360-(angle-90) = 450 - angle
-			angle = 450 - angle;
-			} else if (angle < 0 && angle >= -90) {
-			//Fourth quadrant, add 90 to abs(angle)
-			angle = abs(angle) + 90;
-			} else {
-			//Third quadrant, add 90 to abs(angle)
-			angle = abs(angle) + 90;
-		}
+		angle = (int) radiansToDegrees((atan2(joy1x1,joy1y1)));
+
 		speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2))) / 127.0;
 		rotation = ((float) joy1x2) / 127.0;
-		displayString(1, "X1: %d, Y1: %d, X2: %d", joy1x1, joy1y1, joy1x2);
-		displayString(2, "Angle: %d, Speed: %f, Rotation: %f", angle, speed, rotation);
 		driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, rotation);
 		} else {
-		displayString(1, "Zeroing motors");
 		driveZeroMecMotor(desiredMotorVals);
 	}
 
