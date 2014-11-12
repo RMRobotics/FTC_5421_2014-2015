@@ -161,10 +161,12 @@ float powerRatio, float rotationRatio) {
 	writeDebugStreamLine("Relative power: %f, %f, %f, %f", powFL, powBL, powFR, powBR);
 
 	//Cap motor values
-	powFL = helpFindSign(helpRoundFloat(powFL)) * helpFindMinAbsFloat(powFL, maxPowFLBR);
-	powBL = helpFindSign(helpRoundFloat(powBL)) * helpFindMinAbsFloat(powBL, maxPowFRBL);
-	powFR = helpFindSign(helpRoundFloat(powFR)) * helpFindMinAbsFloat(powFR, maxPowFRBL);
-	powBR = helpFindSign(helpRoundFloat(powBR)) * helpFindMinAbsFloat(powBR, maxPowFLBR);
+	powFL = sgn(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
+	powBL = sgn(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
+	powFR = sgn(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
+	powBR = sgn(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
+
+	nxtDisplayString(3, "PW:%f %f %f %f", powFL, powBL, powFR, powBR);
 
 	//Holds max reference power
 	float maxRefPow = (float) motorGetMaxReferencePower();
