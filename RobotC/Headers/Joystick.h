@@ -82,4 +82,10 @@ bool joyButtonPressed(Joystick joyNum, JoyButtons joyButton) {
 		return (bool)joy2Btn((int)joyButton); //JoystickDriver defined function
 	}
 }
+
+/*Checks tophat button
+*/
+bool tophat(JoyTophat tophatBtn, TJoystick *joyState) {
+	return ((joyState->joy1_TopHat & (1 << (tophatBtn))) != 0);
+}
 #endif
