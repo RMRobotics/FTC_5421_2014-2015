@@ -25,14 +25,14 @@ float helpFindMinAbsFloat(float a, float b) {
 	}
 }
 
-//Returns sign of int
-int helpFindSign(int x) {
-	if (x > 0.0) {
-		return 1;
-	} else if (x < 0.0) {
-		return -1;
-	} else {
-		return 0;
+//Helper function for calculating contraints of a float
+float constrain(float x, float lowerBound, float upperBound){
+	if(x<lowerBound){
+		return lowerBound;
+	}else if(x>upperBound){
+		return upperBound;
+	}else{
+		return x;
 	}
 }
 

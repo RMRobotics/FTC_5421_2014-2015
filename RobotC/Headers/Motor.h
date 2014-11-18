@@ -16,7 +16,7 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 
 //Constants to keep PID working and counter stalling regardless of battery level
 #define MAX_NEVEREST_POWER 78
-#define MIN_NEVEREST_POWER 10
+#define MIN_NEVEREST_POWER 15
 #define MAX_NORMAL_POWER 100
 #define MIN_NORMAL_POWER 15
 
@@ -106,7 +106,7 @@ static int motorScalePower(tMotor currentMotor, int power) {
 
 		//Scale power
 		float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
-												(float)(maxPower-minPower)) + (helpFindSign(power) * minPower);
+												(float)(maxPower-minPower)) + (sgn(power) * minPower);
 	}
 	return (int) power;
 }
@@ -120,7 +120,7 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 	if (abs(power) < minPower) { //in deadband
 		boundPower = 0;
 	} else if (abs(power) > maxPower) {
-		boundPower = helpFindSign(boundPower) * maxPower;
+		boundPower = sgn(boundPower) * maxPower;
 	}
 	return boundPower;
 }
@@ -150,10 +150,10 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 
 	//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
 	//Make sure to keep the sign of the change
-	int rateFL = helpFindSign(diffFL) * (int)helpFindMinAbsFloat(diffFL, scaledSlewFL);
-	int rateBL = helpFindSign(diffBL) * (int)helpFindMinAbsFloat(diffBL, scaledSlewBL);
-	int rateFR = helpFindSign(diffFR) * (int)helpFindMinAbsFloat(diffFR, scaledSlewFR);
-	int rateBR = helpFindSign(diffBR) * (int)helpFindMinAbsFloat(diffBR, scaledSlewBR);
+	int rateFL = sgn(diffFL) * (int)helpFindMinAbsFloat(diffFL, scaledSlewFL);
+	int rateBL = sgn(diffBL) * (int)helpFindMinAbsFloat(diffBL, scaledSlewBL);
+	int rateFR = sgn(diffFR) * (int)helpFindMinAbsFloat(diffFR, scaledSlewFR);
+	int rateBR = sgn(diffBR) * (int)helpFindMinAbsFloat(diffBR, scaledSlewBR);
 
 	writeDebugStreamLine("FL: %d, BL: %d, FR: %d, BR: %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
 	writeDebugStreamLine("Rate FL: %d", rateFL);
@@ -161,11 +161,15 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	writeDebugStreamLine("Rate FR: %d", rateFR);
 	writeDebugStreamLine("Rate BR: %d", rateBR);
 
+
+
 	//Update motors
 	motor[MecMotor_FL] = motor[MecMotor_FL] + rateFL;
 	motor[MecMotor_BL] = motor[MecMotor_BL] + rateBL;
 	motor[MecMotor_FR] = motor[MecMotor_FR] + rateFR;
 	motor[MecMotor_BR] = motor[MecMotor_BR] + rateBR;
+
+	nxtDisplayString(1, "PW:%d %d %d %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
 }
 
 #endif
