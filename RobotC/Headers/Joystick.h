@@ -85,7 +85,7 @@ bool joyButtonPressed(Joystick joyNum, JoyButtons joyButton) {
 
 /*Checks tophat button
 */
-bool tophat(JoyTophat tophatBtn, TJoystick *joyState) {
-	return ((joyState->joy1_TopHat & (1 << (tophatBtn))) != 0);
+JoyTophat joyGetTophat(TJoystick *joyState) {
+	return (JoyTophat) joyState->joy1_TopHat;
 }
 #endif
