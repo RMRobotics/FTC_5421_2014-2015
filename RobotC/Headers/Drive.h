@@ -180,10 +180,10 @@ float powerRatio, float rotationRatio) {
 	float scaledPowFR = powFR * multiplier;
 	float scaledPowBR = powBR * multiplier;
 
-	desiredMotorVals->power[MecMotor_FL] = helpRoundFloat(scaledPowFL);
-	desiredMotorVals->power[MecMotor_BL] = helpRoundFloat(scaledPowBL);
-	desiredMotorVals->power[MecMotor_FR] = helpRoundFloat(scaledPowFR);
-	desiredMotorVals->power[MecMotor_BR] = helpRoundFloat(scaledPowBR);
+	desiredMotorVals->power[MecMotor_FL] = round(scaledPowFL);
+	desiredMotorVals->power[MecMotor_BL] = round(scaledPowBL);
+	desiredMotorVals->power[MecMotor_FR] = round(scaledPowFR);
+	desiredMotorVals->power[MecMotor_BR] = round(scaledPowBR);
 
 	//Drive debug
 	writeDebugStreamLine("Drive: %f, %f, %f, %f", scaledPowFL, scaledPowBL, scaledPowFR, scaledPowBR);
