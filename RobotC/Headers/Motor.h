@@ -28,6 +28,8 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define MOTOR_SLEW_RATE 5
 
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
+//Kludgey - you have to set this yourself for robot
+#define NUM_MOTORS 4
 
 //Struct for storing motor power limits for each motor
 typedef struct MotorData {
@@ -35,14 +37,8 @@ typedef struct MotorData {
 	int minPower;
 } MotorData;
 
-//Array for storing MotorData for each motor
-static MotorData motorDefinitions[MAX_NUM_MOTORS];
-
-//Struct definition for desired motor powers/encoder lengths
-typedef struct DesiredMotorVals {
-	int power[MAX_NUM_MOTORS];
-	int encoder[MAX_NUM_MOTORS];
-} DesiredMotorVals;
+//Array for storing all motor enums that we use (this way we can loop through)
+tMotor motorList[NUM_MOTORS];
 
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
@@ -55,6 +51,16 @@ typedef enum MecMotor {
 	MecMotor_BR = Raphael_BR,
 } MecMotor;
 
+//Array for storing MotorData for each motor
+static MotorData motorDefinitions[MAX_NUM_MOTORS];
+
+//Struct definition for desired motor powers/encoder lengths
+typedef struct DesiredMotorVals {
+	int power[MAX_NUM_MOTORS];
+	int encoder[MAX_NUM_MOTORS];
+} DesiredMotorVals;
+
+
 //Returns max reference power
 int motorGetMaxReferencePower() {
 	return MAX_REFERENCE_POWER;
@@ -66,11 +72,18 @@ bool motorDefsInitialized = false;
 //Initialize motor definitions, preprocess slew rates
 void motorInit() {
 	//VOLATILE
+	//list all motors
+	motorList[0] = MecMotor_FL;
+	motorList[1] = MecMotor_BL;
+	motorList[2] = MecMotor_FR;
+	motorList[3] = MecMotor_BR;
+
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {
 		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
 		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
 	}
+
 	//set drive max motor powers
 	motorDefinitions[MecMotor_FL].maxPower = MAX_NEVEREST_POWER;
 	motorDefinitions[MecMotor_BL].maxPower = MAX_NEVEREST_POWER;
@@ -130,45 +143,31 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	//Kludgey code, but it works
 	//VOLATILE
 
-	//Scale all powers
-	int scaledFL = motorScalePower((tMotor)MecMotor_FL, desiredVals->power[MecMotor_FL]);
-	int scaledBL = motorScalePower((tMotor)MecMotor_BL, desiredVals->power[MecMotor_BL]);
-	int scaledFR = motorScalePower((tMotor)MecMotor_FR, desiredVals->power[MecMotor_FR]);
-	int scaledBR = motorScalePower((tMotor)MecMotor_BR, desiredVals->power[MecMotor_BR]);
-	int scaledSlewFL = motorScalePower((tMotor)MecMotor_FL, MOTOR_SLEW_RATE);
-	int scaledSlewBL = motorScalePower((tMotor)MecMotor_BL, MOTOR_SLEW_RATE);
-	int scaledSlewFR = motorScalePower((tMotor)MecMotor_FR, MOTOR_SLEW_RATE);
-	int scaledSlewBR = motorScalePower((tMotor)MecMotor_BR, MOTOR_SLEW_RATE);
+	for(int i=0; i<NUM_MOTORS; i++) {
+		//Scale powers to motor range
+		int scaled = motorScalePower(motorList[i], desiredVals->power[motorList[i]]);
+		int scaledSlew = motorScalePower(motorList[i], MOTOR_SLEW_RATE);
 
-	writeDebugStreamLine("Desired: %d, %d, %d, %d", scaledFL, scaledBL, scaledFR, scaledBR);
+		//Find differences between motor and desired
+		int diff = scaled - motor[motorList[i]];
 
-	//Find differences between motor and desired
-	int diffFL = scaledFL - motor[MecMotor_FL];
-	int diffBL = scaledBL - motor[MecMotor_BL];
-	int diffFR = scaledFR - motor[MecMotor_FR];
-	int diffBR = scaledBR - motor[MecMotor_BR];
+		//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
+	  //Make sure to keep the sign of the change
+		int rate = sgn(diff) * (int)(helpFindMinAbsFloat(diff,scaledSlew));
+
+		//update motors
+		motor[motorList[i]] = motor[motorList[i]] + rate;
+	}
+
+	//writeDebugStreamLine("Desired: %d, %d, %d, %d", scaledFL, scaledBL, scaledFR, scaledBR);
 
 	//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
 	//Make sure to keep the sign of the change
-	int rateFL = sgn(diffFL) * (int)helpFindMinAbsFloat(diffFL, scaledSlewFL);
-	int rateBL = sgn(diffBL) * (int)helpFindMinAbsFloat(diffBL, scaledSlewBL);
-	int rateFR = sgn(diffFR) * (int)helpFindMinAbsFloat(diffFR, scaledSlewFR);
-	int rateBR = sgn(diffBR) * (int)helpFindMinAbsFloat(diffBR, scaledSlewBR);
-
-	writeDebugStreamLine("FL: %d, BL: %d, FR: %d, BR: %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
+	/*writeDebugStreamLine("FL: %d, BL: %d, FR: %d, BR: %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
 	writeDebugStreamLine("Rate FL: %d", rateFL);
 	writeDebugStreamLine("Rate BL: %d", rateBL);
 	writeDebugStreamLine("Rate FR: %d", rateFR);
-	writeDebugStreamLine("Rate BR: %d", rateBR);
-
-
-
-	//Update motors
-	motor[MecMotor_FL] = motor[MecMotor_FL] + rateFL;
-	motor[MecMotor_BL] = motor[MecMotor_BL] + rateBL;
-	motor[MecMotor_FR] = motor[MecMotor_FR] + rateFR;
-	motor[MecMotor_BR] = motor[MecMotor_BR] + rateBR;
-
+	writeDebugStreamLine("Rate BR: %d", rateBR);*/
 	nxtDisplayString(1, "PW:%d %d %d %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
 }
 
