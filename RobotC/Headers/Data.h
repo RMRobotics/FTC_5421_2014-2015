@@ -153,7 +153,6 @@ static TJoystick * deserializeTJoy(SerialTJoystick *serialized) {
 /* Writes to joystick log file stream.
 	 Returns true if written, false if not. */
 bool dataWriteJoyLogStream(TJoystick *joy) {
-	writeDebugStream("Attempting to write....\n");
 	if (accessible) {
 		if ((accessedBytes + TJOY_SIZE) > currentFilesize) {
 			writeDebugStream("IO Error: Attempting to write past max filesize.\n");
@@ -165,8 +164,6 @@ bool dataWriteJoyLogStream(TJoystick *joy) {
 				if (ioResult != 0) {
 					writeDebugStream("IO Error Writing: %d\n", ioResult);
 					return false;
-				} else {
-					writeDebugStream("Data successfully written.\n");
 				}
 			}
 			accessedBytes += TJOY_SIZE;
