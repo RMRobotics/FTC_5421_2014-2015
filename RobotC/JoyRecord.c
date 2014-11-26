@@ -6,6 +6,7 @@
 //#include "Headers\Motor.h"
 //#include "Headers\Servo.h"
 //#include "Headers\JoyMecanumDrive.h"
+#include "Headers\JoyPlayMusic.h"
 
 //Stores desired motor values
 //DesiredMotorVals desiredMotorVals;
@@ -31,7 +32,7 @@ task main()
 		getJoystickSettings(joystick);
 		//joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
 		//motorSetActualPowerToDesired(&desiredMotorVals);
-		motor[singleMotor] = round(((float)joystick.joy1_y1 / 128.0)*100);
+		joyplaymusicPlay(&joystick);
 		dataWriteJoyLogStream(joystick);
 		wait1Msec(delay);
 	}

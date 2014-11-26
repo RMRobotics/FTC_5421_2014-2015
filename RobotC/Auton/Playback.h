@@ -1,6 +1,8 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
+#include "Headers\JoyPlayMusic.h"
+
 //Enumerates all states in this autonomous program
 typedef enum PlaybackStateNames {
 	STATE_BEGIN,
@@ -15,7 +17,7 @@ static PlaybackStateNames currentState = STATE_BEGIN;
    isEnd will be set to true when state machine
    has finished. */
 void playbackRun() {
-	bool end;
+	bool end = false;
 	while(!end) {
 		switch(currentState) {
 			case STATE_BEGIN:
@@ -28,7 +30,7 @@ void playbackRun() {
 			case STATE_RUN:
 				TJoystick *curJoy = dataReadJoystickLog();
 				if (curJoy) {
-					motor[singleMotor] = round(((float)curJoy->joy1_y1 / 128.0)*100);
+					joyplaymusicPlay(curJoy);
 				} else {
 					currentState = STATE_END;
 				}

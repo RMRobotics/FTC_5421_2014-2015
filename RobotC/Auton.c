@@ -4,6 +4,7 @@
 //#include "Headers\Motor.h"
 //#include "Headers\Servo.h"
 #include "Headers\Data.h"
+#include "JoystickDriver.c"
 
 #include "Auton\Playback.h"
 
