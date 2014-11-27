@@ -17,7 +17,6 @@ void initialize() {
 task main()
 {
 	initialize();
-	bool isEnd = false;
 	waitForStart();
 	//Joystick playback
 	playbackRun();

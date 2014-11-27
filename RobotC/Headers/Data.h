@@ -33,7 +33,7 @@
 	*/
 
 
-//Absolute maximum for log file
+//Absolute maximum for log file (in a multiple of TJOY_SIZE)
 #define JOY_MAX_LOGFILE_SIZE 65520 //In bytes. Limited by max size of word.
 
 /* Stores serialized tJoystick. */
@@ -45,7 +45,7 @@ typedef struct SerialTJoystick {
 TFileHandle logHandle;
 TFileIOResult ioResult;
 //Stores filesize of current file
-int currentFilesize;
+short currentFilesize;
 //Stores status of whether or not the file is accessible
 bool accessible;
 //Stores status of whether or not current log handle is in use
@@ -59,7 +59,7 @@ int accessedBytes = 0;
 	 This deletes the old log file.
 	 Returns true if writeable, false otherwise. */
 bool dataOpenWriteJoyLog(int numTJoy) {
-	int size = numTJoy * TJOY_SIZE;
+	short size = numTJoy * TJOY_SIZE;
 	Delete(JOY_LOGFILE, ioResult);
 	if ((ioResult == 0 || ioResult == 135) && size <= JOY_MAX_LOGFILE_SIZE) { //135 is File Not Found
 		if (!logHandleInUse) {
