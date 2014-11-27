@@ -11,6 +11,7 @@ Code was inspired partly by:
   - Xander (of course), especially his [RVW Maze Crawler](http://botbench.com/blog/2013/05/27/robot-virtual-worlds-maze-crawler/)
   - [Elliot Berman] (http://blog.elliotjb.com/2013/10/holonomic-x-drive-tutorial-programming_31.html)'s holonomic drive tutorial
   - James Pearman's awe-inducing [SmartMotorLib](https://github.com/jpearman/smartMotorLib)
+  - ['Oly Cow's FTC Code](https://github.com/OlyCow/FTC_2013-2014)
 
 -------------------------
 
