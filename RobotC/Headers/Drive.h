@@ -145,56 +145,59 @@
   rotationRatio: float value from -1 to 1 */
 void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
 float powerRatio, float rotationRatio) {
-	//TODO check parameter fit constraints
+	if (angle > 360 || angle < 0 || powerRatio > 1.0 || rotationRatio > 1.0) {
+		writeDebugStream("Drive parameters do not fit constraints! Ang: %d, Pow: %f, Rot: %f",
+										 angle, powerRatio, rotationRatio);
+	} else {
+		//Holds max motor powers
+		float maxPowFLBR = cosDegrees(45.0 - (float)angle);
+		float maxPowFRBL = cosDegrees(45.0 + (float)angle);
 
-	writeDebugStreamLine("Drive power: %f", powerRatio);
+		float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * abs(maxPowFLBR));
+		float powBL = (powerRatio * maxPowFRBL) + (rotationRatio * abs(maxPowFRBL));
+		float powFR = (powerRatio * maxPowFRBL) - (rotationRatio * abs(maxPowFRBL));
+		float powBR = (powerRatio * maxPowFLBR) - (rotationRatio * abs(maxPowFLBR));
 
-	//Holds max motor powers
-	float maxPowFLBR = cosDegrees(45.0 - (float)angle);
-	float maxPowFRBL = cosDegrees(45.0 + (float)angle);
+		//Cap motor values
+		powFL = sgn(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
+		powBL = sgn(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
+		powFR = sgn(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
+		powBR = sgn(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
-	float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * abs(maxPowFLBR));
-	float powBL = (powerRatio * maxPowFRBL) + (rotationRatio * abs(maxPowFRBL));
-	float powFR = (powerRatio * maxPowFRBL) - (rotationRatio * abs(maxPowFRBL));
-	float powBR = (powerRatio * maxPowFLBR) - (rotationRatio * abs(maxPowFLBR));
+		nxtDisplayString(3, "PW:%f %f %f %f", powFL, powBL, powFR, powBR);
 
-	writeDebugStreamLine("Relative power: %f, %f, %f, %f", powFL, powBL, powFR, powBR);
+		//Holds max reference power
+		float maxRefPow = (float) motorGetMaxReferencePower();
 
-	//Cap motor values
-	powFL = sgn(powFL) * helpFindMinAbsFloat(powFL, maxPowFLBR);
-	powBL = sgn(powBL) * helpFindMinAbsFloat(powBL, maxPowFRBL);
-	powFR = sgn(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
-	powBR = sgn(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
+		//Scale to max reference power
+		float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
+		float multiplier = maxRefPow / absHighestPow;
 
-	nxtDisplayString(3, "PW:%f %f %f %f", powFL, powBL, powFR, powBR);
+		float scaledPowFL = powFL * multiplier;
+		float scaledPowBL = powBL * multiplier;
+		float scaledPowFR = powFR * multiplier;
+		float scaledPowBR = powBR * multiplier;
 
-	//Holds max reference power
-	float maxRefPow = (float) motorGetMaxReferencePower();
-
-	//Scale to max reference power
-	float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
-	float multiplier = maxRefPow / absHighestPow;
-
-	float scaledPowFL = powFL * multiplier;
-	float scaledPowBL = powBL * multiplier;
-	float scaledPowFR = powFR * multiplier;
-	float scaledPowBR = powBR * multiplier;
-
-	desiredMotorVals->power[MecMotor_FL] = round(scaledPowFL);
-	desiredMotorVals->power[MecMotor_BL] = round(scaledPowBL);
-	desiredMotorVals->power[MecMotor_FR] = round(scaledPowFR);
-	desiredMotorVals->power[MecMotor_BR] = round(scaledPowBR);
-
-	//Drive debug
-	writeDebugStreamLine("Drive: %f, %f, %f, %f", scaledPowFL, scaledPowBL, scaledPowFR, scaledPowBR);
+		desiredMotorVals->power[MecMotor_FL] = round(scaledPowFL);
+		desiredMotorVals->power[MecMotor_BL] = round(scaledPowBL);
+		desiredMotorVals->power[MecMotor_FR] = round(scaledPowFR);
+		desiredMotorVals->power[MecMotor_BR] = round(scaledPowBR);
+	}
 }
 
-//Zero all mecanum motors
+/* Zero all mecanum motors */
 void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 	desiredMotorVals->power[MecMotor_FL] = 0;
 	desiredMotorVals->power[MecMotor_BL] = 0;
 	desiredMotorVals->power[MecMotor_FR] = 0;
 	desiredMotorVals->power[MecMotor_BR] = 0;
+}
+
+/* Resets all encoders */
+void driveResetEncoders(DesiredMotorVals *desiredMotorVals) {
+	for (int i=0;i<NUM_MOTORS;i++) {
+		nMotorEncoder[motorList[i]] = 0;
+	}
 }
 
 /*Sets desired motor values in order to orbit north (forwards).
