@@ -9,14 +9,12 @@
 //Joystick constants
 #define DEADBAND 10
 
-/*This function interprets a TJoystick struct and sets desired motor powers.
+/*This function interprets a TJoystick struct and sets desired motor powers
+  for mecanum drive system.
   This uses mecanum drive in arcade style.
   Left joystick controls strafing and forwards/backwards
   Right joystick (x-axis only) controls rotation */
 void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
-	//////////////
-	//DRIVE CODE//
-	//////////////
 	int joy1y1 = joyState->joy1_y1;
 	int joy1x2 = joyState->joy1_x2;
 	int joy1x1 = joyState->joy1_x1;
@@ -77,15 +75,28 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 			}
 			break;
 	}//switch tophat
+}
 
-	nxtDisplayString(3, "R:%f %f %f %f",  ((float)joy1x2), rotation);
-	nxtDisplayString(5, "P: %d %d %d", (int)(angle*100),(int)(speed*100),(int)(rotation*100));
-
-	/////////
-	//Other//
-	/////////
-
-
+/*This function interprets a TJoystick struct, sets desired motor powers
+  for mecanum drive system, and handles writing to the debug stream and
+  flushing encoders.
+  This uses mecanum drive in arcade style.
+  Left joystick controls strafing and forwards/backwards
+  Right joystick (x-axis only) controls rotation */
+void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+	joymecdriveSetDesiredPower(desiredMotorVals, joyState);
+	if (joyButtonPressed(joyState, JOY1, BUTTON_LT) && joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
+		writeDebugStream("FL Encoder: %d\n", nMotorEncoder[MecMotor_FL]);
+		writeDebugStream("BL Encoder: %d\n", nMotorEncoder[MecMotor_BL]);
+		writeDebugStream("FR Encoder: %d\n", nMotorEncoder[MecMotor_FR]);
+		writeDebugStream("BR Encoder: %d\n", nMotorEncoder[MecMotor_BR]);
+		writeDebugStream("Resetting drive encoders.");
+		nMotorEncoder[MecMotor_FL] = 0;
+		nMotorEncoder[MecMotor_BL] = 0;
+		nMotorEncoder[MecMotor_FR] = 0;
+		nMotorEncoder[MecMotor_BR] = 0;
+		writeDebugStream("--------------------------");
+	}
 }
 
 #endif
