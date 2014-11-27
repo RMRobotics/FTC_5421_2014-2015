@@ -110,7 +110,7 @@
 		  total_power_BR = cos(45) - 0.5cos(45) = 0.5cos(45)
 
 		But we have exceeded our maximum power of cos(45)! So we cap it and effectively ignore rotation
-		for rightside motors (remember, we choose movement over rotation):
+		for leftside motors (remember, we choose movement over rotation):
 		  capped_power_FL = cos(45)
 		  capped_power_BL = cos(45)
 		  capped_power_FR = 0.5cos(45)
@@ -196,4 +196,57 @@ void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 	desiredMotorVals->power[MecMotor_FR] = 0;
 	desiredMotorVals->power[MecMotor_BR] = 0;
 }
+
+/*Sets desired motor values in order to orbit north (forwards).
+	The center of rotation is in front of the robot.
+	powerRatio: float value from 0 to 1 */
+void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio);
+
+/*Sets desired encoder values in order to orbit north.
+  The center of rotation is in front of the robot.
+  angle: int value of angle to rotate in degrees from 0 to 360 */
+void driveSetEncoderOrbitN(DesiredMotorVals *desiredMotorVals, int angle);
+
+/*Sets desired motor values in order to orbit south (backwards).
+  The center of rotation is behind the robot.
+  powerRatio: float value from 0 to 1 */
+void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio);
+
+/*Sets desired encoder values in order to orbit south.
+  The center of rotation is behind the robot.
+  angle: int value of angle to rotate in degrees from 0 to 360 */
+void driveSetEncoderOrbitS(DesiredMotorVals *desiredMotorVals, int angle);
+
+/*The following functions follow the same format as above.
+  encoderDistance: distance to go in encoder units */
+void driveSetMecMotorN(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderN(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorS(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderS(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorE(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorW(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorNE(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderNE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorNW(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderNW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorSE(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderSE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorSW(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderSW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+
+void driveSetMecMotorRotE(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderRotE(DesiredMotorVals *desiredMotorVals, int angle);
+
+void driveSetMecMotorRotW(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetEncoderRotW(DesiredMotorVals *desiredMotorVals, int angle);
+
 #endif
