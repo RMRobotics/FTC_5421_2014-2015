@@ -35,15 +35,6 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
 #define NUM_MOTORS 4
 
-//Array for storing all motor enums that we use (this way we can loop through)
-tMotor motorList[NUM_MOTORS];
-
-//Struct for storing motor power limits for each motor
-typedef struct MotorData {
-	int maxPower;
-	int minPower;
-} MotorData;
-
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
 //TODO place in config file. this is forced to be here because pragmas can't be included...
@@ -54,6 +45,12 @@ typedef enum MecMotor {
 	MecMotor_FR = Michelangelo_FR,
 	MecMotor_BR = Raphael_BR,
 } MecMotor;
+
+//Struct for storing motor power limits for each motor
+typedef struct MotorData {
+	int maxPower;
+	int minPower;
+} MotorData;
 
 //Array for storing MotorData for each motor
 static MotorData motorDefinitions[MAX_NUM_MOTORS];
@@ -68,13 +65,11 @@ typedef struct DesiredEncVals {
 	int encoder[MAX_NUM_MOTORS];
 } DesiredEncVals;
 
-//Returns max reference power
-int motorGetMaxReferencePower() {
-	return MAX_REFERENCE_POWER;
-}
-
 //Flag for seeing if motor definitions have been initialized
 bool motorDefsInitialized = false;
+
+//Array for storing all motor enums that we use (this way we can loop through)
+tMotor motorList[NUM_MOTORS];
 
 //Initialize motor definitions
 void motorInit() {
@@ -110,6 +105,11 @@ void motorInit() {
 	} else {
 		motorDefsInitialized = true;
 	}
+}
+
+/*Returns max reference power for other functions */
+int motorGetMaxReferencePower() {
+	return MAX_REFERENCE_POWER;
 }
 
 /*Private function, returns power value after scaling power
