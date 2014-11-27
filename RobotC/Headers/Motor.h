@@ -155,6 +155,32 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 	}
 }
 
+/* Returns real encoder value for a specific tMotor */
+void motorGetEncoder(tMotor curMotor) {
+	return nMotorEncoder[curMotor];
+}
+
+/* Resets encoder, desired and real, for a specific tMotor */
+void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
+	if (motorDefsInitialized) {
+		desiredEncVals->encoder[curMotor] = 0;
+		nMotorEncoder[curMotor] = 0;
+	} else {
+		writeDebugStream("Motors not initialized!\n");
+	}
+}
+
+/* Resets all encoders, desired and real */
+void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
+	if (motorDefsInitialized) {
+		for (int i=0;i<NUM_MOTORS;i++) {
+			motorResetEncoder(desiredEncVals, i);
+		}
+	} else {
+		writeDebugStream("Motors not initialized!\n");
+	}
+}
+
 /*Handles limits on desired power given a target encoder distance.
 	- Sets desired powers to 0 if	the motor encoder exceeds desired
 		encoder values.

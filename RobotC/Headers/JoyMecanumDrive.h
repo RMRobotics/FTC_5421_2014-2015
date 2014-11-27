@@ -83,18 +83,18 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
   This uses mecanum drive in arcade style.
   Left joystick controls strafing and forwards/backwards
   Right joystick (x-axis only) controls rotation */
-void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState) {
 	joymecdriveSetDesiredPower(desiredMotorVals, joyState);
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT) && joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		writeDebugStream("FL Encoder: %d\n", nMotorEncoder[MecMotor_FL]);
-		writeDebugStream("BL Encoder: %d\n", nMotorEncoder[MecMotor_BL]);
-		writeDebugStream("FR Encoder: %d\n", nMotorEncoder[MecMotor_FR]);
-		writeDebugStream("BR Encoder: %d\n", nMotorEncoder[MecMotor_BR]);
+		writeDebugStream("FL Encoder: %d\n", motorGetEncoder(MecMotor_FL));
+		writeDebugStream("BL Encoder: %d\n", motorGetEncoder(MecMotor_FR));
+		writeDebugStream("FR Encoder: %d\n", motorGetEncoder(MecMotor_FR));
+		writeDebugStream("BR Encoder: %d\n", motorGetEncoder(MecMotor_BR));
 		writeDebugStream("Resetting drive encoders.");
-		nMotorEncoder[MecMotor_FL] = 0;
-		nMotorEncoder[MecMotor_BL] = 0;
-		nMotorEncoder[MecMotor_FR] = 0;
-		nMotorEncoder[MecMotor_BR] = 0;
+		motorResetEncoder(desiredEncVals, MecMotor_FL);
+		motorResetEncoder(desiredEncVals, MecMotor_FR);
+		motorResetEncoder(desiredEncVals, MecMotor_BL);
+		motorResetEncoder(desiredEncVals, MecMotor_BR);
 		writeDebugStream("--------------------------");
 	}
 }
