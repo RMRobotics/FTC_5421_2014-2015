@@ -24,21 +24,25 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
+/*Length (in encoder units) over which we slow down the robot in order to hit the
+  target precisely. */
+#define ENC_SLOW_LENGTH 3000
+#define ENC_SLOW_RATE MAX_REFERENCE_POWER / ENC_SLOW_LENGTH
+
 //Slew rate for scaling values (amount to add per loop). Percentage.
 #define MOTOR_SLEW_RATE 5
 
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
-//Kludgey - you have to set this yourself for robot
 #define NUM_MOTORS 4
+
+//Array for storing all motor enums that we use (this way we can loop through)
+tMotor motorList[NUM_MOTORS];
 
 //Struct for storing motor power limits for each motor
 typedef struct MotorData {
 	int maxPower;
 	int minPower;
 } MotorData;
-
-//Array for storing all motor enums that we use (this way we can loop through)
-tMotor motorList[NUM_MOTORS];
 
 //Enum for referencing mecanum motors
 //They're named after TMNT because Lisa.
@@ -54,12 +58,15 @@ typedef enum MecMotor {
 //Array for storing MotorData for each motor
 static MotorData motorDefinitions[MAX_NUM_MOTORS];
 
-//Struct definition for desired motor powers/encoder lengths
+//Struct definition for desired motor powers
 typedef struct DesiredMotorVals {
 	int power[MAX_NUM_MOTORS];
-	int encoder[MAX_NUM_MOTORS];
 } DesiredMotorVals;
 
+//Struct definition for desired encoder limit
+typedef struct DesiredEncVals {
+	int encoder[MAX_NUM_MOTORS];
+} DesiredEncVals;
 
 //Returns max reference power
 int motorGetMaxReferencePower() {
@@ -69,7 +76,7 @@ int motorGetMaxReferencePower() {
 //Flag for seeing if motor definitions have been initialized
 bool motorDefsInitialized = false;
 
-//Initialize motor definitions, preprocess slew rates
+//Initialize motor definitions
 void motorInit() {
 	//VOLATILE
 	//list all motors
@@ -96,7 +103,13 @@ void motorInit() {
 	motorDefinitions[MecMotor_FR].minPower = MIN_NEVEREST_POWER;
 	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
 
-	motorDefsInitialized = true;
+	//check to make sure motors listed fills up motorList length
+	int numOfMotors = sizeof(motorList) / sizeof(tMotor);
+	if (numOfMotors != NUM_MOTORS) {
+		writeDebugStream("Motors failed to initialize (check NUM_MOTORS and motorList[] to see if they agree!\n");
+	} else {
+		motorDefsInitialized = true;
+	}
 }
 
 /*Private function, returns power value after scaling power
@@ -105,70 +118,88 @@ void motorInit() {
   If definitions have not been initialized, debug and assume
   normal motor. */
 static int motorScalePower(tMotor currentMotor, int power) {
-	if (power != 0) { //Scaling assumes non zero power
-		int maxPower;
-		int minPower;
-		if (!motorDefsInitialized) {
-			//TODO DEBUG "assuming normal motor speeds!"
-			maxPower = MAX_NORMAL_POWER;
-			minPower = MIN_NORMAL_POWER;
-		} else {
+	if (motorDefsInitialized) {
+		if (power != 0) { //Scaling assumes non zero power
+			int maxPower;
+			int minPower;
 			maxPower = motorDefinitions[currentMotor].maxPower;
 			minPower = motorDefinitions[currentMotor].minPower;
-		}
 
-		//Scale power
-		float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
-												(float)(maxPower-minPower)) + (sgn(power) * minPower);
+			//Scale power
+			float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
+													(float)(maxPower-minPower)) + (sgn(power) * minPower);
+		}
+		return (int) power;
+	} else {
+		return 0;
 	}
-	return (int) power;
 }
 
 /*Bounds power to fit motor constraints.
 	Does NOT scale power */
 static int motorBoundPower(tMotor currentMotor, int power) {
-	int boundPower = power;
-	int minPower = motorDefinitions[currentMotor].minPower;
-	int maxPower = motorDefinitions[currentMotor].maxPower;
-	if (abs(power) < minPower) { //in deadband
-		boundPower = 0;
-	} else if (abs(power) > maxPower) {
-		boundPower = sgn(boundPower) * maxPower;
+	if (motorDefsInitialized) {
+		int boundPower = power;
+		int minPower = motorDefinitions[currentMotor].minPower;
+		int maxPower = motorDefinitions[currentMotor].maxPower;
+		if (abs(power) < minPower) { //in deadband
+			boundPower = 0;
+		} else if (abs(power) > maxPower) {
+			boundPower = sgn(boundPower) * maxPower;
+		}
+		return boundPower;
+	} else {
+		return 0;
 	}
-	return boundPower;
+}
+
+/*Handles limits on desired power given a target encoder distance.
+	- Sets desired powers to 0 if	the motor encoder exceeds desired
+		encoder values.
+	- Limits desired powers when the encoder approaches the target.
+	- If the desired encoder value is zero, it is ignored. */
+void motorLimitDesiredPowerToEncoder(DesiredMotorVals *desiredVals,
+DesiredEncVals *desiredEncVals) {
+	if (motorDefsInitialized) {
+		for (int i=0; i<NUM_MOTORS; i++) {
+			tMotor curMotor = motorList[i];
+			int desiredEnc = desiredEncVals->encoder[curMotor];
+			if (desiredEnc > 0) {
+				if (nMotorEncoder[curMotor] > desiredEnc) {
+					desiredVals->power[curMotor] = 0;
+				} else if ((desiredEnc - nMotorEncoder[curMotor]) < ENC_SLOW_LENGTH) {
+					desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
+				}
+			} else if (desiredEnc < 0) {
+				if (nMotorEncoder[curMotor] < desiredEnc) {
+					desiredVals->power[curMotor] = 0;
+				} else if ((desiredEnc - nMotorEncoder[curMotor]) < -ENC_SLOW_LENGTH) {
+					desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
+				}
+			}
+		}
+	}
 }
 
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
-	//Kludgey code, but it works
-	//VOLATILE
+	if (motorDefsInitialized) {
+		for(int i=0; i<NUM_MOTORS; i++) {
+			//Scale powers to motor range
+			int scaled = motorScalePower(motorList[i], desiredVals->power[motorList[i]]);
+			int scaledSlew = motorScalePower(motorList[i], MOTOR_SLEW_RATE);
 
-	for(int i=0; i<NUM_MOTORS; i++) {
-		//Scale powers to motor range
-		int scaled = motorScalePower(motorList[i], desiredVals->power[motorList[i]]);
-		int scaledSlew = motorScalePower(motorList[i], MOTOR_SLEW_RATE);
+			//Find differences between motor and desired
+			int diff = scaled - motor[motorList[i]];
 
-		//Find differences between motor and desired
-		int diff = scaled - motor[motorList[i]];
+			//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
+		  //Make sure to keep the sign of the change
+			int rate = sgn(diff) * (int)(helpFindMinAbsFloat(diff,scaledSlew));
 
-		//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
-	  //Make sure to keep the sign of the change
-		int rate = sgn(diff) * (int)(helpFindMinAbsFloat(diff,scaledSlew));
-
-		//update motors
-		motor[motorList[i]] = motor[motorList[i]] + rate;
+			//update motors
+			motor[motorList[i]] = motor[motorList[i]] + rate;
+		}
 	}
-
-	//writeDebugStreamLine("Desired: %d, %d, %d, %d", scaledFL, scaledBL, scaledFR, scaledBR);
-
-	//Determine whether to change by slew rate, or by jumping directly to desired speed (smaller is better)
-	//Make sure to keep the sign of the change
-	/*writeDebugStreamLine("FL: %d, BL: %d, FR: %d, BR: %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
-	writeDebugStreamLine("Rate FL: %d", rateFL);
-	writeDebugStreamLine("Rate BL: %d", rateBL);
-	writeDebugStreamLine("Rate FR: %d", rateFR);
-	writeDebugStreamLine("Rate BR: %d", rateBR);*/
-	nxtDisplayString(1, "PW:%d %d %d %d", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
 }
 
 #endif
