@@ -23,6 +23,7 @@ void initialize() {
 	//servoInit();
 	motorInit();
 	//Initialize to zeroes
+	clearDebugStream();
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 }
 

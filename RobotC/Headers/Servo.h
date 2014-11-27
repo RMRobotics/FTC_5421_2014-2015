@@ -55,43 +55,43 @@ void servoInit() {
 /*Sets speed for a continuous rotation servo. If given servo is a
   non-continuous rotation servo, then it debugs and does nothing. */
 void servoSetCont(TServoIndex currentServo, int speed) {
-	if (!servoDefsInitialized) {
-		//TODO DEBUG "servodefs not initialized!"
-		return;
-	}
-	if (servoDefinitions[currentServo].isContinuous) {
-		if (speed > SERVO_CONT_FORWARD) {
-			speed = SERVO_CONT_FORWARD;
-			} else if (speed < SERVO_CONT_REVERSE) {
-			speed = SERVO_CONT_REVERSE;
+	if (servoDefsInitialized) {
+		if (servoDefinitions[currentServo].isContinuous) {
+			if (speed > SERVO_CONT_FORWARD) {
+				speed = SERVO_CONT_FORWARD;
+				} else if (speed < SERVO_CONT_REVERSE) {
+				speed = SERVO_CONT_REVERSE;
+			}
+			servo[currentServo] = speed;
+		} else {
+			writeDebugStream("Attempting to set noncontinuous rotation servo (%d) continuously!\n", currentServo);
 		}
-		servo[currentServo] = speed;
 	} else {
-		//TODO DEBUG "Attempting to send continuous speed to non continuous servo!"
+		writeDebugStream("Servos not initialized!\n");
 	}
 }
 
 /*Sets angle for a non-continuous rotation servo. If given servo is
   a continuous rotation servo, then it debugs and does nothing. */
 void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_DEFAULT_RATE) {
-	if (!servoDefsInitialized) {
-		//TODO DEBUG "servodefs not initialized!"
-		return;
-	}
-	if (!servoDefinitions[currentServo].isContinuous) {
-		int maxAngle = servoDefinitions[currentServo].maxValue;
-		int minAngle = servoDefinitions[currentServo].minValue;
-		if (angle > maxAngle) {
-			//TODO DEBUG output "angle past maximum angle!"
-			angle = maxAngle;
-		} else if (angle < minAngle) {
-			//TODO DEBUG output "angle past minimum angle!"
-			angle = minAngle;
+	if (servoDefsInitialized) {
+		if (!servoDefinitions[currentServo].isContinuous) {
+			int maxAngle = servoDefinitions[currentServo].maxValue;
+			int minAngle = servoDefinitions[currentServo].minValue;
+			if (angle > maxAngle) {
+				writeDebugStream("Angle (%d) past maximum angle (%d) for servo (%d)!\n", angle, maxAngle, currentServo);
+				angle = maxAngle;
+			} else if (angle < minAngle) {
+				writeDebugStream("Angle (%d) past minimum angle (%d) for servo (%d)!\n", angle, minAngle, currentServo);
+				angle = minAngle;
+			}
+			servoChangeRate[currentServo] = servoRate;
+			servo[currentServo] = angle;
+		} else  { //Continuous rotation servo
+			writeDebugStream("Attempting to set continuous rotation servo (%d) noncontinuously!\n", currentServo);
 		}
-		servoChangeRate[currentServo] = servoRate;
-		servo[currentServo] = angle;
-	} else  { //Continuous rotation servo
-		//TODO DEBUG output "Trying to send noncontinuous value to continuous rotation servo!
+	} else {
+		writeDebugStream("Servos not initialized!\n");
 	}
 }
 

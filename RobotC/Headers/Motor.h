@@ -131,6 +131,7 @@ static int motorScalePower(tMotor currentMotor, int power) {
 		}
 		return (int) power;
 	} else {
+		writeDebugStream("Motors not initialized!\n");
 		return 0;
 	}
 }
@@ -149,6 +150,7 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 		}
 		return boundPower;
 	} else {
+		writeDebugStream("Motors not initialized!\n");
 		return 0;
 	}
 }
@@ -178,6 +180,8 @@ DesiredEncVals *desiredEncVals) {
 				}
 			}
 		}
+	} else {
+		writeDebugStream("Motors not initialized!\n");
 	}
 }
 
@@ -199,6 +203,8 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 			//update motors
 			motor[motorList[i]] = motor[motorList[i]] + rate;
 		}
+	} else {
+		writeDebugStream("Motors not initialized!\n");
 	}
 }
 
