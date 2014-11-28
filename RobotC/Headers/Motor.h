@@ -211,6 +211,26 @@ DesiredEncVals *desiredEncVals) {
 	}
 }
 
+/*Checks if a specific tMotor has hit its encoder targets */
+bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
+	int desiredEnc = desiredEncVals->encoder[curMotor];
+	if ((desiredEnc >= nMotorEncoder[curMotor]) || desiredEnc == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/*Checks if all tMotors have hit their encoder targets */
+bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
+	for (int i=0;i<NUM_MOTORS;i++) {
+		if (!motorHasHitEncoderTarget(desiredEncVals, motorList[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
 //Update actual motor values with desired motor values
 void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	if (motorDefsInitialized) {
