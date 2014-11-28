@@ -5,6 +5,8 @@
 #include "Motor.h"
 #include "Helper.h"
 
+#define ROTATION_ENCODER_RATIO 5 //Ratio of degree of rotation to encoder unit
+#define ORBIT_ENCODER_RATIO 10 //Ratio of degree of orbit to encoder unit
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /* A note on math:
@@ -203,53 +205,107 @@ void driveResetEncoders(DesiredMotorVals *desiredMotorVals) {
 /*Sets desired motor values in order to orbit north (forwards).
 	The center of rotation is in front of the robot.
 	powerRatio: float value from 0 to 1 */
-void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, -powerRatio);
+}
 
 /*Sets desired encoder values in order to orbit north.
   The center of rotation is in front of the robot.
-  angle: int value of angle to rotate in degrees from 0 to 360 */
-void driveSetEncoderOrbitN(DesiredMotorVals *desiredMotorVals, int angle);
+  angle: int value of angle to rotate in degrees */
+void driveSetEncoderOrbitN(DesiredEncVals *desiredEncVals, int angle) {
+	desiredEncVals->encoder[MecMotor_BL] = angle * -ORBIT_ENCODER_RATIO;
+	desiredEncVals->encoder[MecMotor_BR] = angle * ORBIT_ENCODER_RATIO;
+}
 
 /*Sets desired motor values in order to orbit south (backwards).
   The center of rotation is behind the robot.
   powerRatio: float value from 0 to 1 */
-void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio);
+void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, powerRatio);
+}
 
 /*Sets desired encoder values in order to orbit south.
   The center of rotation is behind the robot.
-  angle: int value of angle to rotate in degrees from 0 to 360 */
-void driveSetEncoderOrbitS(DesiredMotorVals *desiredMotorVals, int angle);
+  angle: int value of angle to rotate in degrees */
+void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, int angle) {
+	desiredEncVals->encoder[MecMotor_FL] = angle * ORBIT_ENCODER_RATIO;
+	desiredEncVals->encoder[MecMotor_FR] = angle * -ORBIT_ENCODER_RATIO;
+}
 
 /*The following functions follow the same format as above.
   encoderDistance: distance to go in encoder units */
-void driveSetMecMotorN(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderN(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorN(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 1.0, 0.0);
+}
+void driveSetEncoderN(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_BL] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_FR] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+}
 
-void driveSetMecMotorS(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderS(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorS(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 180, powerRatio, 0.0);
+}
+void driveSetEncoderS(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	driveSetEncoderN(desiredEncVals, -encoderDistance);
+}
 
-void driveSetMecMotorE(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, 0.0);
+}
+void driveSetEncoderE(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_BL] = -encoderDistance;
+	desiredEncVals->encoder[MecMotor_FR] = -encoderDistance;
+	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+}
 
-void driveSetMecMotorW(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 270, powerRatio, 0.0);
+}
+void driveSetEncoderW(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	driveSetEncoderE(desiredEncVals, -encoderDistance);
+}
 
-void driveSetMecMotorNE(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderNE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorNE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 45, powerRatio, 0.0);
+}
+void driveSetEncoderNE(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+}
 
-void driveSetMecMotorNW(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderNW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorNW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 315, powerRatio, 0.0);
+}
+void driveSetEncoderNW(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	desiredEncVals->encoder[MecMotor_FR] = encoderDistance;
+	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+}
 
-void driveSetMecMotorSE(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderSE(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorSE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 135, powerRatio, 0.0);
+}
+void driveSetEncoderSE(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	driveSetEncoderNW(desiredEncVals, -encoderDistance);
+}
 
-void driveSetMecMotorSW(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderSW(DesiredMotorVals *desiredMotorVals, int encoderDistance);
+void driveSetMecMotorSW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 225, powerRatio, 0.0);
+}
+void driveSetEncoderSW(DesiredEncVals *desiredEncVals, int encoderDistance) {
+	driveSetEncoderNE(desiredEncVals, -encoderDistance);
+}
 
-void driveSetMecMotorRotE(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderRotE(DesiredMotorVals *desiredMotorVals, int angle);
-
-void driveSetMecMotorRotW(DesiredMotorVals *desiredMotorVals, float powerRatio);
-void driveSetEncoderRotW(DesiredMotorVals *desiredMotorVals, int angle);
+void driveSetMecMotorRotate(DesiredMotorVals *desiredMotorVals, float rotationRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 0, rotationRatio);
+}
+void driveSetEncoderRotate(DesiredEncVals *desiredEncVals, int angle) {
+	desiredEncVals->encoder[MecMotor_FL] = angle * ROTATION_ENCODER_RATIO;
+	desiredEncVals->encoder[MecMotor_BL] = angle * ROTATION_ENCODER_RATIO;
+	desiredEncVals->encoder[MecMotor_FR] = -angle * ROTATION_ENCODER_RATIO;
+	desiredEncVals->encoder[MecMotor_BR] = -angle * ROTATION_ENCODER_RATIO;
+}
 
 #endif
