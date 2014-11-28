@@ -86,15 +86,15 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState) {
 	joymecdriveSetDesiredPower(desiredMotorVals, joyState);
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT) && joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		writeDebugStream("FL Encoder: %d\n", motorGetEncoder(MecMotor_FL));
-		writeDebugStream("BL Encoder: %d\n", motorGetEncoder(MecMotor_FR));
-		writeDebugStream("FR Encoder: %d\n", motorGetEncoder(MecMotor_FR));
-		writeDebugStream("BR Encoder: %d\n", motorGetEncoder(MecMotor_BR));
+		writeDebugStream("FL Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FL));
+		writeDebugStream("BL Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FR));
+		writeDebugStream("FR Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FR));
+		writeDebugStream("BR Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_BR));
 		writeDebugStream("Resetting drive encoders.");
-		motorResetEncoder(desiredEncVals, MecMotor_FL);
-		motorResetEncoder(desiredEncVals, MecMotor_FR);
-		motorResetEncoder(desiredEncVals, MecMotor_BL);
-		motorResetEncoder(desiredEncVals, MecMotor_BR);
+		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FL);
+		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
+		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
+		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
 		writeDebugStream("--------------------------");
 	}
 }

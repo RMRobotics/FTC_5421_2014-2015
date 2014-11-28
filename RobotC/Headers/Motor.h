@@ -156,7 +156,7 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 }
 
 /* Returns real encoder value for a specific tMotor */
-void motorGetEncoder(tMotor curMotor) {
+int motorGetEncoder(tMotor curMotor) {
 	return nMotorEncoder[curMotor];
 }
 
