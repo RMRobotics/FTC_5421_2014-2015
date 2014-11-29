@@ -95,4 +95,15 @@ void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_
 	}
 }
 
+/*Returns an int value of the last target set for the servo.
+  If servoDefinitions is not initialized, returns -1. */
+int servoReadTargetValue(TServoIndex currentServo) {
+	if (servoDefsInitialized) {
+		return ServoValue[currentServo];
+	} else {
+		writeDebugStream("Servos not initialized!\n");
+		return -1;
+	}
+}
+
 #endif
