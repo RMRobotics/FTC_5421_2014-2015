@@ -29,6 +29,11 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define ENC_SLOW_LENGTH 3000
 #define ENC_SLOW_RATE MAX_REFERENCE_POWER / ENC_SLOW_LENGTH
 
+/*Maximum encoder target possible. This is technically the maximum number an int
+  variable can hold, but we'll give it some room so that we don't introduce a
+  race condition between the overflow and the encoder check. */
+#define MAX_ENC_TARGET 30000
+
 //Slew rate for scaling values (amount to add per loop). Percentage.
 #define MOTOR_SLEW_RATE 5
 
@@ -181,6 +186,24 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 	}
 }
 
+/* Sets encoder target for a specific tMotor and resets
+	 the real encoder. Checks to make sure the target is
+	 below the maximum target. If it fails the check, then
+	 the encoder is still reset but it refuses to set the
+	 new target. */
+void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
+	if (motorDefsInitialized) {
+		motorResetEncoder(desiredEncVals, curMotor);
+		if (abs(target) < MAX_ENCODER_TARGET) {
+			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
+		} else {
+			desiredEncVals->encoder[curMotor] = target;
+		}
+	} else {
+		writeDebugStream("Motors not initialized!\n");
+	}
+}
+
 /*Handles limits on desired power given a target encoder distance.
 	- Sets desired powers to 0 if	the motor encoder exceeds desired
 		encoder values.
@@ -211,24 +234,30 @@ DesiredEncVals *desiredEncVals) {
 	}
 }
 
-/*Checks if a specific tMotor has hit its encoder targets */
+/*Checks if a specific tMotor has hit its encoder targets.
+  If there is no target set, returns true. */
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	int desiredEnc = desiredEncVals->encoder[curMotor];
-	if ((desiredEnc >= nMotorEncoder[curMotor]) || desiredEnc == 0) {
+	if ((nMotorEncoder[curMotor] >= desiredEnc) || desiredEnc == 0) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-/*Checks if all tMotors have hit their encoder targets */
+/*Checks if all tMotors have hit their encoder targets by
+  calling motorHasHitEncoderTarget() on all motors. */
 bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
-	for (int i=0;i<NUM_MOTORS;i++) {
-		if (!motorHasHitEncoderTarget(desiredEncVals, motorList[i]) {
-			return false;
+	if (motorDefsInitialized) {
+		for (int i=0;i<NUM_MOTORS;i++) {
+			if (!motorHasHitEncoderTarget(desiredEncVals, motorList[i])) {
+				return false;
+			}
 		}
+		return true;
+	} else {
+		writeDebugStream("Motors not initialized!\n");
 	}
-	return true;
 }
 
 //Update actual motor values with desired motor values
