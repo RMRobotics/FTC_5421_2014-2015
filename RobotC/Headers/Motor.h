@@ -236,10 +236,13 @@ DesiredEncVals *desiredEncVals) {
 }
 
 /*Checks if a specific tMotor has hit its encoder targets.
-  If there is no target set, returns true. */
+  - If there is no target set, returns true.
+  - If the signs of the desired encoder value and the actual
+  	encoder value do not agree, then this returns false.*/
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	int desiredEnc = desiredEncVals->encoder[curMotor];
-	if ((nMotorEncoder[curMotor] >= desiredEnc) || desiredEnc == 0) {
+	int curEnc = nMotorEncoder[curMotor];
+	if (((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) || desiredEnc == 0) {
 		return true;
 	} else {
 		return false;
@@ -277,7 +280,7 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 		  //Make sure to keep the sign of the change
 			int rate = sgn(diff) * (int)(helpFindMinAbsFloat(diff,scaledSlew));
 
-			//update motors
+			//update motor
 			motor[motorList[i]] = motor[motorList[i]] + rate;
 		}
 	} else {
