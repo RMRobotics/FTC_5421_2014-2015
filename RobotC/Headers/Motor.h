@@ -194,7 +194,7 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
 	if (motorDefsInitialized) {
 		motorResetEncoder(desiredEncVals, curMotor);
-		if (abs(target) < MAX_ENCODER_TARGET) {
+		if (abs(target) < MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
 		} else {
 			desiredEncVals->encoder[curMotor] = target;
@@ -208,24 +208,25 @@ void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target
 	- Sets desired powers to 0 if	the motor encoder exceeds desired
 		encoder values.
 	- Limits desired powers when the encoder approaches the target.
-	- If the desired encoder value is zero, it is ignored. */
+	- If the desired encoder value is zero, it is ignored.
+	- If the signs of the desired encoder value and the actual
+		encoder value do not agree, then no limitation is applied. */
 void motorLimitDesiredPowerToEncoder(DesiredMotorVals *desiredVals,
 DesiredEncVals *desiredEncVals) {
 	if (motorDefsInitialized) {
 		for (int i=0; i<NUM_MOTORS; i++) {
 			tMotor curMotor = motorList[i];
 			int desiredEnc = desiredEncVals->encoder[curMotor];
-			if (desiredEnc > 0) {
-				if (nMotorEncoder[curMotor] > desiredEnc) {
-					desiredVals->power[curMotor] = 0;
-				} else if ((desiredEnc - nMotorEncoder[curMotor]) < ENC_SLOW_LENGTH) {
-					desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
-				}
-			} else if (desiredEnc < 0) {
-				if (nMotorEncoder[curMotor] < desiredEnc) {
-					desiredVals->power[curMotor] = 0;
-				} else if ((desiredEnc - nMotorEncoder[curMotor]) < -ENC_SLOW_LENGTH) {
-					desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
+			int curEnc = nMotorEncoder[curMotor];
+			if (desiredEnc != 0) {
+				if (sgn(desiredEnc) == sgn(curEnc)) {
+					if (abs(curEnc) >= abs(desiredEnc)) {
+						desiredVals->power[curMotor] = 0;
+					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
+						desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
+					}
+				} else {
+					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
 				}
 			}
 		}
@@ -257,6 +258,7 @@ bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
 		return true;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
+		return false;
 	}
 }
 
