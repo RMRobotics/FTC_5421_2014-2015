@@ -288,4 +288,6 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 	}
 }
 
+//Chute running the power, link it to the trigger buttons
+
 #endif
