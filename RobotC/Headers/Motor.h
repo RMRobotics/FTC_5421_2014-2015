@@ -59,6 +59,8 @@ void motorInit() {
 	motorList[1] = MecMotor_BL;
 	motorList[2] = MecMotor_FR;
 	motorList[3] = MecMotor_BR;
+	motorList[4] = Chute_Left;
+	motorList[5] = Chute_Right;
 
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {

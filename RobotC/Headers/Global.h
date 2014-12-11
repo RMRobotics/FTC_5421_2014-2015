@@ -14,7 +14,7 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 
 
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
-#define NUM_MOTORS 4
+#define NUM_MOTORS 6
 
 
 //Enum for referencing mecanum motors
