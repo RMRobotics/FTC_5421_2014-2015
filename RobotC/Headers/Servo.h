@@ -45,11 +45,6 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-
-	servoDefinitions[Servo_Tube].isContinuous = true;
-	servoDefinitions[Servo_Tube].minValue = 15;
-	servoDefinitions[Servo_Tube].maxValue = 255;
-	servoDefsInitialized = true;
 }
 
 /*Sets speed for a continuous rotation servo. If given servo is a

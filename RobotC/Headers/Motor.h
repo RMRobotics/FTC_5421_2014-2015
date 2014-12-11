@@ -3,6 +3,7 @@
 #pragma systemFile
 
 #include "Helper.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /*A note on array indexing:
@@ -37,20 +38,6 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 //Slew rate for scaling values (amount to add per loop). Percentage.
 #define MOTOR_SLEW_RATE 5
 
-#define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
-#define NUM_MOTORS 4
-
-//Enum for referencing mecanum motors
-//They're named after TMNT because Lisa.
-//TODO place in config file. this is forced to be here because pragmas can't be included...
-//VOLATILE
-typedef enum MecMotor {
-	MecMotor_FL = Donatello_FL,
-	MecMotor_BL = Leonardo_BL,
-	MecMotor_FR = Michelangelo_FR,
-	MecMotor_BR = Raphael_BR,
-} MecMotor;
-
 //Struct for storing motor power limits for each motor
 typedef struct MotorData {
 	int maxPower;
@@ -60,21 +47,9 @@ typedef struct MotorData {
 //Array for storing MotorData for each motor
 static MotorData motorDefinitions[MAX_NUM_MOTORS];
 
-//Struct definition for desired motor powers
-typedef struct DesiredMotorVals {
-	int power[MAX_NUM_MOTORS];
-} DesiredMotorVals;
-
-//Struct definition for desired encoder limit
-typedef struct DesiredEncVals {
-	int encoder[MAX_NUM_MOTORS];
-} DesiredEncVals;
-
 //Flag for seeing if motor definitions have been initialized
 bool motorDefsInitialized = false;
 
-//Array for storing all motor enums that we use (this way we can loop through)
-tMotor motorList[NUM_MOTORS];
 
 //Initialize motor definitions
 void motorInit() {
