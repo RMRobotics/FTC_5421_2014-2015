@@ -38,16 +38,17 @@ static ServoData servoDefinitions[MAX_NUM_SERVOS];
 //Flag for seeing if servoDefinitions has been initialized
 bool servoDefsInitialized = false;
 
-void servoInit() {
+/*void servoInit() {
 	//Initialize all servos as if they were non continuous
 	for (int i=0; i < MAX_NUM_SERVOS; i++) {
 		servoDefinitions[i].isContinuous = false;
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[KickStand].minValue = 60;
-	servo[KickStand] = 60;
-}
+	servoDefinitions[0].servoID = KickStand;
+	servoDefinitions[0].minAngle = 40;
+	servoDefsInitialized = true;
+}*/
 
 /*Sets speed for a continuous rotation servo. If given servo is a
   non-continuous rotation servo, then it debugs and does nothing. */
