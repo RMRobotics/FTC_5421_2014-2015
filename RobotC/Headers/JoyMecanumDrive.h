@@ -83,9 +83,9 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
   This uses mecanum drive in arcade style.
   Left joystick controls strafing and forwards/backwards
   Right joystick (x-axis only) controls rotation */
-void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState) {
+void joymecdriveDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState) {
 	joymecdriveSetDesiredPower(desiredMotorVals, joyState);
-	if (joyButtonPressed(joyState, JOY1, BUTTON_LT) && joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
+	if (joyButtonPressed(joyState, JOY1, BUTTON_START)) {
 		writeDebugStream("FL Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FL));
 		writeDebugStream("BL Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FR));
 		writeDebugStream("FR Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FR));
@@ -95,8 +95,16 @@ void joymecdriveSetPowDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
-		writeDebugStream("--------------------------");
-	}
+		writeDebugStream("KickStand Servo: %d\n", servoReadTargetValue(KickStand);
+		writeDebugStream("TubeGrabber Servo: %d\n", servoReadTargetValue(TubeGrabber);
+	}/*
+	writeDebugStream("FL Motor: %d\n", motor[MecMotor_FL]);
+	writeDebugStream("BL Motor: %d\n", motor[MecMotor_BL]);
+	writeDebugStream("FR Motor: %d\n", motor[MecMotor_FR]);
+	writeDebugStream("BR Motor: %d\n", motor[MecMotor_BR]);*/
+
+
+	//writeDebugStream("--------------------------\n");
 }
 
 
