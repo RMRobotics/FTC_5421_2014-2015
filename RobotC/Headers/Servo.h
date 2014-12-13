@@ -45,8 +45,13 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[KickStand].minValue = 40;
+	servoDefinitions[KickStand].minValue = 3;
+	servoDefinitions[KickStand].maxValue = 120;
+	servoDefinitions[TubeGrabber].minValue = 0;
+	servoDefinitions[TubeGrabber].maxValue = 145;
 	servoDefsInitialized = true;
+	servo[KickStand] = servoDefinitions[KickStand].minValue;
+	servo[TubeGrabber] = servoDefinitions[TubeGrabber].minValue;
 }
 
 /*Sets speed for a continuous rotation servo. If given servo is a
