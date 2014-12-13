@@ -79,7 +79,6 @@ bool joyButtonPressed(TJoystick *joyState, Joystick joyNum, JoyButtons joyButton
 	if(!joyNum) { //C interprets an int as TRUE if int != 0
 		return ((joyState->joy1_Buttons & (1 << (joyButton - 1))) != 0);
 	} else {
-		writeDebugStream("checking joy2");
 		return ((joyState->joy2_Buttons & (1 << (joyButton - 1))) != 0);
 	}
 }
