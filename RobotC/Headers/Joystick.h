@@ -76,7 +76,7 @@ TJoystick *joyGetJoystickPointer() {
   Note that joyNum will be interpreted as joystick #1 if passed 0,
   and joystick #2 otherwise */
 bool joyButtonPressed(TJoystick *joyState, Joystick joyNum, JoyButtons joyButton) {
-	if(!joyNum) { //C interprets an int as TRUE if int != 0
+	if(joyNum == 0) {
 		return ((joyState->joy1_Buttons & (1 << (joyButton - 1))) != 0);
 	} else {
 		return ((joyState->joy2_Buttons & (1 << (joyButton - 1))) != 0);
