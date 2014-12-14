@@ -71,10 +71,10 @@ void joyWaitForStart();
 	}
 
 #else
-#include "..\Drivers\JoystickDriver.c"
-void joyUpdateJoystickSettings() {
-	getJoystickSettings(joystick);
-}
+	#include "..\Drivers\JoystickDriver.c"
+	void joyUpdateJoystickSettings() {
+		getJoystickSettings(joystick);
+	}
 #endif
 
 //Enum to assign button numbers meaningful names
