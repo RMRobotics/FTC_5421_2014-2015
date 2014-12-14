@@ -95,8 +95,8 @@ void joymecdriveDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desire
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
-		writeDebugStream("KickStand Servo: %d\n", servoReadTargetValue(KickStand);
-		writeDebugStream("TubeGrabber Servo: %d\n", servoReadTargetValue(TubeGrabber);
+		writeDebugStream("KickStand Servo: %d\n", servoReadTargetValue(KickStand));
+		writeDebugStream("TubeGrabber Servo: %d\n", servoReadTargetValue(TubeGrabber));
 	}/*
 	writeDebugStream("FL Motor: %d\n", motor[MecMotor_FL]);
 	writeDebugStream("BL Motor: %d\n", motor[MecMotor_BL]);

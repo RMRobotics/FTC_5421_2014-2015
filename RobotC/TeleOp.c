@@ -23,7 +23,6 @@
 #include "Headers\JoyMecanumDrive.h"
 #include "Headers\Global.h"
 #include "Headers\JoyAuxiliary.h"
-#include "Headers\BatteryLevelCheck.h"
 
 //Stores desired motor values
 DesiredMotorVals desiredMotorVals;
@@ -37,7 +36,6 @@ void initialize() {
 	clearDebugStream();
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	batteryPowerCheck();
 	//servo[Bucket_Right] = 50;
 	//servo[Bucket_Left] =  oppostie directions!!
 
