@@ -75,6 +75,10 @@ void joyWaitForStart();
 	void joyUpdateJoystickSettings() {
 		getJoystickSettings(joystick);
 	}
+	//Normal version use waitForStart
+	void joyWaitForStart() {
+		waitForStart();
+	}
 #endif
 
 //Enum to assign button numbers meaningful names
@@ -110,11 +114,6 @@ typedef enum Joystick {
 	JOY1 = 0,
 	JOY2 = 1,
 } Joystick;
-
-//Normal version use waitForStart
-void joyWaitForStart() {
-	waitForStart();
-}
 
 /*Returns pointer to 'joystick' struct */
 TJoystick *joyGetJoystickPointer() {
