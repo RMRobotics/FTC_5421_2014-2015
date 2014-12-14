@@ -111,6 +111,11 @@ typedef enum Joystick {
 	JOY2 = 1,
 } Joystick;
 
+//Normal version use waitForStart
+void joyWaitForStart() {
+	waitForStart();
+}
+
 /*Returns pointer to 'joystick' struct */
 TJoystick *joyGetJoystickPointer() {
 	return &joystick;
