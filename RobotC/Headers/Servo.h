@@ -87,10 +87,10 @@ void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_
 			int maxAngle = servoDefinitions[currentServo].maxValue;
 			int minAngle = servoDefinitions[currentServo].minValue;
 			if (angle > maxAngle) {
-				writeDebugStream("Angle (%d) past maximum angle (%d) for servo (%d)!\n", angle, maxAngle, currentServo);
+				writeDebugStream("Angle (%d) past maximum angle (%d) for servo (%d)!\n", angle, currentServo, maxAngle);
 				angle = maxAngle;
 			} else if (angle < minAngle) {
-				writeDebugStream("Angle (%d) past minimum angle (%d) for servo (%d)!\n", angle, minAngle, currentServo);
+				writeDebugStream("Angle (%d) past minimum angle (%d) for servo (%d)!\n", angle, currentServo, minAngle);
 				angle = minAngle;
 			}
 			servoChangeRate[currentServo] = servoRate;
