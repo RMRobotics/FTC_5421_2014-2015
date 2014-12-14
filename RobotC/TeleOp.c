@@ -57,5 +57,6 @@ task main() {
 		//joymecdriveDebug(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 		callAuxiliaryMotors();
 		motorSetActualPowerToDesired(&desiredMotorVals);
+		//joyAuxDebug(&desiredMotorVals, joyGetJoystickPointer());
 	}
 }
