@@ -203,7 +203,7 @@ DesiredEncVals *desiredEncVals) {
 			int desiredEnc = desiredEncVals->encoder[curMotor];
 			int curEnc = nMotorEncoder[curMotor];
 			if (desiredEnc != 0) {
-				if (sgn(desiredEnc) == sgn(curEnc)) {
+				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
 					if (abs(curEnc) >= abs(desiredEnc)) {
 						desiredVals->power[curMotor] = 0;
 					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
@@ -211,6 +211,7 @@ DesiredEncVals *desiredEncVals) {
 					}
 				} else {
 					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
+					writeDebugStream("Current encoder value: %d\n", curEnc);
 				}
 			}
 		}
