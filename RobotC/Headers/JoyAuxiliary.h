@@ -37,8 +37,8 @@ void joySlideMotors(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 }
 
 void joyTubeGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	bool tubeRelease = joyButtonPressed(joyState, JOY2, BUTTON_RB);
-	bool tubeGrab = joyButtonPressed(joyState, JOY2, BUTTON_LB);
+	bool tubeRelease = joyButtonPressed(joyState, JOY1, BUTTON_RB);
+	bool tubeGrab = joyButtonPressed(joyState, JOY1, BUTTON_LB);
 	if (tubeRelease){
 		servoSetNonCont(TubeGrabber, 0);
 	}else if (tubeGrab){
@@ -47,8 +47,8 @@ void joyTubeGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 }
 
 void joyKickStand(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	bool kickStandGrab = joyButtonPressed(joyState, JOY1, BUTTON_RB);
-	bool kickStandRelease = joyButtonPressed(joyState, JOY1, BUTTON_LB);
+	bool kickStandGrab = joyButtonPressed(joyState, JOY2, BUTTON_RB);
+	bool kickStandRelease = joyButtonPressed(joyState, JOY2, BUTTON_LB);
 	if (kickStandGrab){
 		servoSetNonCont(KickStand, 145);
 	}else if (kickStandRelease){
