@@ -46,6 +46,7 @@ void callAuxiliaryMotors(){
 	joySlideMotors(&desiredMotorVals, joyGetJoystickPointer());
 	joyTubeGrabber(&desiredMotorVals, joyGetJoystickPointer());
 	joyKickStand(&desiredMotorVals, joyGetJoystickPointer());
+	joyBucket(&desiredMotorVals, joyGetJoystickPointer());
 }
 
 task main() {
