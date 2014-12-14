@@ -36,7 +36,7 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define MAX_ENC_TARGET 30000
 
 //Slew rate for scaling values (amount to add per loop). Percentage.
-#define MOTOR_SLEW_RATE 5
+#define MOTOR_SLEW_RATE 100
 
 //Struct for storing motor power limits for each motor
 typedef struct MotorData {
