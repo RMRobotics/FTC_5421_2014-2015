@@ -50,17 +50,12 @@ void callAuxiliaryMotors(){
 
 task main() {
 	initialize();
-	waitForStart();
+	joyWaitForStart();
 	while (true) {
 		joyUpdateJoystickSettings();
 		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
-		//driveSetMecMotorPolarDegrees(&desiredMotorVals, 90, 1.0, 1.0);
-		joymecdriveDebug(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
-		//joySlideMotors(&desiredMotorVals, joyGetJoystickPointer());
-		//joyChuteMotors(&desiredMotorVals, joyGetJoystickPointer());
-
-		motorSetActualPowerToDesired(&desiredMotorVals);
+		//joymecdriveDebug(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 		callAuxiliaryMotors();
-		//writeDebugStreamLine("------");
+		motorSetActualPowerToDesired(&desiredMotorVals);
 	}
 }

@@ -24,7 +24,58 @@
 //           \________/                                \_________/
 // NOTE: ASCII Art adapted from: http://chris.com/ascii/index.php?art=video%20games/other
 
+
+
+
+//JoystickDriver.c does not work with PC emulator so we'll have to write code separate
+//from that for the PC emulator
+
+/*Robot version: Updates 'joystick' struct to latest bluetooth message
+	PC Emulator version: do whatever debugging is necessary here
+*/
+void joyUpdateJoystickSettings();
+
+/*Robot version: Calls waitForStart()
+	PC Emulator version: do nothing
+*/
+void joyWaitForStart();
+
+#if (defined(NXT) || defined(TETRIX)) && defined(_Target_Emulator_) //target the PC emulator
+	typedef struct
+	{
+	  bool    UserMode;          // Autonomous or Telep-Operated mode
+	  bool    StopPgm;           // Stop program
+
+	  short   joy1_x1;           // -128 to +127
+	  short   joy1_y1;           // -128 to +127
+	  short   joy1_x2;           // -128 to +127
+	  short   joy1_y2;           // -128 to +127
+	  short   joy1_Buttons;      // Bit map for 12-buttons
+	  short   joy1_TopHat;       // value -1 = not pressed, otherwise 0 to 7 for selected "octant".
+
+	  short   joy2_x1;           // -128 to +127
+	  short   joy2_y1;           // -128 to +127
+	  short   joy2_x2;           // -128 to +127
+	  short   joy2_y2;           // -128 to +127
+	  short   joy2_Buttons;      // Bit map for 12-buttons
+	  short   joy2_TopHat;       // value -1 = not pressed, otherwise 0 to 7 for selected "octant".
+	} TJoystick;
+
+	TJoystick joystick;
+
+	void joyUpdateJoystickSettings() {
+		joystick.joy2_Buttons = 128; //turn on slides
+	}
+
+	void joyWaitForStart() { //Do nothing for PC emulator version
+	}
+
+#else
 #include "..\Drivers\JoystickDriver.c"
+void joyUpdateJoystickSettings() {
+	getJoystickSettings(joystick);
+}
+#endif
 
 //Enum to assign button numbers meaningful names
 typedef enum JoyButtons {
@@ -59,13 +110,6 @@ typedef enum Joystick {
 	JOY1 = 0,
 	JOY2 = 1,
 } Joystick;
-
-/*Updates 'joystick' struct to latest bluetooth message
-	For proper code encapsulation, this function should be here
-*/
-void joyUpdateJoystickSettings() {
-	getJoystickSettings(joystick);
-}
 
 /*Returns pointer to 'joystick' struct */
 TJoystick *joyGetJoystickPointer() {
