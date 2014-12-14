@@ -2,8 +2,6 @@
 #define DATA_H
 #pragma systemFile
 
-#include "JoystickDriver.c"
-
 /*Name of log file
   Note that the "txt" file extension is REQUIRED, else the file
   becomes unrecognizable to the NXT. Redownloading F/W is required
