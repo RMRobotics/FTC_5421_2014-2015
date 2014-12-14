@@ -60,9 +60,11 @@ void joyBucket(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	bool dump = joyButtonPressed(joyState, JOY2, BUTTON_A);
 	bool fill = joyButtonPressed(joyState, JOY2, BUTTON_B);
 	if (dump) {
-		servoSetNonCont(Bucket_Left, 220);
+		servoSetNonCont(Bucket_Left, 157);
+		servoSetNonCont(Bucket_Right, 97);
 } else if (fill) {
-		servoSetNonCont(Bucket_Left, 0);
+		servoSetNonCont(Bucket_Left, 97);
+		servoSetNonCont(Bucket_Left, 157);
 	}
 }
 

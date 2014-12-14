@@ -49,11 +49,15 @@ void servoInit() {
 	servoDefinitions[KickStand].maxValue = 120;
 	servoDefinitions[TubeGrabber].minValue = 0;
 	servoDefinitions[TubeGrabber].maxValue = 145;
-	servoDefinitions[Bucket_Left].minValue = 0;
+	//servoDefinitions[Bucket_Left].minValue = 0;
+	//servoDefinitions[Bucket_Right].maxValue =
 	servoDefsInitialized = true;
 	servo[KickStand] = servoDefinitions[KickStand].minValue;
 	servo[TubeGrabber] = servoDefinitions[TubeGrabber].minValue;
-	servo[Bucket_Left] = servoDefinitions[Bucket_Left].minValue;
+	servo[Bucket_Left] = 127;
+	servo[Bucket_Right] = 127;
+	//servo[Bucket_Left] = servoDefinitions[Bucket_Left].minValue;
+	//servo[Bucket_Right] = servoDefinitions[Bucket_Right].minValue;
 }
 
 /*Sets speed for a continuous rotation servo. If given servo is a
