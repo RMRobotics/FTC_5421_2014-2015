@@ -42,7 +42,7 @@ void joyTubeGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (tubeRelease){
 		servoSetNonCont(TubeGrabber, 0);
 	}else if (tubeGrab){
-		servoSetNonCont(TubeGrabber, 100);
+		servoSetNonCont(TubeGrabber, 120);
 	}
 }
 
@@ -52,6 +52,23 @@ void joyKickStand(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (kickStandGrab){
 		servoSetNonCont(KickStand, 145);
 	}else if (kickStandRelease){
-		servoSetNonCont(KickStand, 3);
+		servoSetNonCont(KickStand, 9);
 	}
+}
+
+void joyBucket(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+	bool dump = joyButtonPressed(joyState, JOY2, BUTTON_A);
+	bool fill = joyButtonPressed(joyState, JOY2, BUTTON_B);
+	if (dump) {
+		servoSetNonCont(Bucket_Left, 220);
+} else if (fill) {
+		servoSetNonCont(Bucket_Left, 0);
+	}
+}
+
+void joyAuxDebug(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+	writeDebugStream("Left Slide Motor: %d\n", motor[Slides_Left]);
+	writeDebugStream("Right Slide Motor: %d\n", motor[Slides_Right]);
+	writeDebugStream("Left Slide Motor Desired: %d\n", desiredMotorVals->power[Slides_Left]);
+	writeDebugStream("Right Slide Motor Desired: %d\n", desiredMotorVals->power[Slides_Right]);
 }
