@@ -55,6 +55,10 @@ bool motorDefsInitialized = false;
 void motorInit() {
 	//VOLATILE
 	//list all motors
+	//initialize to -1 so that we can check for any missing motors
+	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
+		motorList[i] = -1;
+	}
 	motorList[0] = MecMotor_FL;
 	motorList[1] = MecMotor_BL;
 	motorList[2] = MecMotor_FR;
@@ -83,12 +87,13 @@ void motorInit() {
 	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
 
 	//check to make sure motors listed fills up motorList length
-	int numOfMotors = sizeof(motorList) / sizeof(tMotor);
-	if (numOfMotors != NUM_MOTORS) {
-		writeDebugStream("Motors failed to initialize (check NUM_MOTORS and motorList[] to see if they agree!\n");
-	} else {
-		motorDefsInitialized = true;
+	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
+		if((int) motorList[i] == -1) {
+			writeDebugStream("Motors failed to initialize! Make sure motorList contains all motors.");
+			return;
+		}
 	}
+	motorDefsInitialized = true;
 }
 
 /*Returns max reference power for other functions */
