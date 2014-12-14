@@ -41,6 +41,7 @@ void joyUpdateJoystickSettings();
 void joyWaitForStart();
 
 #if (defined(NXT) || defined(TETRIX)) && defined(_Target_Emulator_) //target the PC emulator
+#warn "YOU ARE COMPILING FOR THE EMULATOR."
 	typedef struct
 	{
 	  bool    UserMode;          // Autonomous or Telep-Operated mode
