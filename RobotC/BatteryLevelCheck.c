@@ -50,12 +50,15 @@ task main(){
 
 	if(nBatAvgVolts < lowNxtPower && nBatActualVolts < lowNxtPower){
 		writeDebugStream("Replace NXT batteries!: Voltage: %d\n", nBatActualVolts);
+				nxtDisplayBigTextLine(2, "Replace NXT batteries!: Voltage: %d\n", nBatActualVolts);
 		//. -..- .--. .-.. --- -.. .. -. --.
 		explodingSound();
 	}
 	if(extBatAvgVolts < lowExternalPower && extBatActualVolts < lowExternalPower){
 		writeDebugStream("Replace external batteries!: Voltage: %d\n", extBatActualVolts);
+		nxtDisplayBigTextLine(2, "Replace external batteries!: Voltage: %d\n", extBatActualVolts);
 		//. -..- .--. .-.. --- -.. .. -. --.
 		explodingSound();
+
 	}
 }
