@@ -24,7 +24,7 @@
 //           \________/                                \_________/
 // NOTE: ASCII Art adapted from: http://chris.com/ascii/index.php?art=video%20games/other
 
-#include "JoystickDriver.c"
+#include "..\Drivers\JoystickDriver.c"
 
 //Enum to assign button numbers meaningful names
 typedef enum JoyButtons {
