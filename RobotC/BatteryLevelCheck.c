@@ -86,4 +86,5 @@ task main(){
 		explodingSound();
 
 	}
+	while(true) {}
 }
