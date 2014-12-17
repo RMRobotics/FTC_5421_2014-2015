@@ -151,7 +151,8 @@ float powerRatio, float rotationRatio) {
 		writeDebugStream("Drive parameters do not fit constraints! Ang: %d, Pow: %f, Rot: %f",
 										 angle, powerRatio, rotationRatio);
 	} else {
-		//Holds max motor powers
+		//Holds max motor powers possible based on the calculation (cos has different maximum values
+		//at different values around the unit circle)
 		float maxPowFLBR = cosDegrees(45.0 - (float)angle);
 		float maxPowFRBL = cosDegrees(45.0 + (float)angle);
 
@@ -171,7 +172,7 @@ float powerRatio, float rotationRatio) {
 		//Holds max reference power
 		float maxRefPow = (float) motorGetMaxReferencePower();
 
-		//Scale to max reference power
+		//Scale maximum possible power to max reference power
 		float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
 		float multiplier = maxRefPow / absHighestPow;
 
