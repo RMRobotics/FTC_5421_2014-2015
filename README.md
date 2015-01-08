@@ -4,6 +4,16 @@ This repository contains the code for the RM'd and Dangerous (FTC #5421) 2014-20
 
 -------------------------
 
+## Checklist for debugging
+1) Check if robot is powered on.
+2) Check to see if you are compiling for PC emulator or Robot.
+3) Check battery levels.
+4) Check for RobotC joystick misinterpretation.
+5) Check to see if the function you are debugging is being called.
+6) Check motor and servo configurations.
+
+-------------------------
+
 ## Special Thanks
 To Frank for all of the mentoring help, and Jon for being the premier codemaster of RM Robotics. You both rock :)
 
