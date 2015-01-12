@@ -69,7 +69,11 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 				rotation = ((float) joy1x2) / 127.0;
 				speed = constrain(speed,-1.0,1.0);
 				rotation = constrain(rotation,-1.0,1.0);
-				driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, rotation);
+				if (abs(rotation) > abs(speed)) {
+					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
+				} else {
+					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
+				}
 			} else {
 				driveZeroMecMotor(desiredMotorVals);
 			}
