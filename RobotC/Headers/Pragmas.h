@@ -24,9 +24,8 @@
 // To access that sensor, we must use msensor_S1_1.  If the sensor
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
+#include "drivers/hitechnic-sensormux.h"
+#include "drivers/hitechnic-gyro.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor ULTRASONIC_BR = msensor_S4_2;
-
-#include "drivers/hitechnic-sensormux.h"
-#include "drivers/hitechnic-gyro.h"
