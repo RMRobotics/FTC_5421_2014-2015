@@ -67,7 +67,7 @@ task main(){
 	float extBatAvgVolts = ((float) externalBatteryAvg)/1000.0; //avg external battery average and converts from milivolts to volts
 	float extBatActualVolts = ((float) externalBattery)/1000.0; //actual external battery average and converts from milivolts to volts
 
-	float lowExternalPower = 12; //CHANGE THIS WHEN LOW BATTERY LEVEL IS KNOWN
+	float lowExternalPower = 11.5; //CHANGE THIS WHEN LOW BATTERY LEVEL IS KNOWN
 
 	writeDebugStream("NXT batteries: Voltage: %f\n", nBatActualVolts);
 	writeDebugStream("External batteries: Voltage: %f\n", extBatActualVolts);
