@@ -38,26 +38,6 @@ static ServoData servoDefinitions[MAX_NUM_SERVOS];
 //Flag for seeing if servoDefinitions has been initialized
 bool servoDefsInitialized = false;
 
-void servoInit() {
-	//Initialize all servos as if they were non continuous
-	for (int i=0; i < MAX_NUM_SERVOS; i++) {
-		servoDefinitions[i].isContinuous = false;
-		servoDefinitions[i].minValue = 0;
-		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
-	}
-	servoDefinitions[KickStand].minValue = 25;
-	servoDefinitions[KickStand].maxValue = 120;
-	servoDefinitions[TubeGrabber].minValue = 0;
-	servoDefinitions[TubeGrabber].maxValue = 145;
-	servoDefsInitialized = true;
-	servo[KickStand] = servoDefinitions[KickStand].minValue;
-	servo[TubeGrabber] = servoDefinitions[TubeGrabber].minValue;
-	//servoDefinitions[Bucket_Left].minValue = 228;
-	//servoDefinitions[Bucket_Right].maxValue = 27;
-	//Initialize to fill
-	servo[Bucket_Left] = 240; //0 is toward bottom
-	servo[Bucket_Right] = 15; //0 is up
-}
 
 /*Sets speed for a continuous rotation servo. If given servo is a
   non-continuous rotation servo, then it debugs and does nothing. */
@@ -100,6 +80,20 @@ void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_
 	} else {
 		writeDebugStream("Servos not initialized!\n");
 	}
+}
+
+void servoInit() {
+	//Initialize all servos as if they were non continuous
+	for (int i=0; i < MAX_NUM_SERVOS; i++) {
+		servoDefinitions[i].isContinuous = false;
+		servoDefinitions[i].minValue = 0;
+		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
+	}
+	servoDefinitions[Wing_Base].minValue = 10;
+	servoDefinitions[Wing_Base].maxValue = 230;
+	servoDefsInitialized = true;
+	servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
+	servoSetNonCont(Ultrasonic_BR_Servo, 170);
 }
 
 /*Returns an int value of the last target set for the servo.

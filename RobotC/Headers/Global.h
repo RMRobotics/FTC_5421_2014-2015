@@ -14,7 +14,6 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 
 
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
-#define NUM_MOTORS 8
 
 
 //Enum for referencing mecanum motors
@@ -38,7 +37,5 @@ typedef struct DesiredMotorVals {
 	int power[MAX_NUM_MOTORS];
 } DesiredMotorVals;
 
-//Array for storing all motor enums that we use (this way we can loop through)
-tMotor motorList[NUM_MOTORS];
 
 #endif
