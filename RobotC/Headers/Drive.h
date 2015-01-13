@@ -167,8 +167,6 @@ float powerRatio, float rotationRatio) {
 		powFR = sgn(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
 		powBR = sgn(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
-		nxtDisplayString(3, "PW:%f %f %f %f", powFL, powBL, powFR, powBR);
-
 		//Holds max reference power
 		float maxRefPow = (float) motorGetMaxReferencePower();
 
@@ -194,13 +192,6 @@ void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 	desiredMotorVals->power[MecMotor_BL] = 0;
 	desiredMotorVals->power[MecMotor_FR] = 0;
 	desiredMotorVals->power[MecMotor_BR] = 0;
-}
-
-/* Resets all encoders */
-void driveResetEncoders(DesiredMotorVals *desiredMotorVals) {
-	for (int i=0;i<NUM_MOTORS;i++) {
-		nMotorEncoder[motorList[i]] = 0;
-	}
 }
 
 /*Sets desired motor values in order to orbit north (forwards).
