@@ -66,7 +66,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 				//We use atan2 because we want the actual angle, not the reference angle
 				angle = (int) radiansToDegrees((atan2(joy1x1,joy1y1)));
 				speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2))) / 127.0;
-				rotation = ((float) joy1x2) / 127.0;
+				rotation = ((float) -joy1x2) / 127.0;
 				speed = constrain(speed,-1.0,1.0);
 				rotation = constrain(rotation,-1.0,1.0);
 				if (abs(rotation) > abs(speed)) {

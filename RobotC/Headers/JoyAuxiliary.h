@@ -20,6 +20,7 @@ void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 
 bool centerWingIsMoving = false;
 bool centerWingDown = false;
+bool baseWingDown = false;
 int centerWingPulseTimeMs = 200;
 
 void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
@@ -40,10 +41,14 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 			}
 		}
 	}
-	if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
-		servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
-	} else if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
-		servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+	if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
+		if (baseWingDown) {
+			servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
+			baseWingDown = false;
+		} else {
+			servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+			baseWingDown = true;
+		}
 	}
 }
 
