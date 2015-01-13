@@ -64,8 +64,31 @@ void joyWaitForStart();
 
 	TJoystick joystick;
 
+	short joy1x1 = 0;
+	short joy1y1 = 0;
+	short joy1x2 = 0;
+	short radius = 30;
+	int angleDegree = 0;
+	int radiusStep = 5;
+	int angleStep = 10;
+	int x2Step = 10;
+
 	void joyUpdateJoystickSettings() {
-		joystick.joy2_Buttons = 128; //turn on slides
+		//Generates circles on joy1x1, generates linear sliding on joy1x2
+		joy1x1 = cos(angleDegree * PI / 180.0) * radius;
+		joy1y1 = sin(angleDegree * PI / 180.0) * radius;
+		joy1x2 += x2Step;
+		if (joy1x2 > 120 || joy1x2 < -115){
+			x2Step = -x2Step;
+		}
+ 		if (radius > 115 || radius < 26) { //Deadzone is somewhere around 20, and keep it below 127
+			radiusStep = -radiusStep;
+		}
+		radius += radiusStep; // radius = radius + radiusStep
+		angleDegree += angleStep;
+		joystick.joy1_x1 = joy1x1;
+		joystick.joy1_y1 = joy1y1;
+		joystick.joy1_x2 = joy1x2;
 	}
 
 	void joyWaitForStart() { //Do nothing for PC emulator version
