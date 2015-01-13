@@ -7,12 +7,12 @@
 #pragma config(Motor,  mtr_S3_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S3_C3_1,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C3_1,     Wing_Middle,          tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S3_C3_2,     motorI,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     motorJ,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_2,     motorK,        tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S2_C1_1,    servo1,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_2,    servo2,               tServoNone)
+#pragma config(Motor,  mtr_S3_C4_1,     Lift,        tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_2,     Harvester,        tmotorTetrix, openLoop)
+#pragma config(Servo,  srvo_S2_C1_1,    Ultrasonic_BR_Servo,               tServoNone)
+#pragma config(Servo,  srvo_S2_C1_2,    Wing_Base,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_5,    servo5,               tServoNone)
@@ -42,8 +42,8 @@ DesiredMotorVals desiredMotorVals;
 DesiredEncVals desiredEncVals;
 
 void initialize() {
-	servoInit();
 	motorInit();
+	servoInit();
 	//Initialize to zeroes
 	clearDebugStream();
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
@@ -52,6 +52,7 @@ void initialize() {
 
 void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
+	joyWing(&desiredMotorVals, joyGetJoystickPointer());
 }
 
 task main() {
