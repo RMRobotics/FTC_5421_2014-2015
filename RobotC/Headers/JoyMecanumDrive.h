@@ -72,7 +72,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 				if (abs(rotation) > abs(speed)) {
 					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
 				} else {
-					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
+					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, speed, 0.0);
 				}
 			} else {
 				driveZeroMecMotor(desiredMotorVals);
@@ -99,8 +99,6 @@ void joymecdriveDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desire
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
 		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
-		writeDebugStream("KickStand Servo: %d\n", servoReadTargetValue(KickStand));
-		writeDebugStream("TubeGrabber Servo: %d\n", servoReadTargetValue(TubeGrabber));
 	}/*
 	writeDebugStream("FL Motor: %d\n", motor[MecMotor_FL]);
 	writeDebugStream("BL Motor: %d\n", motor[MecMotor_BL]);
