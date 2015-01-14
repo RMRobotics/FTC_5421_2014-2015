@@ -53,6 +53,7 @@ void initialize() {
 void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
 	joyWing(&desiredMotorVals, joyGetJoystickPointer());
+	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
 }
 
 task main() {
