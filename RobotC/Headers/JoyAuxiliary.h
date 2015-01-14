@@ -60,9 +60,9 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
-		desiredMotorVals->power[Harvester] = 50;
+		desiredMotorVals->power[Harvester] = 80;
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		desiredMotorVals->power[Harvester] = -50;
+		desiredMotorVals->power[Harvester] = -80;
 	} else {
 		desiredMotorVals->power[Harvester] = 0;
 	}
