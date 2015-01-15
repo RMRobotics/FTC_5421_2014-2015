@@ -89,14 +89,14 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[Bucket_Drop].minValue = 100;
-	servoDefinitions[Bucket_Drop].maxValue = 230;
+	servoDefinitions[Bucket_Drop].minValue = 0;
+	servoDefinitions[Bucket_Drop].maxValue = 80;
 	servoDefinitions[Wing_Base].minValue = 10;
 	servoDefinitions[Wing_Base].maxValue = 230;
 	servoDefsInitialized = true;
 	servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
 	servoSetNonCont(Ultrasonic_BR_Servo, 170);
-	servoSetNonCont(Bucket_Drop,servoDefinitions[Bucket_Drop].minValue);
+	servoSetNonCont(Bucket_Drop,servoDefinitions[Bucket_Drop].maxValue);
 }
 
 /*Returns an int value of the last target set for the servo.
