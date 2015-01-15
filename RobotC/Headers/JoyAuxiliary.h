@@ -16,11 +16,12 @@ void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	}
 }
 
-
+TTimers centerWingPulse = T1;
+TTimers centerWingMoving = T2;
 bool centerWingIsMoving = false;
 bool centerWingDown = false;
 int centerWingStartTimeMs = 0;
-int centerWingMoveTimeMs = 200;
+int centerWingMoveTimeMs = 0; //200 to move
 int centerWingStartPulseTimeMs = 0;
 float centerWingPulseTimeFractionS = 0.2; //fraction of a second to pulse
 
@@ -30,43 +31,26 @@ int baseWingMoveTimeMs = 500;
 
 void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	//Add cooldown time so lisa doesn't accidentally put it down then raise it
-	if ((time1[SystemTimer] - centerWingStartTimeMs) > centerWingMoveTimeMs) { //if not moving
-		if (joyButtonPressed(joyState, JOY1, BUTTON_X)) {
-			centerWingStartTimeMs = time1[SystemTimer];
-			if (centerWingDown) {
-				desiredMotorVals->power[Wing_Middle] = 100;
-			} else {
-				desiredMotorVals->power[Wing_Middle] = -100;
-			}
-			centerWingDown = !centerWingDown;
-		} else {
-			if (centerWingDown) {
-				desiredMotorVals->power[Wing_Middle] = 0;
-			} else {
-				//arm is up so pulse it to keep it up
-				if ((time1[SystemTimer] - centerWingStartPulseTimeMs) > 1000*(1.0 - centerWingPulseTimeFractionS)) {
-					centerWingStartPulseTimeMs = time1[SystemTimer];
-					desiredMotorVals->power[Wing_Middle] = 75;
-				} else if ((time1[SystemTimer] - centerWingStartPulseTimeMs) < 1000*centerWingPulseTimeFractionS) {
-					desiredMotorVals->power[Wing_Middle] = 75;
-				} else {
-					desiredMotorVals->power[Wing_Middle] = 0;
-				}
-				desiredMotorVals->power[Wing_Middle] = 0;
-			}
-		}
+	if(joyButtonPressed(joyState,JOY1, BUTTON_B) && (centerWingIsMoving == false) && (centerWingDown == false)){
+		centerWingIsMoving = true;
+		centerWingMoveTimeMs = time1[centerWingMoving];
+		desiredMotorVals->power[Wing_Middle] = -75;
+	}else if(joyButtonPressed(joyState,JOY1, BUTTON_A) && (centerWingIsMoving == false) && (centerWingDown == true)){
+		centerWingIsMoving = true;
+		centerWingMoveTimeMs = time1[centerWingMoving];
+		desiredMotorVals->power[Wing_Middle] = 75;
+	}else if(((time1[centerWingPulse]-centerWingStartPulseTimeMs) == 100) && (centerWingIsMoving == false) && (centerWingDown == false)){
+		centerWingStartPulseTimeMs = time1[centerWingPulse];
+		desiredMotorVals->power[Wing_Middle] = 75;
 	}
-	//Add cooldown time to avoid servo jerking back and forth
-	if ((time1[SystemTimer] - baseWingStartTimeMs) > baseWingMoveTimeMs) {
-		if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
-			baseWingStartTimeMs = time1[SystemTimer];
-			if (baseWingDown) {
-				servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
-			} else {
-				servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
-			}
-			baseWingDown = !baseWingDown;
-		}
+	if((centerWingIsMoving == true) && (centerWingMoveTimeMs >= 200) && (centerWingDown == false)){
+		centerWingIsMoving = false;
+		centerWingDown = true;
+		desiredMotorVals->power[Wing_Middle] = 0;
+	}else if ((centerWingIsMoving == true) && (centerWingMoveTimeMs >= 200)&& (centerWingDown == true)){
+		centerWingIsMoving = false;
+		centerWingDown = false;
+		desiredMotorVals->power[Wing_Middle] = 0;
 	}
 }
 

@@ -12,10 +12,6 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 */
 ////////////////////////////////////////////////////////////////////////////////////////
 
-//Use this timer as a global timer.
-//DO NOT CLEAR THIS TIMER. Use a different timer if you need a clearable one.
-TTimers SystemTimer = T1;
-
 #define MAX_NUM_MOTORS ((int)kNumbOfTotalMotors)
 
 
