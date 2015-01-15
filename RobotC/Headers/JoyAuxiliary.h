@@ -6,8 +6,6 @@
 #include "Joystick.h"
 #include "Drive.h"
 
-TTimers joyGlobalTimer = T1;
-
 void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY1, BUTTON_Y)) {
 		desiredMotorVals->power[Lift] = 100;
@@ -32,9 +30,9 @@ int baseWingMoveTimeMs = 500;
 
 void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	//Add cooldown time so lisa doesn't accidentally put it down then raise it
-	if (time1[joyGlobalTimer] - centerWingStartTimeMs > centerWingMoveTimeMs) { //if not moving
+	if ((time1[SystemTimer] - centerWingStartTimeMs) > centerWingMoveTimeMs) { //if not moving
 		if (joyButtonPressed(joyState, JOY1, BUTTON_X)) {
-			centerWingStartTimeMs = time1[joyGlobalTimer];
+			centerWingStartTimeMs = time1[SystemTimer];
 			if (centerWingDown) {
 				desiredMotorVals->power[Wing_Middle] = 100;
 			} else {
@@ -44,24 +42,24 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		} else {
 			if (centerWingDown) {
 				desiredMotorVals->power[Wing_Middle] = 0;
-			} else {/*
+			} else {
 				//arm is up so pulse it to keep it up
-				if (time1[joyGlobalTimer] - centerWingStartPulseTimeMs > 1000*(1.0 - centerWingPulseTimeFractionS)) {
-					centerWingStartPulseTimeMs = time1[joyGlobalTimer];
+				if ((time1[SystemTimer] - centerWingStartPulseTimeMs) > 1000*(1.0 - centerWingPulseTimeFractionS)) {
+					centerWingStartPulseTimeMs = time1[SystemTimer];
 					desiredMotorVals->power[Wing_Middle] = 75;
-				} else if (time1[joyGlobalTimer] - centerWingStartPulseTimeMs < 1000*centerWingPulseTimeFractionS) {
+				} else if ((time1[SystemTimer] - centerWingStartPulseTimeMs) < 1000*centerWingPulseTimeFractionS) {
 					desiredMotorVals->power[Wing_Middle] = 75;
 				} else {
 					desiredMotorVals->power[Wing_Middle] = 0;
-				}*/
+				}
 				desiredMotorVals->power[Wing_Middle] = 0;
 			}
 		}
 	}
 	//Add cooldown time to avoid servo jerking back and forth
-	if ((time1[joyGlobalTimer] - baseWingStartTimeMs) > baseWingMoveTimeMs) {
+	if ((time1[SystemTimer] - baseWingStartTimeMs) > baseWingMoveTimeMs) {
 		if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
-			baseWingStartTimeMs = time1[joyGlobalTimer];
+			baseWingStartTimeMs = time1[SystemTimer];
 			if (baseWingDown) {
 				servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].maxValue);
 			} else {
@@ -84,16 +82,16 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 }
 
 bool bucketDown = false;
-int bucketStartTimeMs = 0;
-int bucketMoveTimeMs = 500;
+//int bucketStartTimeMs = 0;
+int bucketMoveTimeMs = 1000;
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	if ((time1[joyGlobalTimer] - bucketStartTimeMs) > bucketMoveTimeMs) {
+	if (time1[T2] > bucketMoveTimeMs) {
 		if (joyButtonPressed(joyState, JOY1, BUTTON_B)){
-			bucketStartTimeMs = time1[joyGlobalTimer];
+			ClearTimer(T2);
 			if (bucketDown) {
-				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].minValue);
-			} else {
 				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
+			} else {
+				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].minValue);
 			}
 			bucketDown = !bucketDown;
 		}
