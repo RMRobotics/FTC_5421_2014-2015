@@ -54,6 +54,7 @@ void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
 	joyWing(&desiredMotorVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
+	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
 }
 
 task main() {

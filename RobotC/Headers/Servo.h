@@ -89,8 +89,8 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[Bucket_Drop].minValue = 125;
-	servoDefinitions[Bucket_Drop].maxValue = 170;
+	servoDefinitions[Bucket_Drop].minValue = 100;
+	servoDefinitions[Bucket_Drop].maxValue = 230;
 	servoDefinitions[Wing_Base].minValue = 10;
 	servoDefinitions[Wing_Base].maxValue = 230;
 	servoDefsInitialized = true;

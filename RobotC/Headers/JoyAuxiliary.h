@@ -41,21 +41,21 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 				desiredMotorVals->power[Wing_Middle] = -100;
 			}
 			centerWingDown = !centerWingDown;
-		} else {/*
+		} else {
 			if (centerWingDown) {
 				desiredMotorVals->power[Wing_Middle] = 0;
-			} else {
+			} else {/*
 				//arm is up so pulse it to keep it up
-				if (time1[joyGlobalTimer] - centerWingPulseStartTimeMs > 1000*(1.0 - centerWingPulseTimeFractionS)) {
-					centerWingPulseStartTimeMs = time1[joyGlobalTimer];
+				if (time1[joyGlobalTimer] - centerWingStartPulseTimeMs > 1000*(1.0 - centerWingPulseTimeFractionS)) {
+					centerWingStartPulseTimeMs = time1[joyGlobalTimer];
 					desiredMotorVals->power[Wing_Middle] = 75;
-				} else if (time1[joyGlobalTimer] - centerWingPulseStartTimeMs < 1000*centerWingPulseTimeFractionS) {
+				} else if (time1[joyGlobalTimer] - centerWingStartPulseTimeMs < 1000*centerWingPulseTimeFractionS) {
 					desiredMotorVals->power[Wing_Middle] = 75;
 				} else {
 					desiredMotorVals->power[Wing_Middle] = 0;
-				}
-			}*/
-			desiredMotorVals->power[Wing_Middle] = 0;
+				}*/
+				desiredMotorVals->power[Wing_Middle] = 0;
+			}
 		}
 	}
 	//Add cooldown time to avoid servo jerking back and forth
@@ -88,13 +88,14 @@ int bucketStartTimeMs = 0;
 int bucketMoveTimeMs = 500;
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if ((time1[joyGlobalTimer] - bucketStartTimeMs) > bucketMoveTimeMs) {
-		if (joyButtonPressed(joyState, JOY1, BUTTON_START)){
+		if (joyButtonPressed(joyState, JOY1, BUTTON_B)){
 			bucketStartTimeMs = time1[joyGlobalTimer];
 			if (bucketDown) {
-				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
-			} else {
 				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].minValue);
+			} else {
+				servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
 			}
+			bucketDown = !bucketDown;
 		}
 	}
 }
