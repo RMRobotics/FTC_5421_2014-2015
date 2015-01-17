@@ -247,7 +247,7 @@ void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, int angle) {
 /*The following functions follow the same format as above.
   encoderDistance: distance to go in encoder units */
 void driveSetMecMotorN(DesiredMotorVals *desiredMotorVals, float powerRatio) {
-	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 1.0, 0.0);
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, powerRatio, 0.0);
 }
 void driveSetEncoderN(DesiredEncVals *desiredEncVals, int encoderDistance) {
 	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
