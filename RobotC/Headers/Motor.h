@@ -173,7 +173,7 @@ void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 	if (motorDefsInitialized) {
 		for (int i=0;i<NUM_MOTORS;i++) {
-			motorResetEncoder(desiredEncVals, i);
+			motorResetEncoder(desiredEncVals, motorList[i]);
 		}
 	} else {
 		writeDebugStream("Motors not initialized!\n");
