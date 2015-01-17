@@ -33,17 +33,19 @@ const tMUXSensor ULTRASONIC_BR = msensor_S4_2;
 #define LIFT_POWER 30
 
 task main(){
+	nMotorEncoder[Lift] = 0;
 	while(true){
 		eraseDisplay();
 
 		if (nNxtButtonPressed == 2) { //left arrow
 			motor[Lift] = -LIFT_POWER;
 		} else if (nNxtButtonPressed == 1) { //right arrow
-			motor[Lift] = 25;
+			motor[Lift] = LIFT_POWER;
 		} else {
 			motor[Lift] = 0;
 		}
-		nxtDisplayTextLine(4, "Moving at power: %f", LIFT_POWER);
+		nxtDisplayTextLine(2, "Moving at power: %f", LIFT_POWER);
+		nxtDisplayTextline(4, "Encoder reads: %d", nMotorEncoder[Lift]);
 		wait1Msec(100);
 	}
 }
