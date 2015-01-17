@@ -28,7 +28,7 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 /*Length (in encoder units) over which we slow down the robot in order to hit the
   target precisely. */
 #define ENC_SLOW_LENGTH 3000
-#define ENC_SLOW_RATE MAX_REFERENCE_POWER / ENC_SLOW_LENGTH
+#define ENC_SLOW_RATE ((float) MAX_REFERENCE_POWER / ENC_SLOW_LENGTH)
 
 /*Maximum encoder target possible. This is technically the maximum number an int
   variable can hold, but we'll give it some room so that we don't introduce a
@@ -175,48 +175,19 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 
 /* Sets encoder target for a specific tMotor and resets
 	 the real encoder. Checks to make sure the target is
-	 below the maximum target. If it fails the check, then
-	 the encoder is still reset but it refuses to set the
+	 below the maximum target, and that the target is not 0.
+	 If it fails the check, then the encoder is still reset
+	 but it refuses to set the
 	 new target. */
 void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
 	if (motorDefsInitialized) {
 		motorResetEncoder(desiredEncVals, curMotor);
 		if (abs(target) < MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
+		} else if (target == 0) {
+			writeDebugStream("Encoder target value cannot be 0!\n");
 		} else {
 			desiredEncVals->encoder[curMotor] = target;
-		}
-	} else {
-		writeDebugStream("Motors not initialized!\n");
-	}
-}
-
-/*Handles limits on desired power given a target encoder distance.
-	- Sets desired powers to 0 if	the motor encoder exceeds desired
-		encoder values.
-	- Limits desired powers when the encoder approaches the target.
-	- If the desired encoder value is zero, it is ignored.
-	- If the signs of the desired encoder value and the actual
-		encoder value do not agree, then no limitation is applied. */
-void motorLimitDesiredPowerToEncoder(DesiredMotorVals *desiredVals,
-DesiredEncVals *desiredEncVals) {
-	if (motorDefsInitialized) {
-		for (int i=0; i<NUM_MOTORS; i++) {
-			tMotor curMotor = motorList[i];
-			int desiredEnc = desiredEncVals->encoder[curMotor];
-			int curEnc = nMotorEncoder[curMotor];
-			if (desiredEnc != 0) {
-				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
-					if (abs(curEnc) >= abs(desiredEnc)) {
-						desiredVals->power[curMotor] = 0;
-					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
-						desiredVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]);
-					}
-				} else {
-					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
-					writeDebugStream("Current encoder value: %d\n", curEnc);
-				}
-			}
 		}
 	} else {
 		writeDebugStream("Motors not initialized!\n");
@@ -230,8 +201,17 @@ DesiredEncVals *desiredEncVals) {
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	int desiredEnc = desiredEncVals->encoder[curMotor];
 	int curEnc = nMotorEncoder[curMotor];
-	if (((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) || desiredEnc == 0) {
+	if (desiredEnc == 0) {
 		return true;
+	} else if ((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) {
+		//Add check for sporadic encoder values as documented by Cougar Robotics #623
+		wait1Msec(10);
+		curEnc = nMotorEncoder[curMotor];
+		if (abs(curEnc) >= abs(desiredEnc)) {
+			return true;
+		} else {
+			return false;
+		}
 	} else {
 		return false;
 	}
@@ -250,6 +230,40 @@ bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
 	} else {
 		writeDebugStream("Motors not initialized!\n");
 		return false;
+	}
+}
+
+
+/*Handles limits on desired power given a target encoder distance.
+	- Sets desired powers to 0 if	the motor encoder exceeds desired
+		encoder values.
+	- Limits desired powers when the encoder approaches the target.
+	- If the desired encoder value is zero, it is ignored.
+	- If the signs of the desired encoder value and the actual
+		encoder value do not agree, then no limitation is applied. */
+void motorLimitDesiredPowerToEncoder(DesiredMotorVals *desiredMotorVals,
+DesiredEncVals *desiredEncVals) {
+	if (motorDefsInitialized) {
+		for (int i=0; i<NUM_MOTORS; i++) {
+			tMotor curMotor = motorList[i];
+			int desiredEnc = desiredEncVals->encoder[curMotor];
+			int curEnc = nMotorEncoder[curMotor];
+			if (desiredEnc != 0) {
+				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
+					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
+						desiredMotorVals->power[curMotor] = 0;
+					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
+						//Calculate slowdown and add one to make sure that the motor never shuts off
+						desiredMotorVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]) + 1;
+					}
+				} else {
+					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
+					writeDebugStream("Current encoder value: %d\n", curEnc);
+				}
+			}
+		}
+	} else {
+		writeDebugStream("Motors not initialized!\n");
 	}
 }
 
