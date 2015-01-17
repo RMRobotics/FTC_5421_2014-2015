@@ -7,13 +7,13 @@
 #pragma config(Motor,  mtr_S3_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S3_C3_1,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C3_1,     Wing_Middle,   tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S3_C3_2,     motorI,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     motorJ,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_2,     motorK,        tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S2_C1_1,    servo1,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_2,    servo2,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_3,    servo3,               tServoNone)
+#pragma config(Motor,  mtr_S3_C4_1,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
+#pragma config(Servo,  srvo_S2_C1_1,    Ultrasonic_BR_Servo,  tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_2,    Wing_Base,            tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_3,    Bucket_Drop,          tServoStandard)
 #pragma config(Servo,  srvo_S2_C1_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_5,    servo5,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_6,    servo6,               tServoNone)
@@ -24,8 +24,8 @@
 // To access that sensor, we must use msensor_S1_1.  If the sensor
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
-#include "drivers/hitechnic-sensormux.h"
-#include "drivers/hitechnic-gyro.h"
+#include "../drivers/hitechnic-sensormux.h"
+#include "../drivers/hitechnic-gyro.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor ULTRASONIC_BR = msensor_S4_2;
@@ -41,15 +41,137 @@ DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
 DesiredEncVals desiredEncVals;
 
+//All states for Grab Medium Tube Autonomous
+typedef enum GrabMedTubeStates {
+	STATE_START,
+	STATE_DRIVETOWARDCENTERPIECE,
+	STATE_DRIVETOWARDTUBE,
+	STATE_ROTATETOWARDWALL,
+	STATE_DRIVETOWARDPZONE,
+	STATE_ALIGNTUBE,
+	STATE_OFFRAMP,
+	STATE_LIFT,
+	STATE_DROPBUCKET,
+	STATE_GRABTUBE,
+	STATE_LOCKTUBEIN,
+	STATE_END,
+}GrabMedTubeStates;
+
+static GrabMedTubeStates currentState = STATE_START;
+
+int count = 0;
+
 void initialize(){
 	servoinit();
 	motorinit();
-
+	motorResetAllEncoders(&desiredEncVals);
+	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
+	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
 }
 
 task main()
 {
+	//CHUTE SIDE IS FACING DOWN THE RAMP
+	/* TODO
+		 Timer for servos
+		 Center wing pulse
+	*/
 
+	initialize();
+	waitForStart();
+	bool end = false;
+	while(!end){
+		switch(currentState){
+			case STATE_START:
+				currentState = STATE_OFFRAMP;
+				break;
+			case STATE_OFFRAMP:
+				driveSetEncoderN(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_DRIVETOWARDCENTERPIECE;
+				}
+				break;
+			case STATE_DRIVETOWARDCENTERPIECE:
+				driveSetEncoderW(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_DRIVETOWARDTUBE;
+				}
+				break;
+			case STATE_DRIVETOWARDTUBE:
+				driveSetEncoderN(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_GRABTUBE;
+				}
+				break;
+			case STATE_GRABTUBE:
+				servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+				currentState = STATE_ALIGNTUBE;
+				break;
+			case STATE_ALIGNTUBE:
+				driveSetEncoderS(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_LOCKTUBEIN;
+				}
+				break;
+			case STATE_LOCKTUBEIN:
+				driveSetEncoderS(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				count = count + 1;
+				if (count = 1){
+					time[T1] = 0;
+				}
+				if (time[T1] < 200){
+					desiredMotorVals->power[Wing_Middle] = -75;
+				} else {
+					desiredMotorVals->power[Wing_Middle] = 0;
+				}
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals) && (time[T1] >200)){
+					currentState = STATE_ROTATETOWARDWALL;
+				}
+				break;
+			case STATE_ROTATETOWARDWALL:
+				driveSetEncoderRotate(&desiredEncVals, #########);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_DRIVETOWARDPZONE;
+				}
+				break;
+			case STATE_DRIVETOWARDPZONE:
+				driveSetEncoderS(&desiredEncVals, #######);
+				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+				motorSetActualPowerToDesired(&desiredMotorVals);
+				if(motorAllHitEncoderTarget(&desiredEncVals)){
+					currentState = STATE_END;
+				}
+				break;
+			case STATE_END:
+				end = true;
+		}
+	}
 
-
+/*	driveSetEncoderN(&desiredEncVals, ######);
+	driveSetEncoderW(&desiredEncVals, ######);
+	driveSetEncoderN(&desiredEncVals, ######);
+	servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+	driveSetEncoderS(&desiredEncVals, ######);
+	desiredMotorVals->power[Wing_Middle] = -100;
+	time[T1] = 0;
+	while (time[T1] < 200){
+		motorSetActualPowerToDesired(&desiredMotorVals);
+	}
+	desiredMotorVals->power[Wing_Middle] = 0;
+	motorSetActualPowerToDesired(&desiredMotorVals);
+	driveSetEncoderW(&desiredEncVals, ######);
+	driveSetEncoderS(&desiredEncVals, ######);
+	driveSetEncoderW(&desiredEncVals, ######); */
 }
