@@ -104,6 +104,13 @@ int motorGetMaxReferencePower() {
 	return MAX_REFERENCE_POWER;
 }
 
+/*Zero all motors */
+void motorZeroAllMotors(DesiredMotorVals *desiredMotorVals) {
+	for (int i=0; i<NUM_MOTORS; i++) {
+		desiredMotorVals->power[motorList[i]] = 0;
+	}
+}
+
 /*Private function, returns power value after scaling power
   to fit motor constraints. Expects values from 0 to
   motorGetMaxReferencePower().
