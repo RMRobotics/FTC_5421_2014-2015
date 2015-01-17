@@ -186,12 +186,32 @@ float powerRatio, float rotationRatio) {
 	}
 }
 
+/* Check if all mecmotors have hit encoder target */
+bool driveMecHasHitEncoderTarget(DesiredEncVals *desiredEncVals) {
+	if (motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FL) &&
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BL) &&
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FR) &&
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BR)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 /* Zero all mecanum motors */
 void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 	desiredMotorVals->power[MecMotor_FL] = 0;
 	desiredMotorVals->power[MecMotor_BL] = 0;
 	desiredMotorVals->power[MecMotor_FR] = 0;
 	desiredMotorVals->power[MecMotor_BR] = 0;
+}
+
+/* Reset encoders for all mecanum motors */
+void driveResetMecEncoder(DesiredEncVals *desiredEncVals) {
+	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FL);
+	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
+	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
+	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
 }
 
 /*Sets desired motor values in order to orbit north (forwards).
