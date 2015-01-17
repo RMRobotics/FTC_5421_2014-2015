@@ -44,8 +44,8 @@ task main(){
 		} else {
 			motor[Lift] = 0;
 		}
-		nxtDisplayTextLine(2, "Moving at power: %f", LIFT_POWER);
-		nxtDisplayTextline(4, "Encoder reads: %d", nMotorEncoder[Lift]);
+		nxtDisplayTextLine(2, "Power: %f", LIFT_POWER);
+		nxtDisplayTextline(4, "Encoder: %d", nMotorEncoder[Lift]);
 		wait1Msec(100);
 	}
 }
