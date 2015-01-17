@@ -54,7 +54,7 @@ task main()
 	initialize();
 	joyWaitForStart();
 	time1[T1] = 0; //in ms
-	driveSetMecMotorN(&desiredMotorVals, 100);
+	driveSetMecMotorS(&desiredMotorVals, 1.0);
 	while (time1[T1] < 2500) {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Driving forward!\n");
