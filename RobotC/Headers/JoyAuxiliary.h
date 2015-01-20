@@ -38,7 +38,7 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (!centerWingIsMoving) {
 		clearTimer(centerWingMovingTimer);
 		if (!centerWingDown){
-			if(joyButtonPressed(joyState, JOY1, BUTTON_B)){
+			if(joyButtonPressed(joyState, JOY1, BUTTON_X)){ //down
 				centerWingIsMoving = true;
 				centerWingMoveTimeMs = time1[centerWingMovingTimer];
 				desiredMotorVals->power[Wing_Middle] = -50;
@@ -52,10 +52,9 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 				} else if (pulseTimeElapsedMs > 0){
 					desiredMotorVals->power[Wing_Middle] = 50;
 				}
-				writeDebugStreamLine("%d", pulseTimeElapsedMs);
 			}
 		}else {
-			if(joyButtonPressed(joyState, JOY1, BUTTON_A)){
+			if(joyButtonPressed(joyState, JOY1, BUTTON_Y)){ //up
 				centerWingIsMoving = true;
 				centerWingMoveTimeMs = time1[centerWingMovingTimer];
 				desiredMotorVals->power[Wing_Middle] = 50;
@@ -73,10 +72,10 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	}
 
 	//For the base wing
-	if(joyButtonPressed(joyState, JOY1, BUTTON_Y)){
+	if(joyButtonPressed(joyState, JOY1, BUTTON_A)){ //up
 		servoSetNonCont(Wing_Base, servoDefinitions[wing_Base].minValue);
 	}
-	if(joyButtonPressed(joyState, JOY1, BUTTON_X)){
+	if(joyButtonPressed(joyState, JOY1, BUTTON_B)){ //down
 		servoSetNonCont(Wing_Base, servoDefinitions[wing_Base].maxValue);
 	}
 }
