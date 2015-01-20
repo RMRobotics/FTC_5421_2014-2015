@@ -61,6 +61,7 @@ bool dataOpenWriteJoyLog(int numTJoy) {
 	Delete(JOY_LOGFILE, ioResult);
 	if ((ioResult == 0 || ioResult == 135) && size <= JOY_MAX_LOGFILE_SIZE) { //135 is File Not Found
 		if (!logHandleInUse) {
+			writeDebugStream("Opening File For Writing: %s\n", JOY_LOGFILE);
 			OpenWrite(logHandle, ioResult, JOY_LOGFILE, size);
 			currentFilesize = size;
 			if(ioResult != 0) {
@@ -69,6 +70,7 @@ bool dataOpenWriteJoyLog(int numTJoy) {
 				logHandleInUse = true;
 				return false;
 			} else {
+				writeDebugStream("File Open For Write Successful: %s\n", JOY_LOGFILE):
 				accessible = true;
 				logHandleInUse = true;
 				return true;
@@ -96,6 +98,7 @@ bool dataOpenReadJoyLog() {
 		logHandleInUse = true;
 		return false;
 	} else {
+		writeDebugStream("Opening File For Reading: %s\n", JOY_LOGFILE);
 		OpenRead(logHandle, ioResult, JOY_LOGFILE, currentFilesize);
 		if(ioResult != 0) {
 			writeDebugStream("IO Error Reading: %d\n", ioResult);
@@ -103,6 +106,7 @@ bool dataOpenReadJoyLog() {
 			logHandleInUse = true;
 			return false;
 		} else {
+			writeDebugStream("File Open For Reading Successful: %s\n", JOY_LOGFILE);
 			accessible = true;
 			logHandleInUse = true;
 			return true;
@@ -113,17 +117,19 @@ bool dataOpenReadJoyLog() {
 /* Closes stream to joystick log file.
 	 Returns true if succeeded, false otherwise.*/
 bool dataCloseJoyLog() {
-		Close(logHandle, ioResult);
-		if (ioResult != 0) {
-			writeDebugStream("IO Error Closing: %d\n", ioResult);
-			accessible = false;
-			logHandleInUse = true;
-			return false;
-		} else {
-			accessible = false;
-			logHandleInUse = false;
-			return true;
-		}
+	writeDebugStream("Closing file: %s\n", JOY_LOGFILE);
+	Close(logHandle, ioResult);
+	if (ioResult != 0) {
+		writeDebugStream("IO Error Closing: %d\n", ioResult);
+		accessible = false;
+		logHandleInUse = true;
+		return false;
+	} else {
+		writeDebugStream("File Close Successful: %s\n", JOY_LOGFILE);
+		accessible = false;
+		logHandleInUse = false;
+		return true;
+	}
 }
 
 /* Serializes TJoystick struct, stores into SerialTJoystick struct*/
@@ -164,6 +170,7 @@ bool dataWriteJoyLogStream(TJoystick *joy) {
 					return false;
 				}
 			}
+			writeDebugStream("Accessed bytes: %f\n", accessedBytes);
 			accessedBytes += TJOY_SIZE;
 			return true;
 		}
