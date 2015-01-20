@@ -41,33 +41,55 @@ DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
 DesiredEncVals desiredEncVals;
 
-//All states for Grab Medium Tube Autonomous
+//ALl states for Grab Medium Tube Autonomous
 typedef enum GrabMedTubeStates {
 	STATE_START,
 	STATE_DRIVETOWARDCENTERPIECE,
 	STATE_DRIVETOWARDTUBE,
 	STATE_ROTATETOWARDWALL,
 	STATE_DRIVETOWARDPZONE,
-	STATE_ALIGNTUBE,
+	STATE_ALIGNANDLOCKTUBE,
 	STATE_OFFRAMP,
 	STATE_LIFT,
 	STATE_DROPBUCKET,
 	STATE_GRABTUBE,
 	STATE_LOCKTUBEIN,
+	STATE_DROP,
 	STATE_END,
-}GrabMedTubeStates;
+} GrabMedTubeStates;
 
 static GrabMedTubeStates currentState = STATE_START;
 
-int count = 0;
-
 void initialize(){
-	servoinit();
-	motorinit();
+	servoInit();
+	motorInit();
 	motorResetAllEncoders(&desiredEncVals);
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
 }
+
+
+TTimers AutonTimer = T1;
+TTimers centerWingMovingTimer = T2;
+TTimers centerWingPulseTimer = T3;
+
+bool centerWingDown = false;
+
+int centerWingStartPulseTimeMs = 0;
+int restStartTimeMs = 0;
+
+#define ENC_PER_REV 1440
+
+bool rest = false;
+int count = 0;
+
+void restMecMotors() {
+	driveResetMecEncoder(&desiredEncVals);
+	driveZeroMecMotor(&desiredMotorVals);
+	rest = true;
+	restStartTimeMs = time1[AutonTimer];
+}
+
 
 task main()
 {
@@ -80,82 +102,142 @@ task main()
 	initialize();
 	waitForStart();
 	bool end = false;
+	bool rest  = false;
 	while(!end){
-		switch(currentState){
-			case STATE_START:
-				currentState = STATE_OFFRAMP;
-				break;
-			case STATE_OFFRAMP:
-				driveSetEncoderN(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
-					currentState = STATE_DRIVETOWARDCENTERPIECE;
-				}
-				break;
-			case STATE_DRIVETOWARDCENTERPIECE:
-				driveSetEncoderW(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
-					currentState = STATE_DRIVETOWARDTUBE;
-				}
-				break;
-			case STATE_DRIVETOWARDTUBE:
-				driveSetEncoderN(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
-					currentState = STATE_GRABTUBE;
-				}
-				break;
-			case STATE_GRABTUBE:
-				servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
-				currentState = STATE_ALIGNTUBE;
-				break;
-			case STATE_ALIGNTUBE:
-				driveSetEncoderS(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
-					currentState = STATE_LOCKTUBEIN;
-				}
-				break;
-			case STATE_LOCKTUBEIN:
-				driveSetEncoderS(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				count = count + 1;
-				if (count = 1){
-					time[T1] = 0;
-				}
-				if (time[T1] < 200){
-					desiredMotorVals->power[Wing_Middle] = -75;
-				} else {
-					desiredMotorVals->power[Wing_Middle] = 0;
-				}
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals) && (time[T1] >200)){
-					currentState = STATE_ROTATETOWARDWALL;
-				}
-				break;
-			case STATE_ROTATETOWARDWALL:
-				driveSetEncoderRotate(&desiredEncVals, #########);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
-					currentState = STATE_DRIVETOWARDPZONE;
-				}
-				break;
-			case STATE_DRIVETOWARDPZONE:
-				driveSetEncoderS(&desiredEncVals, #######);
-				motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-				motorSetActualPowerToDesired(&desiredMotorVals);
-				if(motorAllHitEncoderTarget(&desiredEncVals)){
+		if (rest) {
+			if (time1[AutonTimer] - restStartTimeMs > 1000) {
+				rest = false;
+			} else {
+				motorZeroAllMotors(&desiredMotorVals);
+			}
+		} else {
+			switch(currentState){
+				case STATE_START:
+					currentState = STATE_OFFRAMP;
+					break;
+				case STATE_OFFRAMP:
+					writeDebugStream("State: Offramp\n");
+					driveSetEncoderN(&desiredEncVals, 3.4776411 * ENC_PER_REV);
+					driveSetMecMotorN(&desiredMotorVals, 0.5);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						currentState = STATE_END;//STATE_DRIVETOWARDCENTERPIECE;
+					}
+					break;
+			/*case STATE_DRIVETOWARDCENTERPIECE:
+					writeDebugStream("State: Drive Toward Centerpiece\n");
+					driveSetEncoderW(&desiredEncVals, .54906411 * ENC_PER_REV);
+					driveSetMecMotorW(&desiredMotorVals, 0.5);
+
+					motorSetEncoder(&desiredEncVals, Lift, 5400);
+					desiredMotorVals.power[Lift] = 50;
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						currentState = STATE_DRIVETOWARDTUBE;
+					}
+					break;
+				case STATE_DRIVETOWARDTUBE:
+					writeDebugStream("State: Drive Toward Tube\n");
+					driveSetEncoderN(&desiredEncVals, .2 * ENC_PER_REV);
+					driveSetMecMotorN(&desiredMotorVals, 0.3);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if (driveMecHasHitEncoderTarget(&desiredEncVals) &&
+							motorHasHitEncoderTarget(&desiredEncVals, Lift)) {
+						restMecMotors();
+						motorResetEncoder(&desiredEncVals,
+						currentState = STATE_GRABTUBE;
+					}
+					break;
+				case STATE_GRABTUBE:
+					writeDebugStream("State: Grab Tube\n");
+					servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+					restMecMotors(); //wait for servo to go down
+					ClearTimer(centerWingMovingTimer);
+					currentState = STATE_ALIGNANDLOCKTUBE;
+					break;
+				case STATE_ALIGNANDLOCKTUBE:
+					writeDebugStream("State: Align And Lock Tube\n");
+					driveSetEncoderRotate(&desiredEncVals, 10);
+					driveSetMecMotorRotate(&desiredMotorVals, 10);
+
+					if (time1[centerWingMovingTimer] > 500) {
+						desiredMotorVals.power[Wing_Middle] = 0;
+					} else {
+						desiredMotorVals.power[Wing_Middle] = -75;
+					}
+					centerWingDown = true;
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						currentState = STATE_LOCKTUBEIN;
+					}
+					break;
+				case STATE_ROTATETOWARDWALL:
+					writeDebugStream("State: Rotate Toward Wall\n");
+					driveSetEncoderRotate(&desiredEncVals, 5);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(motorAllHitEncoderTarget(&desiredEncVals)) {
+						resetAndRest();
+						currentState = STATE_DRIVETOWARDPZONE;
+					}
+					break;
+				case STATE_DRIVETOWARDPZONE:
+					writeDebugStream("State: Drive Toward Zone\n");
+					driveSetEncoderS(&desiredEncVals, 6 * ENC_PER_REV);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						currentState = STATE_LIFT;
+					}
+					break;
+				case STATE_LIFT:
+					writeDebugStream("State: Lift\n");
+					//encoders add desired
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						currentState = STATE_DROP;
+					}
+				case STATE_DROP:
+					writeDebugStream("State: Drop\n");
+				//time1[T3] = 0;
+					servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
 					currentState = STATE_END;
-				}
-				break;
-			case STATE_END:
-				end = true;
+					break;
+	*/			case STATE_END:
+					end = true;
+					break;
+			}
+		}
+		//Pulse center wing
+		int pulseTimeElapsedMs = time1[centerWingPulseTimer] - centerWingStartPulseTimeMs;
+		if(!centerWingDown) {
+			if(pulseTimeElapsedMs >= 1000){
+				ClearTimer(centerWingPulseTimer);
+			} else if (pulseTimeElapsedMs <= 100) {
+				desiredMotorVals.power[Wing_Middle] = 50;
+			} else {
+				desiredMotorVals.power[Wing_Middle] = 0;
+			}
 		}
 	}
 
