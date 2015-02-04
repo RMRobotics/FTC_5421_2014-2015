@@ -33,7 +33,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 	int angle = 0;
 	float speed = 0.0;
 	float rotation = 0.0;
-	JoyTophat tophat = joyGetTophat(joyState);
+	JoyTophat tophat = joyGetTophat(joyState, JOY1);
 	switch (tophat) {
 		case TOPHAT_N:
 			driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 1.0, 0.0);
