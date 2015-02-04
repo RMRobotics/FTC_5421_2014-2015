@@ -51,7 +51,7 @@ static MotorData motorDefinitions[MAX_NUM_MOTORS];
 bool motorDefsInitialized = false;
 
 
-#define NUM_MOTORS 7
+#define NUM_MOTORS 6
 //Array for storing all motor enums that we use (this way we can loop through)
 tMotor motorList[NUM_MOTORS];
 
@@ -67,9 +67,8 @@ void motorInit() {
 	motorList[1] = MecMotor_BL;
 	motorList[2] = MecMotor_FR;
 	motorList[3] = MecMotor_BR;
-	motorList[4] = Wing_Middle;
-	motorList[5] = Lift;
-	motorList[6] = Harvester;
+	motorList[4] = Lift;
+	motorList[5] = Harvester;
 
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {
