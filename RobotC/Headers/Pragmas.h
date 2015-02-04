@@ -7,13 +7,13 @@
 #pragma config(Motor,  mtr_S3_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S3_C3_1,     Wing_Middle,   tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C3_2,     motorI,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C3_1,     motor0,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S3_C3_2,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_1,     motor1,        tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S2_C1_1,    Ultrasonic_BR_Servo,  tServoStandard)
-#pragma config(Servo,  srvo_S2_C1_2,    Wing_Base,            tServoStandard)
-#pragma config(Servo,  srvo_S2_C1_3,    Bucket_Drop,          tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_1,    TubeGrabber,          tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_2,    servo2,               tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_3,    servo3,               tServoStandard)
 #pragma config(Servo,  srvo_S2_C1_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_5,    servo5,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_6,    servo6,               tServoNone)
@@ -24,8 +24,10 @@
 // To access that sensor, we must use msensor_S1_1.  If the sensor
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
+/*
 #include "drivers/hitechnic-sensormux.h"
 #include "drivers/hitechnic-gyro.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor ULTRASONIC_BR = msensor_S4_2;
+*/
