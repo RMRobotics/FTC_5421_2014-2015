@@ -7,13 +7,13 @@
 #pragma config(Motor,  mtr_S3_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S3_C3_1,     Wing_Middle,   tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C3_2,     motorI,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C3_1,     motor0,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S3_C3_2,     Lift,          tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_1,     motor1,        tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S2_C1_1,    Ultrasonic_BR_Servo,  tServoStandard)
-#pragma config(Servo,  srvo_S2_C1_2,    Wing_Base,            tServoStandard)
-#pragma config(Servo,  srvo_S2_C1_3,    Bucket_Drop,          tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_1,    TubeGrabber,          tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_2,    servo2,               tServoStandard)
+#pragma config(Servo,  srvo_S2_C1_3,    servo3,               tServoStandard)
 #pragma config(Servo,  srvo_S2_C1_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_5,    servo5,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_6,    servo6,               tServoNone)
@@ -52,9 +52,8 @@ void initialize() {
 
 void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
-	joyWing(&desiredMotorVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
-	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
+	joyGrabber(&desiredMotorVals, joyGetJoystickPointer());
 }
 
 task main() {

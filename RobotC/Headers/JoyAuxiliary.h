@@ -5,13 +5,13 @@
 #include "Global.h"
 #include "Joystick.h"
 #include "Drive.h"
-
+/*
 TTimers centerWingPulseTimer = T1;
 TTimers centerWingMovingTimer = T2;
-
+*/
 void joyAuxInit(){
-	clearTimer(centerWingPulseTimer);
-	clearTimer(centerWingMovingTimer);
+	//clearTimer(centerWingPulseTimer);
+	//clearTimer(centerWingMovingTimer);
 }
 
 void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
@@ -24,7 +24,7 @@ void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	}
 }
 
-
+/*
 
 bool centerWingIsMoving = false;
 bool centerWingDown = false;
@@ -79,7 +79,7 @@ void joyWing(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		servoSetNonCont(Wing_Base, servoDefinitions[wing_Base].maxValue);
 	}
 }
-
+*/
 
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
@@ -90,12 +90,20 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		desiredMotorVals->power[Harvester] = 0;
 	}
 }
-
+/*
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RT)){
 		servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
 	}else if(joyButtonPressed(joyState, JOY2, BUTTON_LT)){
 		servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].minValue);
+	}
+}
+*/
+void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+	if (joyGetTophat(joyState, JOY1) == TOPHAT_N) {
+		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
+	} else if (joyGetTophat(joyState, JOY2) == TOPHAT_S) {
+		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 	}
 }
 
