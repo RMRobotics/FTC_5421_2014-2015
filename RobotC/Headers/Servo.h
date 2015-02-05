@@ -40,7 +40,9 @@ bool servoDefsInitialized = false;
 
 
 /*Sets speed for a continuous rotation servo. If given servo is a
-  non-continuous rotation servo, then it debugs and does nothing. */
+  non-continuous rotation servo, then it debugs and does nothing.
+  Also 127 tells the motor to do nothing. Speed is a value 0-126
+  and runs the servo in reverse. 128-255 being forward.*/
 void servoSetCont(TServoIndex currentServo, int speed) {
 	if (servoDefsInitialized) {
 		if (servoDefinitions[currentServo].isContinuous) {
@@ -89,9 +91,18 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
+	servoDefinitions[HarvesterWinch].isContinuous = true;
+	servoDefinitions[HarvesterStop].minValue = 0;
+	servoDefinitions[HarvesterStop].maxValue = 180;
+	servoDefinitions[Bucket].minValue = 0;
+	servoDefinitions[Bucket].maxValue = 180;
 	servoDefinitions[TubeGrabber].minValue = 145; //up
 	servoDefinitions[TubeGrabber].maxValue = 175; //down
+
 	servoDefsInitialized = true;
+
+	servoSetNonCont(HarvesterStop, servoDefinitions[HarvesterStop].minValue);
+	servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
 }
 
