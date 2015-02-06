@@ -5,6 +5,7 @@
 #include "Global.h"
 #include "Joystick.h"
 #include "Drive.h"
+#include "joyHarvester.h"
 
 void joyAuxInit(){
 }
@@ -38,22 +39,72 @@ void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 }
 */
 
-Ttimers harvesterWinchMoving = T1;
-Ttimers harvesterStopMoving = T2;
+typedef enum {
+	NO_BALLS,
+	BIG_BALLS,
+	ALL_BALLS,
+} HarvestState;
+
+long harvestTime = nPgmTime;
 bool stopIsMoving = false;
 bool winchIsMoving = false;
-bool winchIsDown = false;
-int harvestState = 0; //0 - no balls, 1 - big balls, 2 - all balls
+bool stopIsDown = true; //Stop up or down
+HarvestState harvestState = NO_BALLS; //0 - no balls, 1 - big balls, 2 - all balls
+int harvestPreState = 0;
+int timerCapture = 0;
 
-void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
-	if(stopIsMoving && winchIsMoving){
+void joyHarvesterState(TJoystick *joyState) {
+	harvestTime = nPgmTime;
+	if(harvestState == NO_BALLS){{
+		if(!winchIsMoving && !StopIsMoving)
+			if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
+					writeDebugStream("moving harvester start->Big\n");
+					harvestPreState = 1;
+					stopIsMoving = true;
+					stopOpen();
+					timerCapture = nPgmTime;
+			} else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
+					writeDebugStream("moving harvester start->All\n");
+					harvestPreState = 2;
+					stopIsMoving = true;
+					stopOpen();
+					timerCapture = nPgmTime;
+			}
+		}else{
+			if(stopIsMoving && stopIsDown && (harvestTime-timerCapture == 270)){
+				stopIsDown = false;
+				stopIsMoving = false;
+				clearServos();
+				winchIsMoving = true;
+				winchOpen();
+				timerCapture = nPgmTime;
+			}else if(winchIsMoving&&(harvestPreState = 1)&&(harvestTime-timerCapture == 270)){
+				winchIsMoving = false;
+				clearServos();
+				stopIsMoving = true;
+				stopClose();
+				timerCapture = nPgmTime;
+			}else if(winchIsMoving&&(harvestPreState = 2)&&(harvestTime-timerCapture == 330)){
+				winchIsMoving = false;
+				clearServos();
+				stopIsMoving = true;
+				stopClose();
+				timerCapture = nPgmTime;
+			}else if(stopIsMoving&&!stopIsDown&&(harvestTime-timerCapture == 270)){
+				stopIsDown = true;
+				stopIsMoving = false;
+				clearServos();
+			}
+		}
+	}else if (harvestState == BIG_BALLS){
+		if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
+				writeDebugStream("moving harvester Big->All\n");
+				timerCapture = nPgmTime;
+		}
+	}else if (harvestState == ALL_BALLS){
 		if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
-			servoSetCont(HarvesterWinch,
-			writeDebugStream("moving harvester up/Big Balls!\n");
-			servoSetNonCont(TubeGrabber, 145);
-		} else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
-			writeDebugStream("moving harvester up/All Balls!\n");
-			servoSetNonCont(TubeGrabber, 175);
+				writeDebugStream("moving harvester All->Big\n");
+				timerCapture = nPgmTime;
 		}
 	}
 }
