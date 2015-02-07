@@ -92,12 +92,12 @@ void servoInit() {
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
 	servoDefinitions[HarvesterWinch].isContinuous = true;
-	servoDefinitions[HarvesterStop].minValue = 0;
-	servoDefinitions[HarvesterStop].maxValue = 180;
-	servoDefinitions[Bucket].minValue = 0;
-	servoDefinitions[Bucket].maxValue = 180;
-	servoDefinitions[TubeGrabber].minValue = 145; //up
-	servoDefinitions[TubeGrabber].maxValue = 175; //down
+	servoDefinitions[HarvesterStop].minValue = 10;
+	servoDefinitions[HarvesterStop].maxValue = 240; // out
+	servoDefinitions[Bucket].minValue = 150; //up
+	servoDefinitions[Bucket].maxValue = 250; //down
+	servoDefinitions[TubeGrabber].minValue = 180; //up
+	servoDefinitions[TubeGrabber].maxValue = 220; //down
 
 	servoDefsInitialized = true;
 

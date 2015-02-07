@@ -28,16 +28,16 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		desiredMotorVals->power[Harvester] = 0;
 	}
 }
-/*
+
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RT)){
-		servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket].maxValue);
+		servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
 	}else if(joyButtonPressed(joyState, JOY2, BUTTON_LT)){
-		servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket].minValue);
+		servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	}
 }
-*/
 
+/*
 Ttimers harvesterWinchMoving = T1;
 Ttimers harvesterStopMoving = T2;
 bool stopIsMoving = false;
@@ -57,14 +57,15 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		}
 	}
 }
+*/
 
 void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
-	if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
+	if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
 		writeDebugStream("moving servo up!\n");
-		servoSetNonCont(TubeGrabber, 145);
-	} else if (joyButtonPressed(joyState, JOY2, BUTTON_B)) {
+		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
+	} else if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
 		writeDebugStream("moving servo down\n");
-		servoSetNonCont(TubeGrabber, 175);
+		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 	}
 }
 
