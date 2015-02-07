@@ -65,9 +65,11 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 			if (abs(joy1y1) >= DEADBAND || abs(joy1x1) >= DEADBAND || abs(joy1x2) >= DEADBAND) {
 				//We use atan2 because we want the actual angle, not the reference angle
 				angle = (int) radiansToDegrees((atan2(joy1x1,joy1y1)));
-				speed = sqrt((long)(pow(joy1x1,2) + pow(joy1y1,2))) / 127.0;
+				speed = sqrt((long)(pow(joy1x1,2) + (long)pow(joy1y1,2))) / 127.0;
 				rotation = ((float) -joy1x2) / 127.0;
 				speed = constrain(speed,-1.0,1.0);
+				//Scale to fit exponential curve so that it's easier to move at low speeds
+				speed = sgn(speed) * pow(abs(speed), 2);
 				rotation = constrain(rotation,-1.0,1.0);
 				if (abs(rotation) > abs(speed)) {
 					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
