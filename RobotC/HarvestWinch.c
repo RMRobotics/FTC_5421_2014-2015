@@ -46,4 +46,18 @@ task main()
 			break;
 		}
 	}
+	eraseDisplay();
+	nxtDisplayTextLine(1, "Is harvester down completely?");
+	wait1Msec(1000);
+	while(true) {
+		if (nNxtButtonPressed == ENTER) {
+			break;
+		}
+	}
+	eraseDisplay();
+	nxtDisplayTextLine(1, "Winching...");
+	servo[HarvesterWinch] = 255;
+	wait1Msec(400);
+	servo[HarvesterWinch] = 127;
+
 }
