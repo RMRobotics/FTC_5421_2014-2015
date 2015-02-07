@@ -9,11 +9,11 @@ void clearServos(){
 }
 
 void stopOpen(){
-	servoSetCont(HarvesterStop, 0);
+	servoSetNonCont(HarvesterStop, 27);
 }
 
 void stopClose(){
-	servoSetCont(HarvesterStop, 255);
+	servoSetNonCont(HarvesterStop, 255);
 }
 
 void winchDown(){
