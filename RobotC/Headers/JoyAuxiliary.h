@@ -51,17 +51,119 @@ typedef enum {
 	ALL_BALLS,
 } HarvestPreState;
 
+typedef enum {
+	STOPPER_OPEN,
+	STOPPER_CLOSE,
+	WINCH_BIG_ALL,
+	WINCH_BIG_START,
+	WINCH_ALL_BIG,
+	WINCH_ALL_START,
+	WINCH_START_BIG,
+	WINCH_START_ALL,
+	WINCH_DECIDE,
+	NOTHING,
+} HarvestMovement;
+
 long harvestTime = nPgmTime;
-bool stopIsMoving = false;
-bool winchIsMoving = false;
-bool stopIsDown = true; //Stop up or down
 HarvestState harvestState = NO_BALLS; //0 - no balls, 1 - big balls, 2 - all balls
 HarvestPreState harvestPreState = NO_BALLS;
-int timerCapture = 0;
+HarvestMovement harvestMode = NOTHING;
+long timerCapture = 0;
 
 void joyHarvesterState(TJoystick *joyState) {
 	harvestTime = nPgmTime;
-	if(harvestState == NO_BALLS){
+	switch(harvestMode){
+		case NOTHING:
+			if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
+					writeDebugStream("moving harvester position->Big\n");
+					harvestPreState = BIG_BALLS;
+			} else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
+					writeDebugStream("moving harvester position->All\n");
+					harvestPreState = ALL_BALLS;
+			}
+			if (harvestPreState != harvestState){
+				harvestMode = STOPPER_OPEN;
+			}
+			break;
+		case STOPPER_OPEN:
+			stopOpen();
+			harvestMode = WINCH_DECIDE;
+			break;
+		case WINCH_DECIDE:
+			if((harvestState == BIG_BALLS) && (harvestPreState == ALL_BALLS)){
+				writeDebugStream("moving harvester BIG->All\n");
+				winchDown();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_BIG_ALL;
+			}else if((harvestState == BIG_BALLS) && (harvestPreState == NO_BALLS)){
+				writeDebugStream("moving harvester BIG->START\n");
+				winchUp();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_BIG_START;
+			}else if((harvestState == ALL_BALLS) && (harvestPreState == NO_BALLS)){
+				writeDebugStream("moving harvester ALL->START\n");
+				winchUp();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_ALL_START;
+			}else if((harvestState == ALL_BALLS) && (harvestPreState == BIG_BALLS)){
+				writeDebugStream("moving harvester ALL->BIG\n");
+				winchUp();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_ALL_BIG;
+			}else if((harvestState == NO_BALLS) && (harvestPreState == BIG_BALLS)){
+				writeDebugStream("moving harvester ALL->BIG\n");
+				winchDown();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_START_BIG;
+			}else if((harvestState == NO_BALLS) && (harvestPreState == ALL_BALLS)){
+				writeDebugStream("moving harvester START->ALL\n");
+				winchDown();
+				timerCapture = nPgmTime;
+				harvestMode = WINCH_START_ALL;
+			}
+			break;
+		case STOPPER_CLOSE:
+			stopClose();
+			harvestMode = NOTHING;
+			break;
+		case WINCH_BIG_ALL:
+			if (harvestTime - timerCapture == 125){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+		case WINCH_BIG_START:
+			if (harvestTime - timerCapture == 125){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+		case WINCH_START_ALL:
+			if (harvestTime - timerCapture == 350){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+		case WINCH_START_BIG:
+			if (harvestTime - timerCapture == 250){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+		case WINCH_ALL_BIG:
+			if (harvestTime - timerCapture == 125){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+		case WINCH_ALL_START:
+			if (harvestTime - timerCapture == 255){
+				clearServos();
+				harvestMode = STOPPER_CLOSE;
+			}
+			break;
+	}
+/*	if(harvestState == NO_BALLS){
 		if(!winchIsMoving && !StopIsMoving){
 			if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
 					writeDebugStream("moving harvester start->Big\n");
@@ -167,7 +269,7 @@ void joyHarvesterState(TJoystick *joyState) {
 				harvestState = ALL_BALLS;
 			}
 		}
-	}
+	}*/
 }
 
 void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {

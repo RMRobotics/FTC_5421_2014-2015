@@ -2,17 +2,18 @@
 #define JOYHARVESTER_H
 #pragma systemFile
 
+//127 is no power, 255 is max forward, 0 is max backwards
+
 void clearServos(){
-	servoSetCont(HarvesterStop, 0);
-	servoSetCont(HarvesterWinch,0);
+	servoSetCont(HarvesterWinch,127);
 }
 
 void stopOpen(){
-	servoSetCont(HarvesterStop, 100);
+	servoSetCont(HarvesterStop, 0);
 }
 
 void stopClose(){
-	servoSetCont(HarvesterStop, -100);
+	servoSetCont(HarvesterStop, 255);
 }
 
 void winchDown(){
