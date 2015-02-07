@@ -47,8 +47,10 @@ void servoSetCont(TServoIndex currentServo, int speed) {
 	if (servoDefsInitialized) {
 		if (servoDefinitions[currentServo].isContinuous) {
 			if (speed > SERVO_CONT_FORWARD) {
+				writeDebugStream("Cont. servo speed (%d) past max speed (%d) for servo (%d)!\n", speed, SERVO_CONT_FORWARD, currentServo);
 				speed = SERVO_CONT_FORWARD;
-				} else if (speed < SERVO_CONT_REVERSE) {
+			} else if (speed < SERVO_CONT_REVERSE) {
+				writeDebugStream("Cont. servo speed (%d) past min speed (%d) for servo (%d)!\n", speed, SERVO_CONT_REVERSE, currentServo);
 				speed = SERVO_CONT_REVERSE;
 			}
 			servo[currentServo] = speed;
@@ -68,10 +70,10 @@ void servoSetNonCont(TServoIndex currentServo, int angle, int servoRate = SERVO_
 			int maxAngle = servoDefinitions[currentServo].maxValue;
 			int minAngle = servoDefinitions[currentServo].minValue;
 			if (angle > maxAngle) {
-				writeDebugStream("Angle (%d) past maximum angle (%d) for servo (%d)!\n", angle, currentServo, maxAngle);
+				writeDebugStream("Angle (%d) past maximum angle (%d) for servo (%d)!\n", angle, maxAngle, currentServo);
 				angle = maxAngle;
 			} else if (angle < minAngle) {
-				writeDebugStream("Angle (%d) past minimum angle (%d) for servo (%d)!\n", angle, currentServo, minAngle);
+				writeDebugStream("Angle (%d) past minimum angle (%d) for servo (%d)!\n", angle, minAngle, currentServo);
 				angle = minAngle;
 			}
 			servoChangeRate[currentServo] = servoRate;
