@@ -45,27 +45,33 @@ typedef enum {
 	ALL_BALLS,
 } HarvestState;
 
+typedef enum {
+	NO_BALLS,
+	BIG_BALLS,
+	ALL_BALLS,
+} HarvestPreState;
+
 long harvestTime = nPgmTime;
 bool stopIsMoving = false;
 bool winchIsMoving = false;
 bool stopIsDown = true; //Stop up or down
 HarvestState harvestState = NO_BALLS; //0 - no balls, 1 - big balls, 2 - all balls
-int harvestPreState = 0;
+HarvestPreState harvestPreState = NO_BALLS;
 int timerCapture = 0;
 
 void joyHarvesterState(TJoystick *joyState) {
 	harvestTime = nPgmTime;
-	if(harvestState == NO_BALLS){{
-		if(!winchIsMoving && !StopIsMoving)
+	if(harvestState == NO_BALLS){
+		if(!winchIsMoving && !StopIsMoving){
 			if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
 					writeDebugStream("moving harvester start->Big\n");
-					harvestPreState = 1;
+					harvestPreState = BIG_BALLS;
 					stopIsMoving = true;
 					stopOpen();
 					timerCapture = nPgmTime;
 			} else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
 					writeDebugStream("moving harvester start->All\n");
-					harvestPreState = 2;
+					harvestPreState = ALL_BALLS;
 					stopIsMoving = true;
 					stopOpen();
 					timerCapture = nPgmTime;
@@ -76,15 +82,15 @@ void joyHarvesterState(TJoystick *joyState) {
 				stopIsMoving = false;
 				clearServos();
 				winchIsMoving = true;
-				winchOpen();
+				winchDown();
 				timerCapture = nPgmTime;
-			}else if(winchIsMoving&&(harvestPreState = 1)&&(harvestTime-timerCapture == 270)){
+			}else if(winchIsMoving&&(harvestPreState == BIG_BALLS)&&(harvestTime-timerCapture == 270)){
 				winchIsMoving = false;
 				clearServos();
 				stopIsMoving = true;
 				stopClose();
 				timerCapture = nPgmTime;
-			}else if(winchIsMoving&&(harvestPreState = 2)&&(harvestTime-timerCapture == 330)){
+			}else if(winchIsMoving&&(harvestPreState == ALL_BALLS)&&(harvestTime-timerCapture == 330)){
 				winchIsMoving = false;
 				clearServos();
 				stopIsMoving = true;
@@ -94,17 +100,72 @@ void joyHarvesterState(TJoystick *joyState) {
 				stopIsDown = true;
 				stopIsMoving = false;
 				clearServos();
+				if(harvestPreState == BIG_BALLS){
+					harvestState = BIG_BALLS;
+				}else{
+					harvestState = ALL_BALLS;
+				}
 			}
 		}
 	}else if (harvestState == BIG_BALLS){
-		if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
-				writeDebugStream("moving harvester Big->All\n");
+		if(!winchIsMoving && !StopIsMoving){
+			if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
+					writeDebugStream("moving harvester ALL->BIG\n");
+					harvestPreState = ALL_BALLS;
+					stopIsMoving = true;
+					stopOpen();
+					timerCapture = nPgmTime;
+			}
+		}else{
+			if(stopIsMoving && stopIsDown && (harvestTime-timerCapture == 270)){
+				stopIsDown = false;
+				stopIsMoving = false;
+				clearServos();
+				winchIsMoving = true;
+				winchUp();
 				timerCapture = nPgmTime;
+			}else if(winchIsMoving&&(harvestTime-timerCapture == 330)){
+				winchIsMoving = false;
+				clearServos();
+				stopIsMoving = true;
+				stopClose();
+				timerCapture = nPgmTime;
+			}else if(stopIsMoving&&!stopIsDown&&(harvestTime-timerCapture == 270)){
+				stopIsDown = true;
+				stopIsMoving = false;
+				clearServos();
+				harvestState = BIG_BALLS;
+			}
 		}
 	}else if (harvestState == ALL_BALLS){
-		if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
-				writeDebugStream("moving harvester All->Big\n");
+		if(!winchIsMoving && !StopIsMoving){
+			if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
+					writeDebugStream("moving harvester BIG->ALL\n");
+					harvestPreState = BIG_BALLS;
+					stopIsMoving = true;
+					stopOpen();
+					timerCapture = nPgmTime;
+			}
+		}else{
+			if(stopIsMoving && stopIsDown && (harvestTime-timerCapture == 270)){
+				stopIsDown = false;
+				stopIsMoving = false;
+				clearServos();
+				winchIsMoving = true;
+				winchDown();
 				timerCapture = nPgmTime;
+			}else if(winchIsMoving&&(harvestTime-timerCapture == 330)){
+				winchIsMoving = false;
+				clearServos();
+				stopIsMoving = true;
+				stopClose();
+				timerCapture = nPgmTime;
+			}else if(stopIsMoving&&!stopIsDown&&(harvestTime-timerCapture == 270)){
+				stopIsDown = true;
+				stopIsMoving = false;
+				clearServos();
+				harvestState = ALL_BALLS;
+			}
 		}
 	}
 }
