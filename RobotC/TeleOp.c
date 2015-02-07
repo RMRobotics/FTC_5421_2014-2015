@@ -45,6 +45,7 @@ DesiredEncVals desiredEncVals;
 void initialize() {
 	motorInit();
 	servoInit();
+	joyAuxInit(&desiredEncVals);
 	//Initialize to zeroes
 	clearDebugStream();
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
@@ -52,7 +53,7 @@ void initialize() {
 }
 
 void callAuxiliaryMotors(){
-	joyLift(&desiredMotorVals, joyGetJoystickPointer());
+	joyLift(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
 	joyHarvesterState(joyGetJoystickPointer());
 	joyGrabber(&desiredMotorVals, joyGetJoystickPointer());
@@ -67,6 +68,7 @@ task main() {
 		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
 		//joymecdriveDebug(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 		callAuxiliaryMotors();
+		motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		//joyAuxDebug(&desiredMotorVals, joyGetJoystickPointer());
 	}

@@ -7,17 +7,50 @@
 #include "Drive.h"
 #include "joyHarvester.h"
 
-void joyAuxInit(){
+void joyAuxInit(DesiredEncVals *desiredEncVals){
+	motorResetEncoder(desiredEncVals, Lift);
 }
 
+#define LIFT_MAX 15000
+#define HIGH_GOAL 10000
+#define NINETY_GOAL 7000
+#define SIXTY_GOAL 5000
+#define THIRTY_GOAL 3000
+#define LIFT_UP_POW 100
+#define ENC_SIGN sgn(LIFT_UP_POW)
 
-void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) {
-		desiredMotorVals->power[Lift] = 100;
-	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) {
-		desiredMotorVals->power[Lift] = -100;
+void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
+	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
+		desiredMotorVals->power[Lift] = LIFT_UP_POW;
+		motorSetEncoder(desiredEncVals, Lift, 0);
+	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
+		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+		motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * LIFT_MAX);
 	} else {
-		desiredMotorVals->power[Lift] = 0;
+		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
+			if (motorGetEncoder(Lift) > HIGH_GOAL) {
+				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+			} else {
+				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+			}
+			motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * HIGH_GOAL);
+		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_E || joyGetTophat(joyState, JOY2) == TOPHAT_W) { //med goal
+			if (motorGetEncoder(Lift) > SIXTY_GOAL) {
+				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+			} else {
+				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+			}
+			motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * SIXTY_GOAL);
+		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_S) { //low goal
+			if (motorGetEncoder(Lift) > THIRTY_GOAL) {
+				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+			} else {
+				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+			}
+			motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * THIRTY_GOAL);
+		} else {
+			desiredMotorVals->power[Lift] = 0;
+		}
 	}
 }
 
