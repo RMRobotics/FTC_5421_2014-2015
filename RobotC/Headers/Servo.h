@@ -94,7 +94,7 @@ void servoInit() {
 	servoDefinitions[HarvesterWinch].isContinuous = true;
 	servoDefinitions[HarvesterStop].minValue = 10;
 	servoDefinitions[HarvesterStop].maxValue = 240; // out
-	servoDefinitions[Bucket].minValue = 150; //up
+	servoDefinitions[Bucket].minValue = 130; //up
 	servoDefinitions[Bucket].maxValue = 250; //down
 	servoDefinitions[TubeGrabber].minValue = 180; //up
 	servoDefinitions[TubeGrabber].maxValue = 220; //down
