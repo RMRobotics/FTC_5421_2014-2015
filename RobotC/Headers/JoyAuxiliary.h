@@ -104,6 +104,7 @@ HarvestMovement harvestMode = NOTHING;
 long timerCapture = 0;
 
 void joyHarvesterState(TJoystick *joyState) {
+	/*
 	harvestTime = nPgmTime;
 	switch(harvestMode){
 		case NOTHING:
@@ -223,6 +224,21 @@ void joyHarvesterState(TJoystick *joyState) {
 				harvestMode = STOPPER_CLOSE;
 			}
 			break;
+	} */
+
+	//stopper
+	if (joyButtonPressed(joyState, JOY2, BUTTON_A)) {
+		stopOpen();
+	} else if (joyButtonPressed(joyState, JOY2, BUTTON_B)) {
+		stopClose();
+	}
+	//winch
+	if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
+		winchDown();
+	} else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
+		winchUp();
+	} else {
+		servoSetCont(HarvesterWinch, 127);
 	}
 }
 
