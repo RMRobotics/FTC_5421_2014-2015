@@ -9,6 +9,7 @@
 void joyAuxInit(){
 }
 
+
 void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) {
 		desiredMotorVals->power[Lift] = 100;
@@ -21,9 +22,9 @@ void joyLift(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
-		desiredMotorVals->power[Harvester] = 95;
+		desiredMotorVals->power[Harvester] = 100;
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		desiredMotorVals->power[Harvester] = -95;
+		desiredMotorVals->power[Harvester] = -100;
 	} else {
 		desiredMotorVals->power[Harvester] = 0;
 	}

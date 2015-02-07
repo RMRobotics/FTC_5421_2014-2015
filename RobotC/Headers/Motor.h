@@ -259,7 +259,7 @@ DesiredEncVals *desiredEncVals) {
 					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 						desiredMotorVals->power[curMotor] = 0;
 					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
-						//Calculate slowdown and add one to make sure that the motor never shuts off
+						//Calculate slowdown and add one to make sure that the motor never shuts off on approach
 						desiredMotorVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]) + 1;
 					}
 				} else {
