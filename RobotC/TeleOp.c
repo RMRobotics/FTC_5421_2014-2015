@@ -44,13 +44,13 @@ DesiredMotorVals desiredMotorVals;
 DesiredEncVals desiredEncVals;
 
 void initialize() {
-	motorInit();
-	servoInit();
-	joyAuxInit(&desiredEncVals);
-	//Initialize to zeroes
 	clearDebugStream();
+	//Initialize to zeroes
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
+	motorInit(&desiredEncVals);
+	servoInit();
+	joyAuxInit(&desiredEncVals);
 }
 
 void callAuxiliaryMotors(){

@@ -30,6 +30,9 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 #define ENC_SLOW_LENGTH 3000
 #define ENC_SLOW_RATE ((float) MAX_REFERENCE_POWER / ENC_SLOW_LENGTH)
 
+/*Encoder target value which we ignore (use this when you want to ignore encoder checks) */
+#define ENC_OFF -32767
+
 /*Maximum encoder target possible. This is technically the maximum number an int
   variable can hold, but we'll give it some room so that we don't introduce a
   race condition between the overflow and the encoder check. */
@@ -55,12 +58,13 @@ bool motorDefsInitialized = false;
 //Array for storing all motor enums that we use (this way we can loop through)
 tMotor motorList[NUM_MOTORS];
 
-//Initialize motor definitions
-void motorInit() {
+//Initialize motor definitions and a DesiredEncVals struct to ENC_OFF
+void motorInit(DesiredEncVals *desiredEncVals) {
 	//VOLATILE
 	//list all motors
 	//initialize to -1 so that we can check for any missing motors
-	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
+	int motorListSize = sizeof(motorList) / sizeof(tMotor);
+	for (int i=0; i<motorListSize; i++) {
 		motorList[i] = -1;
 	}
 	motorList[0] = MecMotor_FL;
@@ -96,6 +100,11 @@ void motorInit() {
 		}
 	}
 	motorDefsInitialized = true;
+
+	//Initialize enc vals to ENC_OFF
+	for (int i=0; i<motorListSize; i++) {
+		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
+	}
 }
 
 /*Returns max reference power for other functions */
@@ -161,7 +170,7 @@ int motorGetEncoder(tMotor curMotor) {
 /* Resets encoder, desired and real, for a specific tMotor */
 void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	if (motorDefsInitialized) {
-		desiredEncVals->encoder[curMotor] = 0;
+		desiredEncVals->encoder[curMotor] = ENC_OFF;
 		nMotorEncoder[curMotor] = 0;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
@@ -181,7 +190,8 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 
 /* Sets encoder target for a specific tMotor and resets
 	 the real encoder. Checks to make sure the target is
-	 below the maximum target, and that the target is not 0.
+	 below the maximum target, and that the target is not
+	 ENC_OFF.
 	 If it fails the check, then the encoder is still reset
 	 but it refuses to set the
 	 new target. */
@@ -190,8 +200,8 @@ void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target
 		motorResetEncoder(desiredEncVals, curMotor);
 		if (abs(target) < MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
-		} else if (target == 0) {
-			writeDebugStream("Encoder target value cannot be 0!\n");
+		} else if (target == ENC_OFF) {
+			writeDebugStream("Encoder target value cannot be (%d)!\n", ENC_OFF);
 		} else {
 			desiredEncVals->encoder[curMotor] = target;
 		}
@@ -207,7 +217,7 @@ void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	int desiredEnc = desiredEncVals->encoder[curMotor];
 	int curEnc = nMotorEncoder[curMotor];
-	if (desiredEnc == 0) {
+	if (desiredEnc == ENC_OFF) {
 		return true;
 	} else if ((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) {
 		//Add check for sporadic encoder values as documented by Cougar Robotics #623
@@ -244,7 +254,7 @@ bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
 	- Sets desired powers to 0 if	the motor encoder exceeds desired
 		encoder values.
 	- Limits desired powers when the encoder approaches the target.
-	- If the desired encoder value is zero, it is ignored.
+	- If the desired encoder value is ENC_OFF, it is ignored.
 	- If the signs of the desired encoder value and the actual
 		encoder value do not agree, then no limitation is applied. */
 void motorLimitDesiredPowerToEncoder(DesiredMotorVals *desiredMotorVals,
@@ -254,7 +264,7 @@ DesiredEncVals *desiredEncVals) {
 			tMotor curMotor = motorList[i];
 			int desiredEnc = desiredEncVals->encoder[curMotor];
 			int curEnc = nMotorEncoder[curMotor];
-			if (desiredEnc != 0) {
+			if (desiredEnc != ENC_OFF) {
 				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
 					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 						desiredMotorVals->power[curMotor] = 0;
