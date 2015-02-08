@@ -63,7 +63,7 @@ task main()
 		writeDebugStream("Driving forward!\n");
 	}
 	driveZeroMecMotor(&desiredMotorVals);
-	while (time1[T1] < 10000) {
+	while (time1[T1] < 2500) {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Stopping!\n");
 	}
