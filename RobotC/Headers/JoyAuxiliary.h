@@ -68,9 +68,9 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 }
 
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	if (joyButtonPressed(joyState, JOY2, BUTTON_RT)){
+	if (joyButtonPressed(joyState, JOY2, BUTTON_LT)){ //open
 		servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
-	}else if(joyButtonPressed(joyState, JOY2, BUTTON_LT)){
+	}else if(joyButtonPressed(joyState, JOY2, BUTTON_RT)){
 		servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	}
 }
