@@ -17,11 +17,11 @@ void stopClose(){
 }
 
 void winchDown(){
-	servoSetCont(HarvesterWinch, 255);
+	servoSetCont(HarvesterWinch, 0);
 }
 
 void winchUp(){
-	servoSetCont(HarvesterWinch, 0);
+	servoSetCont(HarvesterWinch, 255);
 }
 
 #endif
