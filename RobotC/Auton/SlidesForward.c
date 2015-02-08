@@ -54,6 +54,7 @@ void initialize() {
 task main()
 {
 	initialize();
+	writeDebugStream("This is slides forward\n");
 	joyWaitForStart();
 	time1[T1] = 0; //in ms
 	driveSetMecMotorN(&desiredMotorVals, 1.0);

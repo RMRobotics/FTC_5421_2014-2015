@@ -55,6 +55,7 @@ void initialize() {
 task main()
 {
 	initialize();
+	writeDebugStream("This is chute forward\n");
 	joyWaitForStart();
 	time1[T1] = 0; //in ms
 	driveSetMecMotorS(&desiredMotorVals, 1.0);
@@ -63,7 +64,7 @@ task main()
 		writeDebugStream("Driving forward!\n");
 	}
 	driveZeroMecMotor(&desiredMotorVals);
-	while (time1[T1] < 10000) {
+	while (time1[T1] < 2500) {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Stopping!\n");
 	}
