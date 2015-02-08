@@ -17,9 +17,10 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define NINETY_GOAL 7000
 #define SIXTY_GOAL 5000
 #define THIRTY_GOAL 3000
-#define LIFT_UP_POW 100
-#define ENC_SIGN sgn(LIFT_UP_POW)
 */
+#define LIFT_UP_POW 100
+//#define ENC_SIGN sgn(LIFT_UP_POW)
+
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
