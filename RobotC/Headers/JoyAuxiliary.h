@@ -11,6 +11,7 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 	motorResetEncoder(desiredEncVals, Lift);
 }
 
+/*
 #define LIFT_MAX 15000
 #define HIGH_GOAL 10000
 #define NINETY_GOAL 7000
@@ -18,16 +19,17 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define THIRTY_GOAL 3000
 #define LIFT_UP_POW 100
 #define ENC_SIGN sgn(LIFT_UP_POW)
+*/
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
 		desiredMotorVals->power[Lift] = LIFT_UP_POW;
-		motorSetEncoder(desiredEncVals, Lift, 0);
+		//motorSetEncoder(desiredEncVals, Lift, 0);
 	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
 		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
-		motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * LIFT_MAX);
+		//motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * LIFT_MAX);
 	} else {
-		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
+		/*if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
 			if (motorGetEncoder(Lift) > HIGH_GOAL) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
 			} else {
@@ -48,9 +50,9 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 				desiredMotorVals->power[Lift] = LIFT_UP_POW;
 			}
 			motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * THIRTY_GOAL);
-		} else {
+		} else {*/
 			desiredMotorVals->power[Lift] = 0;
-		}
+		//}
 	}
 }
 
