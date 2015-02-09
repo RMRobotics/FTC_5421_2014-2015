@@ -25,8 +25,8 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
-#include "drivers/hitechnic-sensormux.h"
-#include "drivers/hitechnic-gyro.h"
+#include "../drivers/hitechnic-sensormux.h"
+#include "../drivers/hitechnic-gyro.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor GYRO = msensor_S4_1;
@@ -63,7 +63,7 @@ static GrabMedTubeStates currentState = STATE_START;
 
 void initialize(){
 	servoInit();
-	motorInit();
+	motorInit(&desiredEncVals);
 	motorResetAllEncoders(&desiredEncVals);
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
@@ -71,34 +71,24 @@ void initialize(){
 
 
 TTimers AutonTimer = T1;
-TTimers centerWingMovingTimer = T2;
-TTimers centerWingPulseTimer = T3;
-
-bool centerWingDown = false;
-
-int centerWingStartPulseTimeMs = 0;
-int restStartTimeMs = 0;
 
 #define ENC_PER_REV 1440
 
+long restStartTimeMs = 0;
+long liftStartTimeMs = 0;
 bool rest = false;
-int count = 0;
 
 void restMecMotors() {
 	driveResetMecEncoder(&desiredEncVals);
 	driveZeroMecMotor(&desiredMotorVals);
 	rest = true;
-	restStartTimeMs = time1[AutonTimer];
+	restStartTimeMs = nPgmTime;
 }
 
 
 task main()
 {
-	//CHUTE SIDE IS FACING DOWN THE RAMP
-	/* TODO
-		 Timer for servos
-		 Center wing pulse
-	*/
+	//SLIDE SIDE IS FACING DOWN THE RAMP
 
 	initialize();
 	waitForStart();
@@ -106,8 +96,9 @@ task main()
 	bool rest  = false;
 	while(!end){
 		if (rest) {
-			if (time1[AutonTimer] - restStartTimeMs > 1000) {
+			if (nPgmTime - restStartTimeMs > 1000) {
 				rest = false;
+				restStartTimeMs = 0;
 			} else {
 				motorZeroAllMotors(&desiredMotorVals);
 			}
@@ -118,7 +109,7 @@ task main()
 					break;
 				case STATE_OFFRAMP:
 					writeDebugStream("State: Offramp\n");
-					driveSetEncoderN(&desiredEncVals, 3.4776411 * ENC_PER_REV);
+					driveSetEncoderN(&desiredEncVals, 8.029685 * ENC_PER_REV);
 					driveSetMecMotorN(&desiredMotorVals, 0.5);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -131,16 +122,20 @@ task main()
 					break;
 			/*case STATE_DRIVETOWARDCENTERPIECE:
 					writeDebugStream("State: Drive Toward Centerpiece\n");
-					driveSetEncoderW(&desiredEncVals, .54906411 * ENC_PER_REV);
-					driveSetMecMotorW(&desiredMotorVals, 0.5);
+					driveSetEncoderE(&desiredEncVals, .267562016 * ENC_PER_REV);
+					driveSetMecMotorE(&desiredMotorVals, 0.5);
 
-					motorSetEncoder(&desiredEncVals, Lift, 5400);
-					desiredMotorVals.power[Lift] = 50;
+					liftStartTimeMs = nPgmTime;
+					desiredMotorVals.power[Lift] = 100;
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
-					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
+					if ((nPgmTime - liftStartTimeMs) > 3500) {
+							desiredMotorVals.power[Lift] = 0;
+					}
+
+					if(driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						currentState = STATE_DRIVETOWARDTUBE;
 					}
@@ -153,42 +148,37 @@ task main()
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
+					if ((nPgmTime - liftStartTimeMs) > 3500) {
+							desiredMotorVals.power[Lift] = 0;
+					}
+
 					if (driveMecHasHitEncoderTarget(&desiredEncVals) &&
 							motorHasHitEncoderTarget(&desiredEncVals, Lift)) {
 						restMecMotors();
-						motorResetEncoder(&desiredEncVals,
 						currentState = STATE_GRABTUBE;
 					}
 					break;
 				case STATE_GRABTUBE:
 					writeDebugStream("State: Grab Tube\n");
-					servoSetNonCont(Wing_Base, servoDefinitions[Wing_Base].minValue);
+					servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
+
+					if ((nPgmTime - liftStartTimeMs) > 3500) {
+							desiredMotorVals.power[Lift] = 0;
+					}
+
 					restMecMotors(); //wait for servo to go down
-					ClearTimer(centerWingMovingTimer);
-					currentState = STATE_ALIGNANDLOCKTUBE;
-					break;
-				case STATE_ALIGNANDLOCKTUBE:
-					writeDebugStream("State: Align And Lock Tube\n");
-					driveSetEncoderRotate(&desiredEncVals, 10);
-					driveSetMecMotorRotate(&desiredMotorVals, 10);
-
-					if (time1[centerWingMovingTimer] > 500) {
-						desiredMotorVals.power[Wing_Middle] = 0;
-					} else {
-						desiredMotorVals.power[Wing_Middle] = -75;
-					}
-					centerWingDown = true;
-
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-					motorSetActualPowerToDesired(&desiredMotorVals);
-
-					if(motorAllHitEncoderTarget(&desiredEncVals)){
-						restMecMotors();
-						currentState = STATE_LOCKTUBEIN;
+					if (desiredMotorVals.power[Lift] == 0) {
+						currentState = STATE_DROP;
 					}
 					break;
-				case STATE_ROTATETOWARDWALL:
-					writeDebugStream("State: Rotate Toward Wall\n");
+				case STATE_DROP:
+					writeDebugStream("State: Drop\n");
+				//time1[T3] = 0;
+					servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
+					currentState = STATE_ROTATETOWARDCENTERPIECE;
+					break;
+				case STATE_ROTATETOWARDCENTERPIECE:
+					writeDebugStream("State: Rotate Toward Centerpiece\n");
 					driveSetEncoderRotate(&desiredEncVals, 5);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -207,37 +197,12 @@ task main()
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
 					if(motorAllHitEncoderTarget(&desiredEncVals)){
-						currentState = STATE_LIFT;
+						currentState = STATE_END;
 					}
-					break;
-				case STATE_LIFT:
-					writeDebugStream("State: Lift\n");
-					//encoders add desired
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-					motorSetActualPowerToDesired(&desiredMotorVals);
-					if(motorAllHitEncoderTarget(&desiredEncVals)){
-						currentState = STATE_DROP;
-					}
-				case STATE_DROP:
-					writeDebugStream("State: Drop\n");
-				//time1[T3] = 0;
-					servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
-					currentState = STATE_END;
 					break;
 	*/			case STATE_END:
 					end = true;
 					break;
-			}
-		}
-		//Pulse center wing
-		int pulseTimeElapsedMs = time1[centerWingPulseTimer] - centerWingStartPulseTimeMs;
-		if(!centerWingDown) {
-			if(pulseTimeElapsedMs >= 1000){
-				ClearTimer(centerWingPulseTimer);
-			} else if (pulseTimeElapsedMs <= 100) {
-				desiredMotorVals.power[Wing_Middle] = 50;
-			} else {
-				desiredMotorVals.power[Wing_Middle] = 0;
 			}
 		}
 	}
