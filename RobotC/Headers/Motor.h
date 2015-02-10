@@ -125,6 +125,7 @@ void motorZeroAllMotors(DesiredMotorVals *desiredMotorVals) {
   If definitions have not been initialized, debug and assume
   normal motor. */
 static int motorScalePower(tMotor currentMotor, int power) {
+	int outputPower = power;
 	if (motorDefsInitialized) {
 		if (power != 0) { //Scaling assumes non zero power
 			int maxPower;
@@ -134,8 +135,15 @@ static int motorScalePower(tMotor currentMotor, int power) {
 			//Scale power
 			float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
 													(float)(maxPower-minPower)) + (sgn(power) * minPower);
+
+			outputPower = (int) scaledPower;
+
+			/*
+			writeDebugStream("Scale pow: %f\n", scaledPower);
+			writeDebugStream("Output pow: %d\n", outputPower);
+			*/
 		}
-		return (int) power;
+		return outputPower;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
 		return 0;
@@ -297,8 +305,21 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 		  //Make sure to keep the sign of the change
 			int rate = sgn(diff) * (int)(helpFindMinAbsFloat(diff,scaledSlew));
 
+			/*
+			if (motor[motorList[i]] == MecMotor_FL) {
+				writeDebugStream("Initial: %d\n", motor[motorList[i]]);
+			}*/
+
 			//update motor
 			motor[motorList[i]] = motor[motorList[i]] + rate;
+
+			/*
+			if (motorList[i] == MecMotor_FL) {
+				writeDebugStream("Slew: %d\n", scaledSlew);
+				writeDebugStream("Diff: %d\n", diff);
+				writeDebugStream("Rate: %d\n", rate);
+				writeDebugStream("Final: %d\n", motor[motorList[i]]);
+			}*/
 		}
 	} else {
 		writeDebugStream("Motors not initialized!\n");
