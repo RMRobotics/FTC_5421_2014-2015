@@ -271,7 +271,7 @@ DesiredEncVals *desiredEncVals) {
 			tMotor curMotor = motorList[i];
 			int desiredEnc = desiredEncVals->encoder[curMotor];
 			int curEnc = nMotorEncoder[curMotor];
-			if (desiredEnc != ENC_OFF) {
+			if (desiredEnc != ENC_OFF && (desiredMotorVals->power[curMotor] != 0)) {
 				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
 					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 						desiredMotorVals->power[curMotor] = 0;
