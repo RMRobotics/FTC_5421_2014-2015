@@ -7,10 +7,10 @@
 #pragma config(Motor,  mtr_S3_C1_2,     Donatello_FL,  tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C2_1,     Raphael_BR,    tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S3_C3_1,     motor0,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S3_C3_1,     motor0,        tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S3_C3_2,     Lift,          tmotorTetrix, openLoop, encoder)
-#pragma config(Motor,  mtr_S3_C4_1,     motor1,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S3_C4_1,     LiftEnc,        tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop, encoder)
 #pragma config(Servo,  srvo_S2_C1_1,    servo1,               tServoNone)
 #pragma config(Servo,  srvo_S2_C1_2,    servo2,          tServoStandard)
 #pragma config(Servo,  srvo_S2_C1_3,    HarvesterWinch,       tServoContinuousRotation)
@@ -52,28 +52,22 @@ void initialize() {
 	clearDebugStream();
 }
 
-int encSim = 3000;
+int encTarget = 3200;
+tMotor testEncoder = Lift;
+tMotor testMotor = Lift;
 task main()
 {
 	initialize();
-	writeDebugStream("This is chute forward\n");
+	writeDebugStream("This is lift encoder test\n");
 	joyWaitForStart();
-	driveSetMecMotorS(&desiredMotorVals, 1.0);
-	driveSetEncoderS(&desiredEncVals, encSim);
-	writeDebugStream("Driving forward!\n");
+	motorResetEncoder(&desiredEncVals, testEncoder);
+	motorSetEncoder(&desiredEncVals, testEncoder, encTarget);
+	desiredMotorVals.power[testMotor] = 50;
+	writeDebugStream("Testing!\n");
 	while (!motorAllHitEncoderTarget(&desiredEncVals)) {
-		encSim = encSim - 100;
-		driveSetEncoderS(&desiredEncVals, encSim);
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-		writeDebugStream("FL Pow: %d Enc: %d Target: %d\n", motor[(tMotor) MecMotor_FL],
-			motorGetEncoder((tMotor) MecMotor_FL), desiredEncVals.encoder[MecMotor_FL]);
+		writeDebugStream("Pow: %d Enc: %d\n", motor[testMotor], nMotorEncoder[testEncoder]);
 	}
 	writeDebugStream("Stopped!\n");
-	while (true) {
-		motorSetEncoder(&desiredEncVals, Lift, 5000);
-		desiredMotorVals.power[Lift] = 50;
-		motorSetActualPowerToDesired(&desiredMotorVals);
-		writeDebugStream("Lift Enc: %d\n", motorGetEncoder(Lift));
-	}
 }
