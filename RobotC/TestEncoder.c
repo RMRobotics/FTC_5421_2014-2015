@@ -52,18 +52,21 @@ void initialize() {
 	clearDebugStream();
 }
 
+int encSim = 3000;
 task main()
 {
 	initialize();
 	writeDebugStream("This is chute forward\n");
 	joyWaitForStart();
 	driveSetMecMotorS(&desiredMotorVals, 1.0);
-	driveSetEncoderS(&desiredEncVals, 10000);
+	driveSetEncoderS(&desiredEncVals, encSim);
 	writeDebugStream("Driving forward!\n");
 	while (!motorAllHitEncoderTarget(&desiredEncVals)) {
+		encSim = encSim - 100;
+		driveSetEncoderS(&desiredEncVals, encSim);
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-		writeDebugStream("FL Pow: %d Enc: %d Target: %d", motor[(tMotor) MecMotor_FL],
+		writeDebugStream("FL Pow: %d Enc: %d Target: %d\n", motor[(tMotor) MecMotor_FL],
 			motorGetEncoder((tMotor) MecMotor_FL), desiredEncVals.encoder[MecMotor_FL]);
 	}
 	writeDebugStream("Stopped!\n");
@@ -71,6 +74,6 @@ task main()
 		motorSetEncoder(&desiredEncVals, Lift, 5000);
 		desiredMotorVals.power[Lift] = 50;
 		motorSetActualPowerToDesired(&desiredMotorVals);
-		writeDebugStream("Lift Enc: %d", motorGetEncoder(Lift));
+		writeDebugStream("Lift Enc: %d\n", motorGetEncoder(Lift));
 	}
 }
