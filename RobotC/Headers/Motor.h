@@ -131,7 +131,6 @@ static int motorScalePower(tMotor currentMotor, int power) {
 			int minPower;
 			maxPower = motorDefinitions[currentMotor].maxPower;
 			minPower = motorDefinitions[currentMotor].minPower;
-
 			//Scale power
 			float scaledPower = (((float)power / (float)motorGetMaxReferencePower()) *
 													(float)(maxPower-minPower)) + (sgn(power) * minPower);
@@ -198,7 +197,7 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
 	if (motorDefsInitialized) {
 		motorResetEncoder(desiredEncVals, curMotor);
-		if (abs(target) < MAX_ENC_TARGET) {
+		if (abs(target) > MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
 		} else if (target == ENC_OFF) {
 			writeDebugStream("Encoder target value cannot be (%d)!\n", ENC_OFF);
