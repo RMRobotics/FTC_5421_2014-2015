@@ -21,6 +21,7 @@ Queuing:
 1. Check battery levels
 2. Check wiring (if it is all connected and wired correctly, NO LOOSE HANGING WIRES)
 3. Nxt Bluetooth off
+4. Wipe down wheels
 
 On the field:
 3. Align the robot onto the field

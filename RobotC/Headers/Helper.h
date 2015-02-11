@@ -1,5 +1,6 @@
 #ifndef HELPER_H
 #define HELPER_H
+#pragma systemFile
 
 /*Helper function for calculating ABSOLUTE maximum of two floats
   Will return maximum absolute value (ignores sign) */
