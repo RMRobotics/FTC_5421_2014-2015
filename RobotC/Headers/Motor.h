@@ -25,10 +25,11 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
-/*Length (in encoder units) over which we slow down the robot in order to hit the
+/*Max length (in encoder units) over which we slow down the robot in order to hit the
   target precisely. */
-#define ENC_SLOW_LENGTH 3000
-#define ENC_SLOW_RATE ((float) MAX_REFERENCE_POWER / ENC_SLOW_LENGTH)
+#define ENC_SLOW_LENGTH 200
+/* Encoder step by which we decrement motor power by 1 */
+#define ENC_SLOW_STEP 20
 
 /*Encoder target value which we ignore (use this when you want to ignore encoder checks) */
 #define ENC_OFF -32767
@@ -276,8 +277,11 @@ DesiredEncVals *desiredEncVals) {
 					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 						desiredMotorVals->power[curMotor] = 0;
 					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
-						//Calculate slowdown and add one to make sure that the motor never shuts off on approach
-						desiredMotorVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-curEnc) + 1;
+						//Calculate number of steps left to decrement motor
+						long steps = ((long) desiredEnc - curEnc) / ENC_SLOW_STEP;
+						//Add one to make sure that the motor never shuts off on approach, set target
+						desiredMotorVals->power[curMotor] = (int) steps + 1;
+
 					}
 				} else {
 					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
