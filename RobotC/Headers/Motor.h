@@ -223,13 +223,13 @@ void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target
   	encoder value do not agree, then this returns false.*/
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	int desiredEnc = desiredEncVals->encoder[curMotor];
-	int curEnc = nMotorEncoder[curMotor];
+	int curEnc = motorGetEncoder(curMotor);
 	if (desiredEnc == ENC_OFF) {
 		return true;
 	} else if ((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) {
 		//Add check for sporadic encoder values as documented by Cougar Robotics #623
 		wait1Msec(10);
-		curEnc = nMotorEncoder[curMotor];
+		curEnc = motorGetEncoder(curMotor);
 		if (abs(curEnc) >= abs(desiredEnc)) {
 			return true;
 		} else {
@@ -270,14 +270,14 @@ DesiredEncVals *desiredEncVals) {
 		for (int i=0; i<NUM_MOTORS; i++) {
 			tMotor curMotor = motorList[i];
 			int desiredEnc = desiredEncVals->encoder[curMotor];
-			int curEnc = nMotorEncoder[curMotor];
+			int curEnc = motorGetEncoder(curMotor);
 			if (desiredEnc != ENC_OFF && (desiredMotorVals->power[curMotor] != 0)) {
 				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
 					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 						desiredMotorVals->power[curMotor] = 0;
 					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
 						//Calculate slowdown and add one to make sure that the motor never shuts off on approach
-						desiredMotorVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-nMotorEncoder[curMotor]) + 1;
+						desiredMotorVals->power[curMotor] = ENC_SLOW_RATE * (desiredEnc-curEnc) + 1;
 					}
 				} else {
 					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
