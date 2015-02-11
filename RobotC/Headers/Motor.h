@@ -279,8 +279,8 @@ DesiredEncVals *desiredEncVals) {
 					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
 						//Calculate number of steps left to decrement motor
 						long steps = ((long) desiredEnc - curEnc) / ENC_SLOW_STEP;
-						//Add one to make sure that the motor never shuts off on approach, set target
-						desiredMotorVals->power[curMotor] = (int) steps + 1;
+						//Add one to make sure motor never shuts off and set target
+						desiredMotorVals->power[curMotor] = (int) steps + ((steps > 0)?1:-1);
 
 					}
 				} else {
