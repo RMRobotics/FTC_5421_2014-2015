@@ -93,9 +93,6 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[HarvesterWinch].isContinuous = true;
-	servoDefinitions[HarvesterStop].minValue = 10;
-	servoDefinitions[HarvesterStop].maxValue = 240; // out
 	servoDefinitions[Bucket].minValue = 140; //up
 	servoDefinitions[Bucket].maxValue = 250; //down
 	servoDefinitions[TubeGrabber].minValue = 180; //up
@@ -103,10 +100,8 @@ void servoInit() {
 
 	servoDefsInitialized = true;
 
-	servoSetNonCont(HarvesterStop, servoDefinitions[HarvesterStop].minValue);
 	servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
-	servoSetCont(HarvesterWinch, 127);
 }
 
 /*Returns an int value of the last target set for the servo.
