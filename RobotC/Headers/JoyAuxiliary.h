@@ -69,8 +69,9 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		desiredMotorVals->power[HarvesterMove] = 50;
 	}else if (joyButtonPressed(joyState, JOY2, Button_y)) {
 		desiredMotorVals->power[HarvesterMove] = -50;
+	} else {
+		desiredMotorVals->power[HarvesterMove] = 0;
 	}
-	writeDebugStream("%d \n", motorGetEncoder(HarvesterMove));
 }
 
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
