@@ -170,9 +170,56 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 	}
 }
 
-/* Returns real encoder value for a specific tMotor */
+/* Returns real encoder value for a specific tMotor.
+	 This function attempts a check for bad encoder
+	 values but will abort the check if the function takes
+	 longer than the specified time. */
 int motorGetEncoder(tMotor curMotor) {
-	return nMotorEncoder[curMotor];
+	long encFnStartTimeMs = nPgmTime;
+	int returnEnc = 0;
+	int pow = motor[curMotor];
+
+	//Check for sporadic encoder values as documented by Cougar Robotics #623
+	int checkEnc = nMotorEncoder[curMotor];
+	int curEnc = nMotorEncoder[curMotor];
+
+	if (pow > 0) { //we expect encoder value to be changing
+		while (true) {
+			//This can potentially take a long time, so abort after specified time
+			if ((nPgmTime - encFnStartTimeMs) > 5) {
+				writeDebugStream("Bad enc check taking too long, aborting!\n");
+				break;
+			}
+			while (curEnc == checkEnc) {
+				//This can also potentially take a long time, so abort after specified time
+				if ((nPgmTime - encFnStartTimeMs) > 5) {
+					writeDebugStream("Bad enc check taking too long, aborting!\n");
+					break;
+				}
+				curEnc = nMotorEncoder[curMotor];
+			}
+			if ((sgn(curEnc - checkEnc) == sgn(pow)) {
+				break;
+			} else {
+				checkEnc = curEnc;
+			}
+		}
+	} else { //we expect encoder value to be still
+		//monitor for short period
+		while ((nPgmTime - encFnStartTimeMs) < 5) {
+			curEnc = nMotorEncoder[curMotor];
+			if (curEnc != checkEnc) {
+				//assume latest value is good
+				checkEnc = curEnc;
+			}
+		}
+	}
+
+	long encFnTimeMs = nPgmTimeMs - encFnStartTimeMs;
+	if (encFnTimeMs > 5) {
+		writeDebugStream("motorGetEncoder function call took %d ms!", encFnTimeMs);
+	}
+	return curEnc;
 }
 
 /* Resets encoder, desired and real, for a specific tMotor */
@@ -228,14 +275,7 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	if (desiredEnc == ENC_OFF) {
 		return true;
 	} else if ((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) {
-		//Add check for sporadic encoder values as documented by Cougar Robotics #623
-		wait1Msec(10);
-		curEnc = motorGetEncoder(curMotor);
-		if (abs(curEnc) >= abs(desiredEnc)) {
-			return true;
-		} else {
-			return false;
-		}
+		return true;
 	} else {
 		return false;
 	}
