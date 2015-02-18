@@ -98,5 +98,7 @@ task main(){
 		explodingSound();
 
 	}
-	while(true) {}
+	while(true) {
+		wait1Msec(1);
+	}
 }

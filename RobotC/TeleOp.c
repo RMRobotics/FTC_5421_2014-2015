@@ -10,7 +10,7 @@
 #pragma config(Motor,  mtr_S3_C3_1,     HarvesterMove, tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S3_C3_2,     motor0,        tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder)
-#pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop, encoder)
 #pragma config(Servo,  srvo_S2_C1_1,    servo1,        tServoNone)
 #pragma config(Servo,  srvo_S2_C1_2,    servo2,        tServoNone)
 #pragma config(Servo,  srvo_S2_C1_3,    servo3,        tServoNone)
@@ -70,6 +70,7 @@ task main() {
 		callAuxiliaryMotors();
 		motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 		motorSetActualPowerToDesired(&desiredMotorVals);
+		motorUpdateState();
 		//joyAuxDebug(&desiredMotorVals, joyGetJoystickPointer());
 	}
 }

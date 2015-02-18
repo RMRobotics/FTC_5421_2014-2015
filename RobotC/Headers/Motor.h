@@ -25,19 +25,22 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
+/*Offset by which we define the encoder to have hit the target */
+#define ENC_HIT_ZONE 100
+
 /*Max length (in encoder units) over which we slow down the robot in order to hit the
   target precisely. */
-#define ENC_SLOW_LENGTH 200
+#define ENC_SLOW_LENGTH 2000
 /* Encoder step by which we decrement motor power by 1 */
 #define ENC_SLOW_STEP 20
 
 /*Encoder target value which we ignore (use this when you want to ignore encoder checks) */
-#define ENC_OFF -32767
+#define ENC_OFF -(MAX_ENC_TARGET + 1)
 
-/*Maximum encoder target possible. This is technically the maximum number an int
+/*Maximum encoder target possible. This is technically the maximum number an long
   variable can hold, but we'll give it some room so that we don't introduce a
   race condition between the overflow and the encoder check. */
-#define MAX_ENC_TARGET 30000
+#define MAX_ENC_TARGET 2000000000
 
 //Slew rate for scaling values (amount to add per loop). Percentage.
 #define MOTOR_SLEW_RATE 100
@@ -50,6 +53,17 @@ typedef struct MotorData {
 
 //Array for storing MotorData for each motor
 static MotorData motorDefinitions[MAX_NUM_MOTORS];
+
+//Struct for storing motor status for each motor
+//This is used to handle encoder overflows automatically so we can use values up to
+//MAX_LONG for encoder targets.
+typedef struct MotorState {
+	long encoder;
+	long lastRealEncoderPos; //stores last real encoder pos
+} MotorState;
+
+//Array for storing MotorState for eachmotor
+static MotorState motorStates[MAX_NUM_MOTORS];
 
 //Flag for seeing if motor definitions have been initialized
 bool motorDefsInitialized = false;
@@ -77,9 +91,12 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	motorList[6] = HarvesterMove;
 
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
+	//init motor state encoder data to 0
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {
 		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
 		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
+		motorStates[i].encoder = 0;
+		motorStates[i].lastRealEncoderPos = 0;
 	}
 
 	//set drive max motor powers
@@ -171,22 +188,20 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 	}
 }
 
-/* Returns real encoder value for a specific tMotor */
-int motorGetEncoder(tMotor curMotor) {
-	return nMotorEncoder[curMotor];
-}
-
-/* Resets encoder, desired and real, for a specific tMotor */
+/* Resets desired, real, and the MotorState encoder, for a specific tMotor */
 void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	if (motorDefsInitialized) {
 		desiredEncVals->encoder[curMotor] = ENC_OFF;
-		nMotorEncoder[curMotor] = 0;
+		motorStates[curMotor].encoder = 0;
+		nMotorEncoder[Lift] = 0;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
 	}
 }
 
-/* Resets all encoders, desired and real */
+/* Resets all encoders, desired and real.
+	 Use this function when you want reset the encoders to
+	 a fresh state, NOT to turn off targeting. */
 void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 	if (motorDefsInitialized) {
 		for (int i=0;i<NUM_MOTORS;i++) {
@@ -197,20 +212,19 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 	}
 }
 
-/* Sets encoder target for a specific tMotor and resets
-	 the real encoder. Checks to make sure the target is
-	 below the maximum target, and that the target is not
-	 ENC_OFF.
-	 If it fails the check, then the encoder is still reset
-	 but it refuses to set the
-	 new target. */
+/* Returns MotorState encoder value */
+long motorGetEncoder(tMotor curMotor) {
+	return motorStates[curMotor].encoder;
+}
+
+/* Sets encoder target for a specific tMotor. Checks
+	 to make sure the target is below the maximum target,
+	 and that the target is not ENC_OFF.
+	 Does NOT reset the encoder. */
 void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
 	if (motorDefsInitialized) {
-		motorResetEncoder(desiredEncVals, curMotor);
 		if (abs(target) > MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
-		} else if (target == ENC_OFF) {
-			writeDebugStream("Encoder target value cannot be (%d)!\n", ENC_OFF);
 		} else {
 			desiredEncVals->encoder[curMotor] = target;
 		}
@@ -221,24 +235,26 @@ void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target
 
 /*Checks if a specific tMotor has hit its encoder targets.
   - If there is no target set, returns true.
-  - If the signs of the desired encoder value and the actual
-  	encoder value do not agree, then this returns false.*/
+  - "Hit" targets is defined as being anywhere in ENC_HIT_ZONE
+    distance from the target. */
 bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
-	int desiredEnc = desiredEncVals->encoder[curMotor];
-	int curEnc = motorGetEncoder(curMotor);
+	long desiredEnc = desiredEncVals->encoder[curMotor];
 	if (desiredEnc == ENC_OFF) {
 		return true;
-	} else if ((sgn(curEnc) == sgn(desiredEnc)) && (abs(curEnc) >= abs(desiredEnc))) {
-		//Add check for sporadic encoder values as documented by Cougar Robotics #623
-		wait1Msec(10);
-		curEnc = motorGetEncoder(curMotor);
-		if (abs(curEnc) >= abs(desiredEnc)) {
+	} else {
+		long curEnc = motorGetEncoder(curMotor);
+
+		if ((desiredEnc < (curEnc + ENC_HIT_ZONE)) && (desiredEnc > (curEnc - ENC_HIT_ZONE))) {
 			return true;
 		} else {
+			writeDebugStream("Desired enc: %d\n", desiredEnc);
+			writeDebugStream("Current enc: %d\n", curEnc);
+			writeDebugStream("Motor: %d\n", motor[curMotor]);
+			if ((sgn(motor[curMotor]) != sgn(desiredEnc - curEnc)) && motor[curMotor] != 0) {
+				writeDebugStream("Motor not running in same direction as encoder target!\n");
+			}
 			return false;
 		}
-	} else {
-		return false;
 	}
 }
 
@@ -271,27 +287,90 @@ DesiredEncVals *desiredEncVals) {
 	if (motorDefsInitialized) {
 		for (int i=0; i<NUM_MOTORS; i++) {
 			tMotor curMotor = motorList[i];
-			int desiredEnc = desiredEncVals->encoder[curMotor];
-			int curEnc = motorGetEncoder(curMotor);
-			if (desiredEnc != ENC_OFF && (desiredMotorVals->power[curMotor] != 0)) {
-				if ((sgn(desiredEnc) == sgn(curEnc)) || curEnc == 0) {
-					if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
-						desiredMotorVals->power[curMotor] = 0;
-					} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
-						//Calculate number of steps left to decrement motor
-						long steps = ((long) desiredEnc - curEnc) / ENC_SLOW_STEP;
-						//Add one to make sure motor never shuts off and set target
-						desiredMotorVals->power[curMotor] = (int) steps + ((steps > 0)?1:-1);
+			long desiredEnc = desiredEncVals->encoder[curMotor];
 
-					}
-				} else {
-					writeDebugStream("Motor (%d) is not going in the same direction as the encoder target (%d)!\n", curMotor, desiredEnc);
-					writeDebugStream("Current encoder value: %d\n", curEnc);
+			if (desiredEnc != ENC_OFF && (desiredMotorVals->power[curMotor] != 0)) {
+				long curEnc = motorGetEncoder(curMotor);
+
+				if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
+					desiredMotorVals->power[curMotor] = 0;
+				} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
+					//Calculate number of steps left to decrement motor
+					long steps = (desiredEnc - curEnc) / ENC_SLOW_STEP;
+					//Add one to make sure motor never shuts off and set target
+					desiredMotorVals->power[curMotor] = (int) steps + ((steps > 0)?1:-1);
 				}
 			}
 		}
 	} else {
 		writeDebugStream("Motors not initialized!\n");
+	}
+}
+
+/*Update motor states, including encoder data.
+	This function attempts a check for bad encoder
+	values but will abort the check if the function takes
+	longer than the specified time. */
+void motorUpdateState() {
+	for (int i=0; i<NUM_MOTORS; i++) {
+		tMotor curMotor = motorList[i];
+		/*
+		//used to abort the check if it takes too long
+		long encFnStartTimeMs = nPgmTime;
+		int pow = motor[motorList[i]];
+
+		//Check for sporadic encoder values as documented by Cougar Robotics #623
+		int checkEnc = nMotorEncoder[motorList[i]];
+		int curEnc = nMotorEncoder[motorList[i]];
+
+		if (abs(pow) > 0) { //we expect encoder value to be changing
+			while (true) {
+				//This can potentially take a long time, so abort after specified time
+				if ((nPgmTime - encFnStartTimeMs) > 5) {
+					writeDebugStream("Bad enc check taking too long, aborting!\n");
+					break;
+				}
+				while (curEnc == checkEnc) {
+					//This can also potentially take a long time, so abort after specified time
+					if ((nPgmTime - encFnStartTimeMs) > 5) {
+						writeDebugStream("Bad enc check taking too long, aborting!\n");
+						break;
+					}
+					curEnc = nMotorEncoder[motorList[i]];
+				}
+				if (sgn(curEnc - checkEnc) == sgn(pow)) { //encoder is good
+					break;
+				} else { //repeat check with new value
+					checkEnc = curEnc;
+				}
+			}
+		} else { //we expect encoder value to be still
+			//monitor for short period
+			while ((nPgmTime - encFnStartTimeMs) < 5) {
+				curEnc = nMotorEncoder[motorList[i]];
+				if (curEnc != checkEnc) { //failed check (should be still)
+					//assume latest value is better
+					checkEnc = curEnc;
+				}
+			}
+		}
+
+		//Write to debug stream if the encoder check took a long time
+		long encFnTimeMs = nPgmTime - encFnStartTimeMs;
+		if (encFnTimeMs > 1) {
+			writeDebugStream("Bad encoder check took %d ms!\n", encFnTimeMs);
+		}
+		*/
+
+		int curEnc = nMotorEncoder[curMotor];
+		motorStates[curMotor].encoder += (curEnc - motorStates[curMotor].lastRealEncoderPos);
+		motorStates[curMotor].lastRealEncoderPos = curEnc;
+
+		if (abs(curEnc) > 30000) { //reset
+			motorStates[curMotor].lastRealEncoderPos = 0;
+			nMotorEncoder[curMotor] = 0;
+		}
+
 	}
 }
 

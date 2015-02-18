@@ -26,10 +26,12 @@ typedef enum MecMotor {
 	MecMotor_BR = Raphael_BR,
 } MecMotor;
 
+
 //Struct definition for desired encoder limit
 typedef struct DesiredEncVals {
-	int encoder[MAX_NUM_MOTORS];
+	long encoder[MAX_NUM_MOTORS];
 } DesiredEncVals;
+
 
 //Struct definition for desired motor powers
 typedef struct DesiredMotorVals {
