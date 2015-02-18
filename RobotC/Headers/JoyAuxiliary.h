@@ -11,54 +11,40 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 }
 
 
-#define LIFT_MAX 90000
-#define HIGH_GOAL LIFT_MAX
-#define NINETY_GOAL 30000
-#define SIXTY_GOAL 15000
-#define THIRTY_GOAL 3000
+#define LIFT_UP_POW -100
+#define ENC_SIGN sgn(LIFT_UP_POW)
+
+#define LIFT_MAX ENC_SIGN * 9800 //high goal
+#define NINETY_GOAL ENC_SIGN * 7400
+#define SIXTY_GOAL ENC_SIGN * 4600
+#define THIRTY_GOAL ENC_SIGN * 2000
 #define LIFT_MIN 0
 
-#define LIFT_UP_POW 100
-#define ENC_SIGN sgn(LIFT_UP_POW)
-#define ENCTARGET_OFF 0
-long encTarget = ENCTARGET_OFF;
-int encOverflowCount = 0;
-
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
-	long currentEnc = 0;
-	//Check for overflow, update currentEnc
-	if (abs(motorGetEncoder(Lift)) > MAX_ENC_TARGET) {
-		int remainder = motorGetEncoder(Lift) - MAX_ENC_TARGET;
-		encOverflowCount = encOverflowCount + sgn(motorGetEncoder(Lift));
-		motorResetEncoder(desiredEncVals, Lift);
-		currentEnc = remainder + (encOverflowCount * MAX_ENC_TARGET);
-	} else {
-		currentEnc = motorGetEncoder(Lift) + (encOverflowCount * MAX_ENC_TARGET);
-	}
-
-	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
-		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
-		encTarget = LIFT_MIN;
-	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
+	long encTarget = ENC_OFF;
+	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //raise
 		desiredMotorVals->power[Lift] = LIFT_UP_POW;
 		encTarget = LIFT_MAX;
+	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //lower
+		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+		encTarget = LIFT_MIN;
 	} else {
 		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
-			if (motorGetEncoder(Lift) > NINETY_GOAL) {
+			if (abs(motorGetEncoder(Lift)) > abs(NINETY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
 			} else {
 				desiredMotorVals->power[Lift] = LIFT_UP_POW;
 			}
 			encTarget = NINETY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_E || joyGetTophat(joyState, JOY2) == TOPHAT_W) { //med goal
-			if (motorGetEncoder(Lift) > SIXTY_GOAL) {
+			if (abs(motorGetEncoder(Lift)) > abs(SIXTY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
 			} else {
 				desiredMotorVals->power[Lift] = LIFT_UP_POW;
 			}
 			encTarget = SIXTY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_S) { //low goal
-			if (motorGetEncoder(Lift) > THIRTY_GOAL) {
+			if (abs(motorGetEncoder(Lift)) > abs(THIRTY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
 			} else {
 				desiredMotorVals->power[Lift] = LIFT_UP_POW;
@@ -66,21 +52,10 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 			encTarget = THIRTY_GOAL;
 		} else {
 			desiredMotorVals->power[Lift] = 0;
-			encTarget = ENCTARGET_OFF;
+			encTarget = ENC_OFF;
 		}
 	}
-	if (encTarget != ENCTARGET_OFF) {
-		//If near goal, set target else don't target
-		if ((abs(currentEnc) > (encTarget - MAX_ENC_TARGET)) && (abs(currentEnc) <= encTarget)) {
-			motorResetEncoder(desiredEncVals, Lift);
-			motorSetEncoder(desiredEncVals, Lift, ENC_SIGN * (encTarget % MAX_ENC_TARGET));
-		} else if ((abs(currentEnc) > encTarget) && (abs(currentEnc) < (encTarget + MAX_ENC_TARGET))) {
-			motorResetEncoder(desiredEncVals, Lift);
-			motorSetEncoder(desiredEncVals, Lift, -ENC_SIGN * (abs(currentEnc) - encTarget));
-		} else {
-			desiredEncVals->encoder[Lift] = ENC_OFF;
-		}
-	}
+	motorSetEncoder(desiredEncVals, Lift, encTarget);
 }
 
 //#define MAX_HARVEST_TIME_MS_POS 2000
@@ -97,12 +72,12 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		desiredMotorVals->power[Harvester] = 0;
 	}
 
-	if (joyButtonPressed(joyState, JOY2, Button_X)) {
+	if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
 		//if (timePosMs < MAX_HARVEST_TIME_MS_POS) {
 			desiredMotorVals->power[HarvesterMove] = 50;
 			//timePosMs += nPgmTime - lastUpdateTimeMs;
 		//}
-	}else if (joyButtonPressed(joyState, JOY2, Button_y)) {
+	}else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
 		//if (timeposMs > MIN_HARVEST_TIME_MS_POS) {
 			desiredMotorVals->power[HarvesterMove] = -50;
 			//timePosMs -= nPgmTime - lastUpdateTimeMs;
