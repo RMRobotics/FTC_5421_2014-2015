@@ -28,6 +28,9 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 /*Offset by which we define the encoder to have hit the target */
 #define ENC_HIT_ZONE 100
 
+/*Threshold difference from previous encoder at which the encoder value is considered bad */
+#define ENC_ERROR_THRESHOLD 3000
+
 /*Max length (in encoder units) over which we slow down the robot in order to hit the
   target precisely. */
 #define ENC_SLOW_LENGTH 2000
@@ -314,63 +317,25 @@ DesiredEncVals *desiredEncVals) {
 void motorUpdateState() {
 	for (int i=0; i<NUM_MOTORS; i++) {
 		tMotor curMotor = motorList[i];
-		/*
-		//used to abort the check if it takes too long
-		long encFnStartTimeMs = nPgmTime;
-		int pow = motor[motorList[i]];
 
 		//Check for sporadic encoder values as documented by Cougar Robotics #623
-		int checkEnc = nMotorEncoder[motorList[i]];
-		int curEnc = nMotorEncoder[motorList[i]];
+		int checkEnc = nMotorEncoder[curMotor];
+		int knownGoodEnc = motorStates[curMotor].lastRealEncoderPos;
+		int curEnc;
 
-		if (abs(pow) > 0) { //we expect encoder value to be changing
-			while (true) {
-				//This can potentially take a long time, so abort after specified time
-				if ((nPgmTime - encFnStartTimeMs) > 5) {
-					writeDebugStream("Bad enc check taking too long, aborting!\n");
-					break;
-				}
-				while (curEnc == checkEnc) {
-					//This can also potentially take a long time, so abort after specified time
-					if ((nPgmTime - encFnStartTimeMs) > 5) {
-						writeDebugStream("Bad enc check taking too long, aborting!\n");
-						break;
-					}
-					curEnc = nMotorEncoder[motorList[i]];
-				}
-				if (sgn(curEnc - checkEnc) == sgn(pow)) { //encoder is good
-					break;
-				} else { //repeat check with new value
-					checkEnc = curEnc;
-				}
-			}
-		} else { //we expect encoder value to be still
-			//monitor for short period
-			while ((nPgmTime - encFnStartTimeMs) < 5) {
-				curEnc = nMotorEncoder[motorList[i]];
-				if (curEnc != checkEnc) { //failed check (should be still)
-					//assume latest value is better
-					checkEnc = curEnc;
-				}
+		if (abs(checkEnc - knownGoodEnc) > ENC_ERROR_THRESHOLD) {
+			writeDebugStream("Bad encoder val! Compare: %d with (bad) %d\n", knownGoodEnc, checkEnc);
+			//do nothing because enc val is bad
+		} else {
+			curEnc = checkEnc; //enc val is good
+			motorStates[curMotor].encoder += (curEnc - motorStates[curMotor].lastRealEncoderPos);
+			motorStates[curMotor].lastRealEncoderPos = curEnc;
+
+			if (abs(curEnc) > 30000) { //reset real encoder when it overflows
+				motorStates[curMotor].lastRealEncoderPos = 0;
+				nMotorEncoder[curMotor] = 0;
 			}
 		}
-
-		//Write to debug stream if the encoder check took a long time
-		long encFnTimeMs = nPgmTime - encFnStartTimeMs;
-		if (encFnTimeMs > 1) {
-			writeDebugStream("Bad encoder check took %d ms!\n", encFnTimeMs);
-		}
-		*/
-
-		int curEnc = nMotorEncoder[curMotor];
-		motorStates[curMotor].encoder += (curEnc - motorStates[curMotor].lastRealEncoderPos);
-		motorStates[curMotor].lastRealEncoderPos = curEnc;
-
-		if (abs(curEnc) > 30000) { //reset
-			motorStates[curMotor].lastRealEncoderPos = 0;
-			nMotorEncoder[curMotor] = 0;
-		}
-
 	}
 }
 
