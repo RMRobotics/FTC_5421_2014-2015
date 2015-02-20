@@ -93,15 +93,15 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[Bucket].minValue = 127; //down
-	servoDefinitions[Bucket].maxValue = 223; //up
-	servoDefinitions[TubeGrabber].minValue = 125; //up
-	servoDefinitions[TubeGrabber].maxValue = 250; //down
+	servoDefinitions[Bucket].minValue = 140; //down
+	servoDefinitions[Bucket].maxValue = 235; //up
+	servoDefinitions[TubeGrabber].minValue = 125; //down
+	servoDefinitions[TubeGrabber].maxValue = 250; //up
 
 	servoDefsInitialized = true;
 
 	servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
-	servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
+	servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 }
 
 /*Returns an int value of the last target set for the servo.
