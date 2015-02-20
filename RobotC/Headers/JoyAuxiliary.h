@@ -55,6 +55,12 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 			encTarget = ENC_OFF;
 		}
 	}
+
+	if (joyButtonPressed(joyState, JOY2, BUTTON_BACK)) { //reset lift min, turn off targeting
+		motorResetEncoder(desiredEncVals, Lift);
+		encTarget = ENC_OFF;
+	}
+
 	motorSetEncoder(desiredEncVals, Lift, encTarget);
 }
 
