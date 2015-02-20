@@ -60,9 +60,12 @@ static MotorData motorDefinitions[MAX_NUM_MOTORS];
 //Struct for storing motor status for each motor
 //This is used to handle encoder overflows automatically so we can use values up to
 //MAX_LONG for encoder targets.
+//This also handles position in time.
 typedef struct MotorState {
 	long encoder;
 	long lastRealEncoderPos; //stores last real encoder pos
+	long timePosMs; //stores position in "time" (50 means net movement forward for 50 ms)
+	long lastUpdateTimeMs; //last time this motorstate as updated
 } MotorState;
 
 //Array for storing MotorState for eachmotor
@@ -100,6 +103,8 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
 		motorStates[i].encoder = 0;
 		motorStates[i].lastRealEncoderPos = 0;
+		motorStates[i].timePosMs = 0;
+		motorStates[i].lastUpdateTimeMs = 0;
 	}
 
 	//set drive max motor powers
@@ -215,6 +220,16 @@ void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
 	}
 }
 
+/* Returns MotorState time value */
+long motorGetTimePosMs(tMotor curMotor) {
+	return motorStates[curMotor].timePosMs;
+}
+
+/* Resets MotorState time value */
+void motorResetTimePosMs(tMotor curMotor) {
+	motorStates[curMotor].timePosMs = 0;
+}
+
 /* Returns MotorState encoder value */
 long motorGetEncoder(tMotor curMotor) {
 	return motorStates[curMotor].encoder;
@@ -250,9 +265,6 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 		if ((desiredEnc < (curEnc + ENC_HIT_ZONE)) && (desiredEnc > (curEnc - ENC_HIT_ZONE))) {
 			return true;
 		} else {
-			writeDebugStream("Desired enc: %d\n", desiredEnc);
-			writeDebugStream("Current enc: %d\n", curEnc);
-			writeDebugStream("Motor: %d\n", motor[curMotor]);
 			if ((sgn(motor[curMotor]) != sgn(desiredEnc - curEnc)) && motor[curMotor] != 0) {
 				writeDebugStream("Motor not running in same direction as encoder target!\n");
 			}
@@ -316,14 +328,25 @@ DesiredEncVals *desiredEncVals) {
 	}
 }
 
-/*Update motor states, including encoder data.
+/*Update motor states.
 	This function attempts a check for bad encoder
 	values but will abort the check if the function takes
 	longer than the specified time. */
 void motorUpdateState() {
 	for (int i=0; i<NUM_MOTORS; i++) {
 		tMotor curMotor = motorList[i];
+		//Update motor time position
+		if (motor[curMotor] > 0) {
+			long deltaTime = (nPgmTime - motorStates[curMotor].lastUpdateTimeMs);
+			motorStates[curMotor].timePosMs = motorStates[curMotor].timePosMs + deltaTime;
+		} else if (motor[curMotor] < 0) {
+			long deltaTime = (nPgmTime - motorStates[curMotor].lastUpdateTimeMs);
+			motorStates[curMotor].timePosMs = motorStates[curMotor].timePosMs - deltaTime;
+		}
 
+		motorStates[curMotor].lastUpdateTimeMs = nPgmTime;
+
+		//Update motor encoders
 		//Check for sporadic encoder values as documented by Cougar Robotics #623
 		int checkEnc = nMotorEncoder[curMotor];
 		int knownGoodEnc = motorStates[curMotor].lastRealEncoderPos;
