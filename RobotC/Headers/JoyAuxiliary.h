@@ -15,7 +15,7 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define ENC_SIGN sgn(LIFT_UP_POW)
 
 #define LIFT_MAX ENC_SIGN * 9800 //high goal
-#define NINETY_GOAL ENC_SIGN * 7400
+#define NINETY_GOAL ENC_SIGN * 7800
 #define SIXTY_GOAL ENC_SIGN * 4600
 #define THIRTY_GOAL ENC_SIGN * 2000
 #define LIFT_MIN 0
@@ -58,10 +58,8 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 	motorSetEncoder(desiredEncVals, Lift, encTarget);
 }
 
-//#define MAX_HARVEST_TIME_MS_POS 2000
-//#define MIN_HARVEST_TIME_MS_POS -2000
-//int timePosMs = 0;
-//long lastUpdateTimeMs = 0;
+#define MAX_HARVESTMOVE_TIME_POS 800
+#define MIN_HARVESTMOVE_TIME_POS 0
 
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
@@ -72,20 +70,25 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 		desiredMotorVals->power[Harvester] = 0;
 	}
 
-	if (joyButtonPressed(joyState, JOY2, BUTTON_X)) {
-		//if (timePosMs < MAX_HARVEST_TIME_MS_POS) {
+	if (joyButtonPressed(joyState, JOY2, BUTTON_START)) {
+		motorResetTimePosMs(HarvesterMove);
+	}
+
+	if (joyButtonPressed(joyState, JOY2, BUTTON_X)) { //down
+		if ((motorGetTimePosMs(HarvesterMove) < MAX_HARVESTMOVE_TIME_POS) || joyButtonPressed(joyState, JOY2, BUTTON_START)) {
 			desiredMotorVals->power[HarvesterMove] = 50;
-			//timePosMs += nPgmTime - lastUpdateTimeMs;
-		//}
+		} else {
+			desiredMotorVals->power[HarvesterMove] = 0;
+		}
 	}else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
-		//if (timeposMs > MIN_HARVEST_TIME_MS_POS) {
+		if ((motorGetTimePosMs(HarvesterMove) >= MIN_HARVESTMOVE_TIME_POS) || joyButtonPressed(joyState, JOY2, BUTTON_START)) {
 			desiredMotorVals->power[HarvesterMove] = -50;
-			//timePosMs -= nPgmTime - lastUpdateTimeMs;
-		//}
+		} else {
+			desiredMotorVals->power[HarvesterMove] = 0;
+		}
 	} else {
 		desiredMotorVals->power[HarvesterMove] = 0;
 	}
-	//lastUpdateTimeMs = nPgmTime;
 }
 
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
@@ -97,10 +100,10 @@ void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 }
 
 void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
-	if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
+	if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
 		writeDebugStream("moving servo up!\n");
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
-	} else if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
+	} else if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
 		writeDebugStream("moving servo down\n");
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 	}
