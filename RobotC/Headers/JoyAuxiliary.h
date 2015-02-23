@@ -14,7 +14,7 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define LIFT_UP_POW -100
 #define ENC_SIGN sgn(LIFT_UP_POW)
 
-#define LIFT_MAX ENC_SIGN * 9800 //high goal
+#define LIFT_MAX ENC_SIGN * 10000 //high goal
 #define NINETY_GOAL ENC_SIGN * 7800
 #define SIXTY_GOAL ENC_SIGN * 4600
 #define THIRTY_GOAL ENC_SIGN * 2000
@@ -98,9 +98,9 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 }
 
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
-	if (joyButtonPressed(joyState, JOY2, BUTTON_LT)){ //open
-		servoSetNonCont(Bucket, 235); //max value is for init only
-	}else if(joyButtonPressed(joyState, JOY2, BUTTON_RT)){
+	if (joyButtonPressed(joyState, JOY2, BUTTON_RT)){ //open
+		servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue); //max value is for init only
+	}else if(joyButtonPressed(joyState, JOY2, BUTTON_LT)){
 		servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	}
 }
@@ -112,6 +112,9 @@ void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
 		writeDebugStream("moving servo down\n");
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
+	} else if (joyButtonPressed(joyState, JOY1, BUTTON_X)) {
+		writeDebugStream("moving servo to middle\n");
+		servoSetNonCont(TubeGrabber, (servoDefinitions[TubeGrabber].maxValue*(.75)));
 	}
 }
 
