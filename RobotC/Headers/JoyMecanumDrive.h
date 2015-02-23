@@ -78,7 +78,7 @@ void joymecdriveSetDesiredPower(DesiredMotorVals *desiredMotorVals, TJoystick *j
 				rotation = ((float) -joy1x2) / 127.0;
 				speed = constrain(speed,-1.0,1.0);
 				//Scale to fit exponential curve so that it's easier to move at low speeds
-				speed = sgn(speed) * pow(abs(speed), 2);
+				speed = sgn(speed) * pow(abs(speed), 4);
 				rotation = constrain(rotation,-1.0,1.0);
 				if (abs(rotation) > 0.0) {
 					driveSetMecMotorPolarDegrees(desiredMotorVals, angle, 0.0, rotation);
