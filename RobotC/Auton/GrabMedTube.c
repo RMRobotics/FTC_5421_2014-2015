@@ -44,18 +44,16 @@ DesiredEncVals desiredEncVals;
 
 //ALl states for Grab Medium Tube Autonomous
 typedef enum GrabMedTubeStates {
-	STATE_START,
-	STATE_DRIVETOWARDCENTERPIECE,
-	STATE_DRIVETOWARDTUBE,
-	STATE_ROTATETOWARDWALL,
-	STATE_DRIVETOWARDPZONE,
-	STATE_ALIGNANDLOCKTUBE,
-	STATE_OFFRAMP,
-	STATE_LIFT,
-	STATE_DROPBUCKET,
-	STATE_GRABTUBE,
-	STATE_LOCKTUBEIN,
-	STATE_DROP,
+	STATE_START, //
+	STATE_OFFRAMP, //
+	STATE_DRIVETOWARDTUBE, //
+	STATE_GRABTUBE, //
+	STATE_DRIVETOWARDRAMP, //
+	STATE_DRIVETOWARDCENTERPIECE, //
+	STATE_DRIVETOWARDPZONE, //
+	STATE_RAISELIFT,
+	STATE_DROPBUCKET, //
+	STATE_LOWERLIFT,
 	STATE_END,
 } GrabMedTubeStates;
 
@@ -109,7 +107,7 @@ task main()
 					break;
 				case STATE_OFFRAMP:
 					writeDebugStream("State: Offramp\n");
-					driveSetEncoderN(&desiredEncVals, 8.029685 * ENC_PER_REV);
+					driveSetEncoderN(&desiredEncVals, 2 * ENC_PER_REV);
 					driveSetMecMotorN(&desiredMotorVals, 0.5);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -117,7 +115,7 @@ task main()
 
 					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
-						currentState = STATE_END;//STATE_DRIVETOWARDCENTERPIECE;
+						currentState = STATE_END;//STATE_DRIVETOWARDTUBE;
 					}
 					break;
 			/*case STATE_DRIVETOWARDCENTERPIECE:
@@ -140,55 +138,6 @@ task main()
 						currentState = STATE_DRIVETOWARDTUBE;
 					}
 					break;
-				case STATE_DRIVETOWARDTUBE:
-					writeDebugStream("State: Drive Toward Tube\n");
-					driveSetEncoderN(&desiredEncVals, .2 * ENC_PER_REV);
-					driveSetMecMotorN(&desiredMotorVals, 0.3);
-
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-					motorSetActualPowerToDesired(&desiredMotorVals);
-
-					if ((nPgmTime - liftStartTimeMs) > 3500) {
-							desiredMotorVals.power[Lift] = 0;
-					}
-
-					if (driveMecHasHitEncoderTarget(&desiredEncVals) &&
-							motorHasHitEncoderTarget(&desiredEncVals, Lift)) {
-						restMecMotors();
-						currentState = STATE_GRABTUBE;
-					}
-					break;
-				case STATE_GRABTUBE:
-					writeDebugStream("State: Grab Tube\n");
-					servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
-
-					if ((nPgmTime - liftStartTimeMs) > 3500) {
-							desiredMotorVals.power[Lift] = 0;
-					}
-
-					restMecMotors(); //wait for servo to go down
-					if (desiredMotorVals.power[Lift] == 0) {
-						currentState = STATE_DROP;
-					}
-					break;
-				case STATE_DROP:
-					writeDebugStream("State: Drop\n");
-				//time1[T3] = 0;
-					servoSetNonCont(Bucket_Drop, servoDefinitions[Bucket_Drop].maxValue);
-					currentState = STATE_ROTATETOWARDCENTERPIECE;
-					break;
-				case STATE_ROTATETOWARDCENTERPIECE:
-					writeDebugStream("State: Rotate Toward Centerpiece\n");
-					driveSetEncoderRotate(&desiredEncVals, 5);
-
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-					motorSetActualPowerToDesired(&desiredMotorVals);
-
-					if(motorAllHitEncoderTarget(&desiredEncVals)) {
-						resetAndRest();
-						currentState = STATE_DRIVETOWARDPZONE;
-					}
-					break;
 				case STATE_DRIVETOWARDPZONE:
 					writeDebugStream("State: Drive Toward Zone\n");
 					driveSetEncoderS(&desiredEncVals, 6 * ENC_PER_REV);
@@ -199,6 +148,38 @@ task main()
 					if(motorAllHitEncoderTarget(&desiredEncVals)){
 						currentState = STATE_END;
 					}
+					break;
+				case STATE_DRIVETOWARDTUBE:
+					writeDebugStream("State: Drive Toward TUBE\n");
+					driveSetEncoderS(&desiredEncVals, 6 * ENC_PER_REV);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						currentState = STATE_END;
+					}
+					break;
+				case STATE_DRIVETOWARDRAMP:
+					writeDebugStream("State: Drive Toward TUBE\n");
+					driveSetEncoderS(&desiredEncVals, 6 * ENC_PER_REV);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+
+					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						currentState = STATE_END;
+					}
+					break;
+				case STATE_DRIVEGRABTUBE:
+					writeDebugStream("State: GRAB TUBE\n");
+					servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
+					currentState = STATE_END;
+					break;
+				case STATE_DROPBUCKET:
+					writeDebugStream("State: Brop Bucket\n");
+					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
+					currentState = STATE_END;
 					break;
 	*/			case STATE_END:
 					end = true;
