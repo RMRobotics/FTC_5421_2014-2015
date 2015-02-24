@@ -25,17 +25,8 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
   0 for minimum reference point. */
 #define MAX_REFERENCE_POWER 100
 
-/*Offset by which we define the encoder to have hit the target */
-#define ENC_HIT_ZONE 100
-
 /*Threshold difference from previous encoder at which the encoder value is considered bad */
 #define ENC_ERROR_THRESHOLD 3000
-
-/*Max length (in encoder units) over which we slow down the robot in order to hit the
-  target precisely. */
-#define ENC_SLOW_LENGTH 2000
-/* Encoder step by which we decrement motor power by 1 */
-#define ENC_SLOW_STEP 20
 
 /*Encoder target value which we ignore (use this when you want to ignore encoder checks) */
 #define ENC_OFF -(MAX_ENC_TARGET + 1)
@@ -43,15 +34,18 @@ enum, so assume the worst and make the size of the array kNumbOfTotalMotors.
 /*Maximum encoder target possible. This is technically the maximum number an long
   variable can hold, but we'll give it some room so that we don't introduce a
   race condition between the overflow and the encoder check. */
-#define MAX_ENC_TARGET 2000000000
+long MAX_ENC_TARGET = 2000000000; //must be a long b/c constants are treated as ints
 
 //Slew rate for scaling values (amount to add per loop). Percentage.
 #define MOTOR_SLEW_RATE 100
 
-//Struct for storing motor power limits for each motor
+//Struct for storing motor data for each motor
 typedef struct MotorData {
 	int maxPower;
 	int minPower;
+	long encSlowLength; //Max length (in encoder units) over which we slow down the robot in order to hit the target precisely.
+	long encSlowStep; //Encoder step by which we decrement motor power by 1
+	long encHitZone; //Offset by which we define the encoder to have hit the target
 } MotorData;
 
 //Array for storing MotorData for each motor
@@ -101,6 +95,9 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {
 		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
 		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
+		motorDefinitions[i].encSlowLength = 2000;
+		motorDefinitions[i].encSlowStep = 20;
+		motorDefinitions[i].encHitZone = 50;
 		motorStates[i].encoder = 0;
 		motorStates[i].lastRealEncoderPos = 0;
 		motorStates[i].timePosMs = 0;
@@ -118,6 +115,13 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	motorDefinitions[MecMotor_BL].minPower = MIN_NEVEREST_POWER;
 	motorDefinitions[MecMotor_FR].minPower = MIN_NEVEREST_POWER;
 	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
+
+	//set lift data
+	motorDefinitions[Lift].minPower = 30;
+	motorDefinitions[Lift].maxPower = 90;
+	motorDefinitions[Lift].encSlowLength = 2000;
+	motorDefinitions[Lift].encSlowStep = 10;
+	motorDefinitions[Lift].encHitZone = 50;
 
 	//check to make sure motors listed fills up motorList length
 	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
@@ -261,8 +265,8 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 		return true;
 	} else {
 		long curEnc = motorGetEncoder(curMotor);
-
-		if ((desiredEnc < (curEnc + ENC_HIT_ZONE)) && (desiredEnc > (curEnc - ENC_HIT_ZONE))) {
+		long encHitZone = motorDefinitions[curMotor].encHitZone;
+		if ((desiredEnc < (curEnc + encHitZone)) && (desiredEnc > (curEnc - encHitZone))) {
 			return true;
 		} else {
 			if ((sgn(motor[curMotor]) != sgn(desiredEnc - curEnc)) && motor[curMotor] != 0) {
@@ -309,9 +313,9 @@ DesiredEncVals *desiredEncVals) {
 
 				if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 					desiredMotorVals->power[curMotor] = 0;
-				} else if (abs(desiredEnc - curEnc) < ENC_SLOW_LENGTH) {
+				} else if (abs(desiredEnc - curEnc) < motorDefinitions[curMotor].encSlowLength) {
 					//Calculate number of steps left to decrement motor
-					long steps = (desiredEnc - curEnc) / ENC_SLOW_STEP;
+					long steps = (desiredEnc - curEnc) / motorDefinitions[curMotor].encSlowStep;
 					//Apply only if below current desired speed
 					if (abs(steps) < abs(desiredMotorVals->power[curMotor])) {
 						desiredMotorVals->power[curMotor] = steps;
