@@ -22,10 +22,10 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	long encTarget = ENC_OFF;
-	if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //raise
+	if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
 		desiredMotorVals->power[Lift] = LIFT_UP_POW;
 		encTarget = LIFT_MAX;
-	} else if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //lower
+	} else if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
 		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
 		encTarget = LIFT_MIN;
 	} else {
@@ -99,7 +99,7 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 
 void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 	if (joyButtonPressed(joyState, JOY2, BUTTON_RT)){ //open
-		servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue); //max value is for init only
+		servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
 	}else if(joyButtonPressed(joyState, JOY2, BUTTON_LT)){
 		servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 	}
