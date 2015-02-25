@@ -14,21 +14,26 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define LIFT_UP_POW -100
 #define ENC_SIGN sgn(LIFT_UP_POW)
 
-#define LIFT_MAX ENC_SIGN * 10000 //high goal
-#define NINETY_GOAL ENC_SIGN * 7800
-#define SIXTY_GOAL ENC_SIGN * 4600
-#define THIRTY_GOAL ENC_SIGN * 2000
-#define LIFT_MIN 0
+#define LIFT_MAX ENC_SIGN * (LIFT_MIN + 10000) //high goal
+#define NINETY_GOAL ENC_SIGN * (LIFT_MIN + 7800)
+#define SIXTY_GOAL ENC_SIGN * (LIFT_MIN + 4600)
+#define THIRTY_GOAL ENC_SIGN * (LIFT_MIN + 2000)
+long LIFT_MIN = 0;
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	long encTarget = ENC_OFF;
 	if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
 		desiredMotorVals->power[Lift] = LIFT_UP_POW;
+		desiredEncVals->encoderCapEnabled[Lift] = true;
+		desiredEncVals->encoderCapIsMax[Lift] = false; //SIGN DEPENDENT
 		encTarget = LIFT_MAX;
 	} else if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
-		desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+		desiredMotorVals->power[Lift] = (-1 * 0.01 * LIFT_UP_POW);
+		desiredEncVals->encoderCapEnabled[Lift] = true;
+		desiredEncVals->encoderCapIsMax[Lift] = true; //SIGN DEPENDENT
 		encTarget = LIFT_MIN;
 	} else {
+		desiredEncVals->encoderCapEnabled[Lift] = false;
 		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
 			if (abs(motorGetEncoder(Lift)) > abs(NINETY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
@@ -57,10 +62,10 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 	}
 
 	if (joyButtonPressed(joyState, JOY2, BUTTON_BACK)) { //reset lift min, turn off targeting
-		motorResetEncoder(desiredEncVals, Lift);
+		LIFT_MIN = motorGetEncoder(Lift);
 		encTarget = ENC_OFF;
 	}
-
+	writeDebugStream("Real lift pow: %d\n", motor[Lift]);
 	motorSetEncoder(desiredEncVals, Lift, encTarget);
 }
 
