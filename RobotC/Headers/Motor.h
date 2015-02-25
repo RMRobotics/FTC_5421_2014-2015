@@ -78,6 +78,25 @@ int motorGetMaxReferencePower() {
 	return MAX_REFERENCE_POWER;
 }
 
+/* Gets motor name given tMotor */
+static void motorGetName(tMotor curMotor, string *motorName) {
+	if (curMotor == MecMotor_FL) {
+		*motorName = "MecMotor_FL";
+	} else if (curMotor == MecMotor_BL) {
+		*motorName = "MecMotor_BL";
+	} else if (curMotor == MecMotor_FR) {
+		*motorName = "MecMotor_FR";
+	} else if (curMotor == MecMotor_BR) {
+		*motorName = "MecMotor_BR";
+	} else if (curMotor == Lift) {
+		*motorName = "Lift";
+	} else if (curMotor == Harvester) {
+		*motorName = "Harvester";
+	} else if (curMotor == HarvesterMove) {
+		*motorName = "HarvesterMove";
+	}
+}
+
 /*Zero all motors */
 void motorZeroAllMotors(DesiredMotorVals *desiredMotorVals) {
 	for (int i=0; i<NUM_MOTORS; i++) {
@@ -140,7 +159,7 @@ void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	if (motorDefsInitialized) {
 		desiredEncVals->encoder[curMotor] = ENC_OFF;
 		motorStates[curMotor].encoder = 0;
-		nMotorEncoder[Lift] = 0;
+		nMotorEncoder[curMotor] = 0;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
 	}
@@ -310,7 +329,9 @@ void motorUpdateState() {
 		int curEnc;
 
 		if (abs(checkEnc - knownGoodEnc) > ENC_ERROR_THRESHOLD) {
-			writeDebugStream("Bad encoder val! Compare: %d with (bad) %d\n", knownGoodEnc, checkEnc);
+			string motorName;
+			motorGetName(curMotor, &motorName);
+			writeDebugStream("Bad encoder val! Compare: %d with (bad) %d for motor: %s\n", knownGoodEnc, checkEnc, motorName);
 			//do nothing because enc val is bad
 		} else {
 			curEnc = checkEnc; //enc val is good
