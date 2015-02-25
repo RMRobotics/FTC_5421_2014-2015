@@ -25,11 +25,16 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
+#include "drivers/hitechnic-irseeker-v2.h"
 #include "drivers/hitechnic-sensormux.h"
 #include "drivers/hitechnic-gyro.h"
+#include "drivers/lego-ultrasound.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor GYRO = msensor_S4_1;
+const tMUXSensor HTIRS2 = msensor_S4_4;
+const tMUXSensor LEGOUS = msensor_S4_3;
+
 
 void explodingSound(){
 		PlaySound(soundShortBlip);
