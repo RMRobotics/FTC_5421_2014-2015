@@ -14,7 +14,7 @@ void joyAuxInit(DesiredEncVals *desiredEncVals){
 #define LIFT_UP_POW -100
 #define ENC_SIGN sgn(LIFT_UP_POW)
 
-#define LIFT_MAX ENC_SIGN * (LIFT_MIN + 10000) //high goal
+#define LIFT_MAX ENC_SIGN * (LIFT_MIN + 10500) //high goal
 #define NINETY_GOAL ENC_SIGN * (LIFT_MIN + 7800)
 #define SIXTY_GOAL ENC_SIGN * (LIFT_MIN + 4600)
 #define THIRTY_GOAL ENC_SIGN * (LIFT_MIN + 2000)
