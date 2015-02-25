@@ -136,6 +136,7 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	for (int i=0; i<motorListSize; i++) {
 		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
 	}
+	motorResetAllEncoders(desiredEncVals);
 }
 
 /*Returns max reference power for other functions */
