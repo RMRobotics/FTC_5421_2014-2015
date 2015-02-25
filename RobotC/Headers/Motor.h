@@ -117,11 +117,11 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
 
 	//set lift data
-	motorDefinitions[Lift].minPower = 30;
-	motorDefinitions[Lift].maxPower = 90;
-	motorDefinitions[Lift].encSlowLength = 2000;
+	motorDefinitions[Lift].minPower = 33;
+	motorDefinitions[Lift].maxPower = 100;
+	motorDefinitions[Lift].encSlowLength = 1000;
 	motorDefinitions[Lift].encSlowStep = 10;
-	motorDefinitions[Lift].encHitZone = 50;
+	motorDefinitions[Lift].encHitZone = 100;
 
 	//check to make sure motors listed fills up motorList length
 	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
@@ -265,14 +265,32 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 		return true;
 	} else {
 		long curEnc = motorGetEncoder(curMotor);
-		long encHitZone = motorDefinitions[curMotor].encHitZone;
-		if ((desiredEnc < (curEnc + encHitZone)) && (desiredEnc > (curEnc - encHitZone))) {
-			return true;
-		} else {
-			if ((sgn(motor[curMotor]) != sgn(desiredEnc - curEnc)) && motor[curMotor] != 0) {
-				writeDebugStream("Motor not running in same direction as encoder target!\n");
+		if (desiredEncVals->encoderCapEnabled[curMotor]) {
+			if (desiredEncVals->encoderCapIsMax[curMotor]) {
+				if (curEnc > desiredEnc) {
+					writeDebugStream("Lift hitting cap!\n");
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				if (curEnc < desiredEnc) {
+					writeDebugStream("Lift hitting cap!\n");
+					return true;
+				} else {
+					return false;
+				}
 			}
-			return false;
+		} else {
+			long encHitZone = motorDefinitions[curMotor].encHitZone;
+			if ((desiredEnc < (curEnc + encHitZone)) && (desiredEnc > (curEnc - encHitZone))) {
+				return true;
+			} else {
+				if ((sgn(motor[curMotor]) != sgn(desiredEnc - curEnc)) && motor[curMotor] != 0) {
+					writeDebugStream("Motor not running in same direction as encoder target!\n");
+				}
+				return false;
+			}
 		}
 	}
 }

@@ -30,6 +30,8 @@ typedef enum MecMotor {
 //Struct definition for desired encoder limit
 typedef struct DesiredEncVals {
 	long encoder[MAX_NUM_MOTORS];
+	bool encoderCapEnabled[MAX_NUM_MOTORS]; //if we want to use encoder as hard stop
+	bool encoderCapIsMax[MAX_NUM_MOTORS]; //if the encoder cap is a max or a min
 } DesiredEncVals;
 
 
