@@ -2,20 +2,21 @@ Prematch Checklist:
 
 Before the match:
 0. Meet with our alliance team to know which autonomous to run
-1. Check battery levels
-	1.i swap out batteries if needed
-	1.ii charge all other batteries and sort charged and uncharged
-2. Run motors to check if they all run
-3. Run chutes to see if they run
-4. Run slides to check if they are tensioned and work
-5. Run all servos to check if they run
-6. Check if the samantha works
-7. Set TeleOp program with programchooser on the nxt
-8. Turn off bluetooth on Nxt
-9. Check battery levels again
-	9.i swap out batteries if needed
-	9.ii charge all other batteries and sort charged and uncharged
-10. Turn off nxt and robot to conserve energy
+1. Check the chains
+2. Check battery levels (nxt, robot, multiplexer)
+	2.i swap out batteries if needed
+	2.ii charge all other batteries and sort charged and uncharged
+3. Run motors to check if they all run
+4. Run chutes to see if they run
+5. Run slides to check if they are tensioned and work
+6. Run all servos to check if they run
+7. Check if the samantha works
+8. Set TeleOp program with programchooser on the nxt
+9. Turn off bluetooth on Nxt
+10. Check battery levels again (nxt, robot, multiplexer)
+	10.i swap out batteries if needed
+	10.ii charge all other batteries and sort charged and uncharged
+11. Turn off nxt, multiplexer and robot to conserve energy
 
 Queuing:
 1. Check battery levels
@@ -24,6 +25,7 @@ Queuing:
 4. Wipe down wheels
 
 On the field:
+2. Multiplexer, robot on.
 3. Align the robot onto the field
 4. Set the autonomous program with the robot facing the right way
 5. SELECT THE AUTONOMOUS PROGRAM AND CLICK RUN
