@@ -25,13 +25,18 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
-#include "drivers/hitechnic-sensormux.h"
-#include "drivers/hitechnic-gyro.h"
+#include "../drivers/hitechnic-irseeker-v2.h"
+#include "../drivers/hitechnic-sensormux.h"
+#include "../drivers/hitechnic-gyro.h"
+#include "../drivers/lego-ultrasound.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor GYRO = msensor_S4_1;
+const tMUXSensor HTIRS2 = msensor_S4_4;
+const tMUXSensor LEGOUS = msensor_S4_3;
 
-#include "..\Headers\Joystick.h"
+
+#include "..\Headers\joystick.h"
 #include "..\Headers\Motor.h"
 #include "..\Headers\Servo.h"
 #include "..\Headers\Global.h"
@@ -41,6 +46,11 @@ const tMUXSensor GYRO = msensor_S4_1;
 DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
 DesiredEncVals desiredEncVals;
+
+#define NINETY_GOAL ENC_SIGN * 7800
+#define SIXTY_GOAL ENC_SIGN * 4600
+#define THIRTY_GOAL ENC_SIGN * 2000
+#define LIFT_MIN 0
 
 //ALl states for Grab Medium Tube Autonomous
 typedef enum GrabMedTubeStates {
@@ -70,7 +80,7 @@ void initialize(){
 
 TTimers AutonTimer = T1;
 
-#define ENC_PER_REV 1440
+#define ENC_PER_REV 280
 
 long restStartTimeMs = 0;
 long liftStartTimeMs = 0;
@@ -115,6 +125,8 @@ task main()
 
 					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
 						currentState = STATE_END;//STATE_DRIVETOWARDTUBE;
 					}
 					break;
@@ -135,6 +147,8 @@ task main()
 
 					if(driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
 						currentState = STATE_DRIVETOWARDTUBE;
 					}
 					break;
@@ -146,6 +160,9 @@ task main()
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
 					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
 						currentState = STATE_END;
 					}
 					break;
@@ -157,6 +174,9 @@ task main()
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
 					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
 						currentState = STATE_END;
 					}
 					break;
@@ -168,6 +188,9 @@ task main()
 					motorSetActualPowerToDesired(&desiredMotorVals);
 
 					if(motorAllHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
 						currentState = STATE_END;
 					}
 					break;
@@ -177,9 +200,39 @@ task main()
 					currentState = STATE_END;
 					break;
 				case STATE_DROPBUCKET:
-					writeDebugStream("State: Brop Bucket\n");
+					writeDebugStream("State: Drop Bucket\n");
 					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
 					currentState = STATE_END;
+					break;
+				case STATE_RAISELIFT:
+					writeDebugStream("State: Raise Lift\n");
+					encTarget = SIXTY_GOAL;
+					desiredMotorVals->power[Lift] = -100;
+
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					motorSetEncoder(desiredEncVals, Lift, encTarget);
+
+					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
+						currentState = STATE_END;//STATE_DRIVETOWARDTUBE;
+					}
+					break;
+				case STATE_LOWERLIFT:
+					writeDebugStream("State: Brop Bucket\n");
+										encTarget = LIFT_MIN;
+					desiredMotorVals->power[Lift] = -100;
+
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					motorSetEncoder(desiredEncVals, Lift, encTarget);
+
+					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
+						restMecMotors();
+						motorResetEncoder(desiredEncVals, Lift);
+						motorResetAllEncoders(desiredEncVals);
+						currentState = STATE_END;//STATE_DRIVETOWARDTUBE;
+					}
 					break;
 	*/			case STATE_END:
 					end = true;
