@@ -25,8 +25,8 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
-#include "../drivers/hitechnic-irseeker-v2.h"
 #include "../drivers/hitechnic-sensormux.h"
+#include "../drivers/hitechnic-irseeker-v2.h"
 #include "../drivers/hitechnic-gyro.h"
 #include "../drivers/lego-ultrasound.h"
 
