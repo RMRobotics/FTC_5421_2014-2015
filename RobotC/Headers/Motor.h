@@ -159,6 +159,7 @@ void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	if (motorDefsInitialized) {
 		desiredEncVals->encoder[curMotor] = ENC_OFF;
 		motorStates[curMotor].encoder = 0;
+		motorStates[curMotor].lastRealEncoderPos = 0;
 		nMotorEncoder[curMotor] = 0;
 	} else {
 		writeDebugStream("Motors not initialized!\n");
@@ -232,14 +233,12 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 		if (desiredEncVals->encoderCapEnabled[curMotor]) {
 			if (desiredEncVals->encoderCapIsMax[curMotor]) {
 				if (curEnc > desiredEnc) {
-					writeDebugStream("Lift hitting cap!\n");
 					return true;
 				} else {
 					return false;
 				}
 			} else {
 				if (curEnc < desiredEnc) {
-					writeDebugStream("Lift hitting cap!\n");
 					return true;
 				} else {
 					return false;
@@ -414,9 +413,9 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	for (int i=0;i<MAX_NUM_MOTORS;i++) {
 		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
 		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
-		motorDefinitions[i].encSlowLength = 2000;
-		motorDefinitions[i].encSlowStep = 20;
-		motorDefinitions[i].encHitZone = 50;
+		motorDefinitions[i].encSlowLength = 500;
+		motorDefinitions[i].encSlowStep = 5;
+		motorDefinitions[i].encHitZone = 100;
 		motorStates[i].encoder = 0;
 		motorStates[i].lastRealEncoderPos = 0;
 		motorStates[i].timePosMs = 0;
