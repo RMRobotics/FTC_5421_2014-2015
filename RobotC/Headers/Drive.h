@@ -140,21 +140,18 @@
 */
 ////////////////////////////////////////////////////////////////////////////////////////
 
-
-/*Set desired motor values based on polar coordinates and rotation:
-  angle: int value of angle IN DEGREES from 0 to 360
-  powerRatio: float value from 0 to 1
-  rotationRatio: float value from -1 to 1 */
-void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
-float powerRatio, float rotationRatio) {
-	if (angle > 360 || angle < 0 || powerRatio > 1.0 || rotationRatio > 1.0) {
+/* Does calculations for mecanum wheels. Results are scaled
+	 to maxRefVal. */
+void driveCalcMecPolarDegrees(int angle, float powerRatio, float rotationRatio, long maxRefVal, long *mecFL, long *mecBL, long *mecFR, long *mecBR) {
+	if (angle > 360 || angle < 0 || abs(powerRatio) > 1.0 || abs(rotationRatio) > 1.0) {
 		writeDebugStream("Drive parameters do not fit constraints! Ang: %d, Pow: %f, Rot: %f",
 										 angle, powerRatio, rotationRatio);
 	} else {
-		//Holds max motor powers possible based on the calculation (cos has different maximum values
+		//Holds max motor values possible based on the calculation (cos has different maximum values
 		//at different values around the unit circle)
 		float maxPowFLBR = cosDegrees(45.0 - (float)angle);
 		float maxPowFRBL = cosDegrees(45.0 + (float)angle);
+
 
 		float powFL = (powerRatio * maxPowFLBR) + (rotationRatio * abs(maxPowFLBR));
 		float powBL = (powerRatio * maxPowFRBL) + (rotationRatio * abs(maxPowFRBL));
@@ -167,23 +164,29 @@ float powerRatio, float rotationRatio) {
 		powFR = sgn(powFR) * helpFindMinAbsFloat(powFR, maxPowFRBL);
 		powBR = sgn(powBR) * helpFindMinAbsFloat(powBR, maxPowFLBR);
 
-		//Holds max reference power
-		float maxRefPow = (float) motorGetMaxReferencePower();
-
-		//Scale maximum possible power to max reference power
+		//Scale maximum possible value to max reference value
 		float absHighestPow = helpFindMaxAbsFloat(maxPowFLBR, maxPowFRBL);
-		float multiplier = maxRefPow / absHighestPow;
+		long multiplier = maxRefVal / absHighestPow;
 
-		float scaledPowFL = powFL * multiplier;
-		float scaledPowBL = powBL * multiplier;
-		float scaledPowFR = powFR * multiplier;
-		float scaledPowBR = powBR * multiplier;
-
-		desiredMotorVals->power[MecMotor_FL] = round(scaledPowFL);
-		desiredMotorVals->power[MecMotor_BL] = round(scaledPowBL);
-		desiredMotorVals->power[MecMotor_FR] = round(scaledPowFR);
-		desiredMotorVals->power[MecMotor_BR] = round(scaledPowBR);
+		*mecFL = round(powFL * multiplier);
+		*mecBL = round(powBL * multiplier);
+		*mecFR = round(powFR * multiplier);
+		*mecBR = round(powBR * multiplier);
 	}
+}
+
+/*Set desired motor values based on polar coordinates and rotation:
+  angle: int value of angle IN DEGREES from 0 to 360
+  powerRatio: float value from 0 to 1
+  rotationRatio: float value from -1 to 1 */
+void driveSetMecMotorPolarDegrees(DesiredMotorVals *desiredMotorVals, int angle,
+float powerRatio, float rotationRatio) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(angle, powerRatio, rotationRatio, (long) motorGetMaxReferencePower(), &mecFL, &mecBL, &mecFR, &mecBR);
+	desiredMotorVals->power[MecMotor_FL] = (int) mecFL;
+	desiredMotorVals->power[MecMotor_BL] = (int) mecBL;
+	desiredMotorVals->power[MecMotor_FR] = (int) mecFR;
+	desiredMotorVals->power[MecMotor_BR] = (int) mecBR;
 }
 
 /* Check if all mecmotors have hit encoder target */
@@ -206,6 +209,14 @@ void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 	desiredMotorVals->power[MecMotor_BR] = 0;
 }
 
+/* Set mec encoders */
+void driveSetMecEncoder(DesiredEncVals *desiredEncVals, long mecFL, long mecBL, long mecFR, long mecBR) {
+	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FL, mecFL, true);
+	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BL, mecBL, true);
+	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FR, mecFR, true);
+	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BR, mecBR, true);
+}
+
 /* Reset encoders for all mecanum motors */
 void driveResetMecEncoder(DesiredEncVals *desiredEncVals) {
 	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FL);
@@ -222,11 +233,11 @@ void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio
 }
 
 /*Sets desired encoder values in order to orbit north.
-  The center of rotation is in front of the robot.
-  angle: int value of angle to rotate in degrees */
-void driveSetEncoderOrbitN(DesiredEncVals *desiredEncVals, int angle) {
-	desiredEncVals->encoder[MecMotor_BL] = angle * -ORBIT_ENCODER_RATIO;
-	desiredEncVals->encoder[MecMotor_BR] = angle * ORBIT_ENCODER_RATIO;
+  The center of rotation is in front of the robot. */
+void driveSetEncoderOrbitN(DesiredEncVals *desiredEncVals, float powerRatio, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(90, powerRatio, -powerRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+
 }
 
 /*Sets desired motor values in order to orbit south (backwards).
@@ -237,11 +248,11 @@ void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio
 }
 
 /*Sets desired encoder values in order to orbit south.
-  The center of rotation is behind the robot.
-  angle: int value of angle to rotate in degrees */
-void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, int angle) {
-	desiredEncVals->encoder[MecMotor_FL] = angle * ORBIT_ENCODER_RATIO;
-	desiredEncVals->encoder[MecMotor_FR] = angle * -ORBIT_ENCODER_RATIO;
+  The center of rotation is behind the robot. */
+void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, float powerRatio, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(90, powerRatio, powerRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 /*The following functions follow the same format as above.
@@ -249,75 +260,74 @@ void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, int angle) {
 void driveSetMecMotorN(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, powerRatio, 0.0);
 }
-void driveSetEncoderN(DesiredEncVals *desiredEncVals, int encoderDistance) {
-	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_BL] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_FR] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+void driveSetEncoderN(DesiredEncVals *desiredEncVals, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(0, 1.0, 0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 void driveSetMecMotorS(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 180, powerRatio, 0.0);
 }
-void driveSetEncoderS(DesiredEncVals *desiredEncVals, int encoderDistance) {
+void driveSetEncoderS(DesiredEncVals *desiredEncVals, long encoderDistance) {
 	driveSetEncoderN(desiredEncVals, -encoderDistance);
 }
 
 void driveSetMecMotorE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, 0.0);
 }
-void driveSetEncoderE(DesiredEncVals *desiredEncVals, int encoderDistance) {
-	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_BL] = -encoderDistance;
-	desiredEncVals->encoder[MecMotor_FR] = -encoderDistance;
-	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+void driveSetEncoderE(DesiredEncVals *desiredEncVals, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(90, 1.0, 0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 void driveSetMecMotorW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 270, powerRatio, 0.0);
 }
-void driveSetEncoderW(DesiredEncVals *desiredEncVals, int encoderDistance) {
+void driveSetEncoderW(DesiredEncVals *desiredEncVals, long encoderDistance) {
 	driveSetEncoderE(desiredEncVals, -encoderDistance);
 }
 
 void driveSetMecMotorNE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 45, powerRatio, 0.0);
 }
-void driveSetEncoderNE(DesiredEncVals *desiredEncVals, int encoderDistance) {
-	desiredEncVals->encoder[MecMotor_FL] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+void driveSetEncoderNE(DesiredEncVals *desiredEncVals, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(45, 1.0, 0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 void driveSetMecMotorNW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 315, powerRatio, 0.0);
 }
-void driveSetEncoderNW(DesiredEncVals *desiredEncVals, int encoderDistance) {
-	desiredEncVals->encoder[MecMotor_FR] = encoderDistance;
-	desiredEncVals->encoder[MecMotor_BR] = encoderDistance;
+void driveSetEncoderNW(DesiredEncVals *desiredEncVals, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(315, 1.0, 0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 void driveSetMecMotorSE(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 135, powerRatio, 0.0);
 }
-void driveSetEncoderSE(DesiredEncVals *desiredEncVals, int encoderDistance) {
+void driveSetEncoderSE(DesiredEncVals *desiredEncVals, long encoderDistance) {
 	driveSetEncoderNW(desiredEncVals, -encoderDistance);
 }
 
 void driveSetMecMotorSW(DesiredMotorVals *desiredMotorVals, float powerRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 225, powerRatio, 0.0);
 }
-void driveSetEncoderSW(DesiredEncVals *desiredEncVals, int encoderDistance) {
+void driveSetEncoderSW(DesiredEncVals *desiredEncVals, long encoderDistance) {
 	driveSetEncoderNE(desiredEncVals, -encoderDistance);
 }
 
 void driveSetMecMotorRotate(DesiredMotorVals *desiredMotorVals, float rotationRatio) {
 	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 0, rotationRatio);
 }
-void driveSetEncoderRotate(DesiredEncVals *desiredEncVals, int angle) {
-	desiredEncVals->encoder[MecMotor_FL] = angle * ROTATION_ENCODER_RATIO;
-	desiredEncVals->encoder[MecMotor_BL] = angle * ROTATION_ENCODER_RATIO;
-	desiredEncVals->encoder[MecMotor_FR] = -angle * ROTATION_ENCODER_RATIO;
-	desiredEncVals->encoder[MecMotor_BR] = -angle * ROTATION_ENCODER_RATIO;
+void driveSetEncoderRotate(DesiredEncVals *desiredEncVals, float rotationRatio, long encoderDistance) {
+	long mecFL, mecBL, mecFR, mecBR = 0;
+	driveCalcMecPolarDegrees(0, 0, rotationRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 #endif
