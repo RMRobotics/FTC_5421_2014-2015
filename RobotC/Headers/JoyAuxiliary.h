@@ -22,18 +22,17 @@ long LIFT_MIN = 0;
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	long encTarget = ENC_OFF;
+	bool encCapModeOn = false; //whether or not to use encoder target as hard stop
+
 	if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
 		desiredMotorVals->power[Lift] = LIFT_UP_POW;
-		desiredEncVals->encoderCapEnabled[Lift] = true;
-		desiredEncVals->encoderCapIsMax[Lift] = false; //SIGN DEPENDENT
 		encTarget = LIFT_MAX;
+		encCapModeOn = true;
 	} else if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
 		desiredMotorVals->power[Lift] = (-1 * 0.01 * LIFT_UP_POW);
-		desiredEncVals->encoderCapEnabled[Lift] = true;
-		desiredEncVals->encoderCapIsMax[Lift] = true; //SIGN DEPENDENT
+		encCapModeOn = true;
 		encTarget = LIFT_MIN;
 	} else {
-		desiredEncVals->encoderCapEnabled[Lift] = false;
 		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
 			if (abs(motorGetEncoder(Lift)) > abs(NINETY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
@@ -66,7 +65,7 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 		encTarget = ENC_OFF;
 	}
 	writeDebugStream("Real lift pow: %d\n", motor[Lift]);
-	motorSetEncoder(desiredEncVals, Lift, encTarget);
+	motorSetEncoder(desiredEncVals, Lift, encTarget, encCapModeOn);
 }
 
 #define MAX_HARVESTMOVE_TIME_POS 800
@@ -112,13 +111,10 @@ void joyBucketDrop(DesiredMotorVals *desiredMotorVals, TJoystick *joyState){
 
 void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_A)) {
-		writeDebugStream("moving servo up!\n");
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
-		writeDebugStream("moving servo down\n");
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_X)) {
-		writeDebugStream("moving servo to middle\n");
 		servoSetNonCont(TubeGrabber, (servoDefinitions[TubeGrabber].maxValue*(.75)));
 	}
 }

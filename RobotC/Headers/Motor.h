@@ -197,11 +197,21 @@ long motorGetEncoder(tMotor curMotor) {
 	 to make sure the target is below the maximum target,
 	 and that the target is not ENC_OFF.
 	 Does NOT reset the encoder. */
-void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, int target) {
+void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, long target, bool capModeOn) {
 	if (motorDefsInitialized) {
 		if (abs(target) > MAX_ENC_TARGET) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
 		} else {
+			if (capModeOn) {
+				desiredEncVals->encoderCapEnabled[curMotor] = true;
+				if (target > motorGetEncoder(curMotor)) {
+					desiredEncVals->encoderCapIsMax[curMotor] = true;
+				} else {
+					desiredEncVals->encoderCapIsMax[curMotor] = false;
+				}
+			} else {
+				desiredEncVals->encoderCapEnabled[curMotor] = false;
+			}
 			desiredEncVals->encoder[curMotor] = target;
 		}
 	} else {
