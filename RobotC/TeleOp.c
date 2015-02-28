@@ -25,8 +25,8 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
-#include "drivers/hitechnic-irseeker-v2.h"
 #include "drivers/hitechnic-sensormux.h"
+#include "drivers/hitechnic-irseeker-v2.h"
 #include "drivers/hitechnic-gyro.h"
 #include "drivers/lego-ultrasound.h"
 
@@ -68,7 +68,10 @@ void callAuxiliaryMotors(){
 task main() {
 	initialize();
 	joyWaitForStart();
+
 	while (true) {
+		long loopStartTimeMs = nPgmTime;
+
 		joyUpdateJoystickSettings();
 		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
 		//joymecdriveDebug(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
@@ -77,5 +80,31 @@ task main() {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		motorUpdateState();
 		//joyAuxDebug(&desiredMotorVals, joyGetJoystickPointer());
+
+
+		//IR code
+		int dcS1, dcS2, dcS3, dcS4, dcS5 = 0;
+		int acS1, acS2, acS3, acS4, acS5 = 0;
+		int dirEnh, strEnh = 0; //direction, strength enhanced
+
+		int dirDC = HTIRS2readDCDir(HTIRS2);
+		int dirAC = HTIRS2readACDir(HTIRS2);
+		HTIRS2readAllDCStrength(HTIRS2, dcS1, dcS2, dcS3, dcS4, dcS5);
+		HTIRS2readAllACStrength(HTIRS2, acS1, acS2, acS3, acS4, acS5);
+		HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
+		writeDebugStream("IR reads: ");
+		writeDebugStream("DC: %d AC: %d\n", dirDC, dirAC);
+		writeDebugStream("D: %d %d %d %d %d\n", dcS1, dcS2, dcS3, dcS4, dcS5);
+		writeDebugStream("A: %d %d %d %d %d\n", acS1, acS2, acS3, acS4, acS5);
+		writeDebugStream("Enh Dir: %d Str %d\n", dirEnh, strEnh);
+
+
+		//ULTRA code
+		int ultraDistance = 0;
+		ultraDistance = USreadDist(LEGOUS);
+		writeDebugStream("Dist:  %3d cm\n", ultraDistance);
+
+		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
+		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);
 	}
 }
