@@ -122,12 +122,12 @@ task main()
 		} else {
 			switch(currentState){
 				case STATE_START:
-					driveSetEncoderRotate(&desiredEncVals, -1.0, 0.10 * ENC_PER_REV);
+					driveSetEncoderRotateCW(&desiredEncVals, -1.0, 0.10 * ENC_PER_REV);
 					currentState = STATE_TURNTOWARDTUBE;
 					break;
 				case STATE_TURNTOWARDTUBE:
 					writeDebugStream("State: AlignonRamp\n");
-					driveSetMecMotorRotate(&desiredMotorVals, -1.0);
+					driveSetMecMotorRotateCW(&desiredMotorVals, -1.0);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
@@ -172,13 +172,13 @@ task main()
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						driveResetMecEncoder(&desiredEncVals);
-						driveSetEncoderRotate(&desiredEncVals, -1.0, 1.0 * ENC_PER_REV); //for next state
+						driveSetEncoderRotateCW(&desiredEncVals, -1.0, 1.0 * ENC_PER_REV); //for next state
 						currentState = STATE_ROTTOWARDPZONE;
 					}
 					break;
 				case STATE_ROTTOWARDPZONE:
 					writeDebugStream("State: Drive Toward Tube\n");
-					driveSetMecMotorRotate(&desiredMotorVals, -1.0);
+					driveSetMecMotorRotateCW(&desiredMotorVals, -1.0);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
