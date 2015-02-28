@@ -231,20 +231,32 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	} else {
 		long curEnc = motorGetEncoder(curMotor);
 		if (desiredEncVals->encoderCapEnabled[curMotor]) {
+			writeDebugStream("Doing cap check!\n");
 			if (desiredEncVals->encoderCapIsMax[curMotor]) {
 				if (curEnc > desiredEnc) {
 					return true;
 				} else {
+					if (motor[curMotor] < 0) {
+						string motorName;
+						motorGetName(curMotor, &motorName);
+						writeDebugStream("Motor %s running in wrong direction of target!", motorName);
+					}
 					return false;
 				}
 			} else {
 				if (curEnc < desiredEnc) {
 					return true;
 				} else {
+					if (motor[curMotor] > 0) {
+						string motorName;
+						motorGetName(curMotor, &motorName);
+						writeDebugStream("Motor %s running in wrong direction of target!", motorName);
+					}
 					return false;
 				}
 			}
 		} else {
+			writeDebugStream("Doing hitzone check!\n");
 			long encHitZone = motorDefinitions[curMotor].encHitZone;
 			if ((desiredEnc < (curEnc + encHitZone)) && (desiredEnc > (curEnc - encHitZone))) {
 				return true;
@@ -264,6 +276,9 @@ bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
 	if (motorDefsInitialized) {
 		for (int i=0;i<NUM_MOTORS;i++) {
 			if (!motorHasHitEncoderTarget(desiredEncVals, motorList[i])) {
+				string motorName;
+				motorGetName(motorList[i], &motorName);
+				writeDebugStream("%s failed enc target check!\n", motorName);
 				return false;
 			}
 		}
@@ -295,16 +310,44 @@ DesiredEncVals *desiredEncVals) {
 				if (motorHasHitEncoderTarget(desiredEncVals, curMotor)) {
 					desiredMotorVals->power[curMotor] = 0;
 				} else if (abs(desiredEnc - curEnc) < motorDefinitions[curMotor].encSlowLength) {
-					//Calculate number of steps left to decrement motor
+					/*//Calculate number of steps left to decrement motor BUG IN THIS CALCULATION WHERE DMV RETURNS -16668
 					long steps = (desiredEnc - curEnc) / motorDefinitions[curMotor].encSlowStep;
 					//Apply only if below current desired speed
 					if (abs(steps) < abs(desiredMotorVals->power[curMotor])) {
-						desiredMotorVals->power[curMotor] = steps;
+						///* HACK TO SLOW ALL MEC MOTORS DOWN BY SAME AMOUNT
+						if (curMotor == MecMotor_FL || curMotor == MecMotor_BL || curMotor == MecMotor_FR || curMotor == MecMotor_BR) {
+
+							int mecFL = abs(desiredMotorVals->power[MecMotor_FL]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FL] - motorGetEncoder((tMotor) MecMotor_FL));
+							int mecBL = abs(desiredMotorVals->power[MecMotor_BL]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BL] - motorGetEncoder((tMotor) MecMotor_BL));
+							int mecFR = abs(desiredMotorVals->power[MecMotor_FR]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FR] - motorGetEncoder((tMotor) MecMotor_FR));
+							int mecBR = abs(desiredMotorVals->power[MecMotor_BR]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BR] - motorGetEncoder((tMotor) MecMotor_BR));
+
+							if (mecFL == 0) {
+								mecFL = (sgn(desiredMotorVals->power[MecMotor_FL]) > 0)?1:-1;
+							}
+							if (mecBL == 0) {
+								mecBL = (sgn(desiredMotorVals->power[MecMotor_BL]) > 0)?1:-1;
+							}
+							if (mecFR == 0) {
+								mecFR = (sgn(desiredMotorVals->power[MecMotor_FR]) > 0)?1:-1;
+							}
+							if (mecBR == 0) {
+								mecBR = (sgn(desiredMotorVals->power[MecMotor_BR]) > 0)?1:-1;
+							}
+
+							desiredMotorVals->power[MecMotor_FL] = mecFL;
+							desiredMotorVals->power[MecMotor_BL] = mecBL;
+							desiredMotorVals->power[MecMotor_FR] = mecFR;
+							desiredMotorVals->power[MecMotor_BR] = mecBR;
+
+						} else { //
+							desiredMotorVals->power[curMotor] = steps;
+						}
 						//Add one to make sure motor never shuts off
 						if (desiredMotorVals->power[curMotor] == 0) {
 							desiredMotorVals->power[curMotor] = (sgn(desiredEnc - curEnc) > 0)?1:-1;
 						}
-					}
+					}*/
 				}
 			}
 		}
