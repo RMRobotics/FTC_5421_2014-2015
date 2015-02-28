@@ -322,23 +322,21 @@ void driveSetEncoderSW(DesiredEncVals *desiredEncVals, long encoderDistance) {
 }
 
 void driveSetMecMotorRotateCW(DesiredMotorVals *desiredMotorVals, float rotationRatio) {
-	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 0, -abs(rotationRatio));
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 0, -rotationRatio);
 }
 
 void driveSetEncoderRotateCW(DesiredEncVals *desiredEncVals, long encoderDistance) {
 	long mecFL, mecBL, mecFR, mecBR = 0;
-	driveCalcMecPolarDegrees(0, 0, -1.0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveCalcMecPolarDegrees(0, 0, -1.0, -encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
 	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 
 void driveSetMecMotorRotateCCW(DesiredMotorVals *desiredMotorVals, float rotationRatio) {
-	driveSetMecMotorPolarDegrees(desiredMotorVals, 0, 0, abs(rotationRatio));
+	driveSetMecMotorRotateCCW(desiredMotorVals, -rotationRatio);
 }
 
 void driveSetEncoderRotateCCW(DesiredEncVals *desiredEncVals, long encoderDistance) {
-	long mecFL, mecBL, mecFR, mecBR = 0;
-	driveCalcMecPolarDegrees(0, 0, 1.0, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
-	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
+	driveSetEncoderRotateCW(desiredEncVals, -encoderDistance);
 }
 
 #endif
