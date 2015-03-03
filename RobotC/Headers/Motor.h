@@ -195,12 +195,11 @@ long motorGetEncoder(tMotor curMotor) {
 }
 
 /* Sets encoder target for a specific tMotor. Checks
-	 to make sure the target is below the maximum target,
-	 and that the target is not ENC_OFF.
+	 to make sure the target is below the maximum target.
 	 Does NOT reset the encoder. */
 void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, long target, bool capModeOn) {
 	if (motorDefsInitialized) {
-		if (abs(target) > MAX_ENC_TARGET) {
+		if (abs(target) > MAX_ENC_TARGET && (target != ENC_OFF)) {
 			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
 		} else {
 			if (capModeOn) {
@@ -231,7 +230,6 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 	} else {
 		long curEnc = motorGetEncoder(curMotor);
 		if (desiredEncVals->encoderCapEnabled[curMotor]) {
-			writeDebugStream("Doing cap check!\n");
 			if (desiredEncVals->encoderCapIsMax[curMotor]) {
 				if (curEnc > desiredEnc) {
 					return true;
@@ -239,7 +237,7 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 					if (motor[curMotor] < 0) {
 						string motorName;
 						motorGetName(curMotor, &motorName);
-						writeDebugStream("Motor %s running in wrong direction of target!", motorName);
+						writeDebugStream("Motor %s at %d running in wrong direction of target %d!\n", motorName, motor[curMotor], desiredEnc);
 					}
 					return false;
 				}
@@ -250,13 +248,12 @@ bool motorHasHitEncoderTarget(DesiredEncVals *desiredEncVals, tMotor curMotor) {
 					if (motor[curMotor] > 0) {
 						string motorName;
 						motorGetName(curMotor, &motorName);
-						writeDebugStream("Motor %s running in wrong direction of target!", motorName);
+						writeDebugStream("Motor %s at %d running in wrong direction of target %d!\n", motorName, motor[curMotor], desiredEnc);
 					}
 					return false;
 				}
 			}
 		} else {
-			writeDebugStream("Doing hitzone check!\n");
 			long encHitZone = motorDefinitions[curMotor].encHitZone;
 			if ((desiredEnc < (curEnc + encHitZone)) && (desiredEnc > (curEnc - encHitZone))) {
 				return true;
@@ -317,10 +314,10 @@ DesiredEncVals *desiredEncVals) {
 						///* HACK TO SLOW ALL MEC MOTORS DOWN BY SAME AMOUNT
 						if (curMotor == MecMotor_FL || curMotor == MecMotor_BL || curMotor == MecMotor_FR || curMotor == MecMotor_BR) {
 
-							int mecFL = abs(desiredMotorVals->power[MecMotor_FL]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FL] - motorGetEncoder((tMotor) MecMotor_FL));
-							int mecBL = abs(desiredMotorVals->power[MecMotor_BL]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BL] - motorGetEncoder((tMotor) MecMotor_BL));
-							int mecFR = abs(desiredMotorVals->power[MecMotor_FR]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FR] - motorGetEncoder((tMotor) MecMotor_FR));
-							int mecBR = abs(desiredMotorVals->power[MecMotor_BR]) * abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BR] - motorGetEncoder((tMotor) MecMotor_BR));
+							int mecFL = abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FL] - motorGetEncoder((tMotor) MecMotor_FL));
+							int mecBL = abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BL] - motorGetEncoder((tMotor) MecMotor_BL));
+							int mecFR = abs(steps) * sgn(desiredEncVals->encoder[MecMotor_FR] - motorGetEncoder((tMotor) MecMotor_FR));
+							int mecBR = abs(steps) * sgn(desiredEncVals->encoder[MecMotor_BR] - motorGetEncoder((tMotor) MecMotor_BR));
 
 							if (mecFL == 0) {
 								mecFL = (sgn(desiredMotorVals->power[MecMotor_FL]) > 0)?1:-1;
