@@ -64,7 +64,6 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 		LIFT_MIN = motorGetEncoder(Lift);
 		encTarget = ENC_OFF;
 	}
-	writeDebugStream("Real lift pow: %d\n", motor[Lift]);
 	motorSetEncoder(desiredEncVals, Lift, encTarget, encCapModeOn);
 }
 
