@@ -51,7 +51,7 @@ task main(){
 		} else {
 			motor[Lift] = 0;
 		}
-		nxtDisplayTextLine(2, "Power: %f", LIFT_POWER);
+		nxtDisplayTextLine(2, "Power: %f", motor[Lift]);
 		nxtDisplayTextline(4, "Encoder: %d", nMotorEncoder[Lift]);
 		wait1Msec(100);
 	}
