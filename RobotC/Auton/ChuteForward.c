@@ -72,9 +72,4 @@ task main()
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Stopping!\n");
 	}
-
-	//lower harvester
-	while (time1[T1] < 3000) {
-		servoSetCont(HarvesterWinch, 0);
-	}
 }
