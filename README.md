@@ -29,6 +29,14 @@ Code was inspired partly by:
 ## Useful Links
 [Debugging RobotC](http://www.robotc.net/forums/viewtopic.php?t=209&start=0&postdays=0&postorder=asc&highlight=)
 
+[RobotC v4 Help](http://help.robotc.net/WebHelpMindstorms/index.htm)
+
+[Data Types in RobotC](http://greenarmyrobotics.org/robotc/data-types-in-robotc-part-i)
+
+[NXT2Excel](https://nxttime.wordpress.com/tag/nxt2excel/)
+
+[Output Formatting in RobotC](http://botbench.com/blog/2013/03/31/output-formatting-in-robotc/)
+
 -------------------------
 
 ## Contact Information
