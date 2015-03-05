@@ -36,53 +36,67 @@ const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
 
 
-
+#include "Headers\Global.h"
 #include "Headers\Motor.h"
 #include "Headers\Servo.h"
 #include "Headers\JoyMecanumDrive.h"
-#include "Headers\Global.h"
 #include "Headers\JoyAuxiliary.h"
+#include "Headers\JoyPlayMusic.h"
 
 #include "Headers\Data.h"
 
 //Stores desired motor values
-DesiredMotorVals desiredMotorVals;
+//DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
-DesiredEncVals desiredEncVals;
+//DesiredEncVals desiredEncVals;
 
 void initialize() {
-	motorInit();
-	servoInit();
-	//Initialize to zeroes
 	clearDebugStream();
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
+	writeDebugStream("This is JoyRecord\n");
+	//Initialize to zeroes
+//	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
+//	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
+//	motorInit();
+//	servoInit();
+
 }
 
-void callAuxiliaryMotors(){
+/*void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
-	joyWing(&desiredMotorVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
 	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
-}
+}*/
 
 task main()
 {
 	initialize();
 	joyWaitForStart();
-	ClearTimer(T1);
-	int time = 30 * 1000; //in ms
+	long pgmStartTimeMs = nPgmTime;
+
+	int timeLengthMs = 5 * 1000; //leave time to close file at the end
 	int delay = 50; //ms delay between joystick updates
-	int numTJoy = time / delay; //Number of tJoysticks in history
-	dataOpenWriteJoyLog(numTJoy);
-	while (time1[T1] < time) {
-		nxtDisplayTextLine(3,"T:%f, MaxT:%f", time1[T1], time);
+	int numTJoy = timeLengthMs / delay; //Number of tJoysticks in history
+
+	short fileSize = numTJoy * TJOY_SIZE;
+	TFileHandle fileHandle;
+	string fileName = JOY_LOGFILE;
+
+	dataOpenWrite(&fileHandle, fileName, fileSize);
+
+	while ((nPgmTime - pgmStartTimeMs) < timeLengthMs) {
 		joyUpdateJoystickSettings();
-		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
-		callAuxiliaryMotors();
-		motorSetActualPowerToDesired(&desiredMotorVals);
-		dataWriteJoyLogStream(joystick);
+		//joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
+		//callAuxiliaryMotors();
+		//motorSetActualPowerToDesired(&desiredMotorVals);
+		TJoystick *joystickPtr = joyGetJoystickPointer();
+		joyplaymusicPlay(joystickPtr);
+
+		byte buffer[TJOY_SIZE];
+		memcpy(buffer, joystickPtr, TJOY_SIZE);
+
+		dataWriteBytes(&fileHandle, buffer, TJOY_SIZE);
 		wait1Msec(delay);
 	}
-	dataCloseJoyLog();
+
+	dataClose(&fileHandle);
 }

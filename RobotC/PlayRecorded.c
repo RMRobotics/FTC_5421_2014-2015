@@ -36,12 +36,12 @@ const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
 
 
+#include "Headers\Global.h"
 #include "Headers\Motor.h"
 #include "Headers\Servo.h"
-#include "Headers\JoyMecanumDrive.h"
-#include "Headers\Global.h"
 #include "Headers\JoyAuxiliary.h"
-
+#include "Headers\JoyMecanumDrive.h"
+#include "Headers\JoyPlayMusic.h"
 #include "Headers\Data.h"
 
 //Enumerates all states in this autonomous program
@@ -55,56 +55,68 @@ static PlaybackStateNames currentState = STATE_BEGIN;
 
 
 //Stores desired motor values
-DesiredMotorVals desiredMotorVals;
+//DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
-DesiredEncVals desiredEncVals;
+//DesiredEncVals desiredEncVals;
 
 void initialize() {
-	motorInit();
-	servoInit();
-	//Initialize to zeroes
 	clearDebugStream();
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
+	writeDebugStream("This is PlayRecorded\n");
+	//Initialize to zeroes
+	/*memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
+	motorInit();
+	servoInit();*/
 }
-
+/*
 void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, joyGetJoystickPointer());
 	joyWing(&desiredMotorVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
 	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
-}
+}*/
 
 task main()
 {
 	initialize();
 	joyWaitForStart();
-	//Joystick playback
-	ClearTimer(T1);
+
+	long pgmStartTimeMs = nPgmTime;
+
+	int timeLengthMs = 5 * 1000;
+	int delay = 50; //ms delay between joystick updates
+
+	short fileSize = 0;
+	TFileHandle fileHandle;
+	string fileName = JOY_LOGFILE;
+
 	bool end = false;
 	while(!end) {
 		switch(currentState) {
 			case STATE_BEGIN:
-				if (dataOpenReadJoyLog()) {
+				if (dataOpenRead(&fileHandle, fileName, &fileSize)) {
 					currentState = STATE_RUN;
 				} else {
 					currentState = STATE_END;
 				}
 				break;
 			case STATE_RUN:
-				TJoystick *curJoy = dataReadJoystickLog();
-				if (curJoy) {
-					joymecdriveSetDesiredPower(&desiredMotorVals, curJoy);
+				TJoystick *curJoy;
+				if (dataReadTJoystick(&fileHandle, curJoy)) {
+					/*joymecdriveSetDesiredPower(&desiredMotorVals, curJoy);
 					callAuxiliaryMotors();
-					motorSetActualPowerToDesired(&desiredMotorVals);
-					wait1Msec(50);
+					motorSetActualPowerToDesired(&desiredMotorVals);*/
+					joyplaymusicPlay(curJoy);
+					wait1Msec(delay);
+					if ((nPgmTime - pgmStartTimeMs) > timeLengthMs) {
+						currentState = STATE_END;
+					}
 				} else {
 					currentState = STATE_END;
 				}
-				wait1Msec(50);
 				break;
 			case STATE_END:
-				dataCloseJoyLog();
+				dataClose(&fileHandle);
 				end = true;
 				break;
 			default:
