@@ -73,13 +73,10 @@ bool motorDefsInitialized = false;
 //Array for storing all motor enums that we use (this way we can loop through)
 tMotor motorList[NUM_MOTORS];
 
-/*Returns max reference power for other functions */
-int motorGetMaxReferencePower() {
-	return MAX_REFERENCE_POWER;
-}
 
 /* Gets motor name given tMotor */
 static void motorGetName(tMotor curMotor, string *motorName) {
+	//VOLATILE
 	if (curMotor == MecMotor_FL) {
 		*motorName = "MecMotor_FL";
 	} else if (curMotor == MecMotor_BL) {
@@ -95,6 +92,78 @@ static void motorGetName(tMotor curMotor, string *motorName) {
 	} else if (curMotor == HarvesterMove) {
 		*motorName = "HarvesterMove";
 	}
+}
+
+//Initialize motor definitions and a DesiredEncVals struct to ENC_OFF
+void motorInit(DesiredEncVals *desiredEncVals) {
+	//VOLATILE
+	//list all motors
+	//initialize to -1 so that we can check for any missing motors
+	int motorListSize = sizeof(motorList) / sizeof(tMotor);
+	for (int i=0; i<motorListSize; i++) {
+		motorList[i] = -1;
+	}
+	motorList[0] = MecMotor_FL;
+	motorList[1] = MecMotor_BL;
+	motorList[2] = MecMotor_FR;
+	motorList[3] = MecMotor_BR;
+	motorList[4] = Lift;
+	motorList[5] = Harvester;
+	motorList[6] = HarvesterMove;
+
+	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
+	//init motor state encoder data to 0
+	for (int i=0;i<MAX_NUM_MOTORS;i++) {
+		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
+		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
+		motorDefinitions[i].encSlowLength = 500;
+		motorDefinitions[i].encSlowStep = 5;
+		motorDefinitions[i].encHitZone = 100;
+		motorStates[i].encoder = 0;
+		motorStates[i].lastRealEncoderPos = 0;
+		motorStates[i].timePosMs = 0;
+		motorStates[i].lastUpdateTimeMs = 0;
+	}
+
+	//set drive max motor powers
+	motorDefinitions[MecMotor_FL].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BL].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_FR].maxPower = MAX_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BR].maxPower = MAX_NEVEREST_POWER;
+
+	//set drive min motor powers
+	motorDefinitions[MecMotor_FL].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BL].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_FR].minPower = MIN_NEVEREST_POWER;
+	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
+
+	//set lift data
+	motorDefinitions[Lift].minPower = 33;
+	motorDefinitions[Lift].maxPower = 100;
+	motorDefinitions[Lift].encSlowLength = 1000;
+	motorDefinitions[Lift].encSlowStep = 10;
+	motorDefinitions[Lift].encHitZone = 100;
+
+	//check to make sure motors listed fills up motorList length
+	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
+		if((int) motorList[i] == -1) {
+			writeDebugStream("Motors failed to initialize! Make sure motorList contains all motors.");
+			return;
+		}
+	}
+	motorDefsInitialized = true;
+
+	//Initialize enc vals to ENC_OFF
+	for (int i=0; i<motorListSize; i++) {
+		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
+		nMotorEncoder[motorList[i]] = 0;
+	}
+}
+
+
+/*Returns max reference power for other functions */
+int motorGetMaxReferencePower() {
+	return MAX_REFERENCE_POWER;
 }
 
 /*Zero all motors */
@@ -428,72 +497,5 @@ void motorSetActualPowerToDesired(DesiredMotorVals *desiredVals) {
 		writeDebugStream("Motors not initialized!\n");
 	}
 }
-
-//Initialize motor definitions and a DesiredEncVals struct to ENC_OFF
-void motorInit(DesiredEncVals *desiredEncVals) {
-	//VOLATILE
-	//list all motors
-	//initialize to -1 so that we can check for any missing motors
-	int motorListSize = sizeof(motorList) / sizeof(tMotor);
-	for (int i=0; i<motorListSize; i++) {
-		motorList[i] = -1;
-	}
-	motorList[0] = MecMotor_FL;
-	motorList[1] = MecMotor_BL;
-	motorList[2] = MecMotor_FR;
-	motorList[3] = MecMotor_BR;
-	motorList[4] = Lift;
-	motorList[5] = Harvester;
-	motorList[6] = HarvesterMove;
-
-	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
-	//init motor state encoder data to 0
-	for (int i=0;i<MAX_NUM_MOTORS;i++) {
-		motorDefinitions[i].maxPower = MAX_NORMAL_POWER;
-		motorDefinitions[i].minPower = MIN_NORMAL_POWER;
-		motorDefinitions[i].encSlowLength = 500;
-		motorDefinitions[i].encSlowStep = 5;
-		motorDefinitions[i].encHitZone = 100;
-		motorStates[i].encoder = 0;
-		motorStates[i].lastRealEncoderPos = 0;
-		motorStates[i].timePosMs = 0;
-		motorStates[i].lastUpdateTimeMs = 0;
-	}
-
-	//set drive max motor powers
-	motorDefinitions[MecMotor_FL].maxPower = MAX_NEVEREST_POWER;
-	motorDefinitions[MecMotor_BL].maxPower = MAX_NEVEREST_POWER;
-	motorDefinitions[MecMotor_FR].maxPower = MAX_NEVEREST_POWER;
-	motorDefinitions[MecMotor_BR].maxPower = MAX_NEVEREST_POWER;
-
-	//set drive min motor powers
-	motorDefinitions[MecMotor_FL].minPower = MIN_NEVEREST_POWER;
-	motorDefinitions[MecMotor_BL].minPower = MIN_NEVEREST_POWER;
-	motorDefinitions[MecMotor_FR].minPower = MIN_NEVEREST_POWER;
-	motorDefinitions[MecMotor_BR].minPower = MIN_NEVEREST_POWER;
-
-	//set lift data
-	motorDefinitions[Lift].minPower = 33;
-	motorDefinitions[Lift].maxPower = 100;
-	motorDefinitions[Lift].encSlowLength = 1000;
-	motorDefinitions[Lift].encSlowStep = 10;
-	motorDefinitions[Lift].encHitZone = 100;
-
-	//check to make sure motors listed fills up motorList length
-	for (int i=0; i<sizeof(motorList) / sizeof(tMotor); i++) {
-		if((int) motorList[i] == -1) {
-			writeDebugStream("Motors failed to initialize! Make sure motorList contains all motors.");
-			return;
-		}
-	}
-	motorDefsInitialized = true;
-
-	//Initialize enc vals to ENC_OFF
-	for (int i=0; i<motorListSize; i++) {
-		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
-		nMotorEncoder[motorList[i]] = 0;
-	}
-}
-
 
 #endif
