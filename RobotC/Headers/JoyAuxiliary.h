@@ -6,54 +6,48 @@
 #include "Joystick.h"
 #include "Drive.h"
 
-void joyAuxInit(DesiredEncVals *desiredEncVals){
-	motorResetEncoder(desiredEncVals, Lift);
-}
 
-
-#define LIFT_UP_POW -100
-#define ENC_SIGN sgn(LIFT_UP_POW)
-
-#define LIFT_MAX ENC_SIGN * (LIFT_MIN + 10500) //high goal
-#define NINETY_GOAL ENC_SIGN * (LIFT_MIN + 7800)
-#define SIXTY_GOAL ENC_SIGN * (LIFT_MIN + 4600)
-#define THIRTY_GOAL ENC_SIGN * (LIFT_MIN + 2000)
+#define LIFT_MAX (10500) //high goal
+#define NINETY_GOAL (7800)
+#define SIXTY_GOAL (4600)
+#define THIRTY_GOAL (2000)
 long LIFT_MIN = 0;
 
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	long encTarget = ENC_OFF;
+	short encFlags = 0;
 	bool encCapModeOn = false; //whether or not to use encoder target as hard stop
 
 	if (joyButtonPressed(joyState, JOY2, BUTTON_LB)) { //raise
-		desiredMotorVals->power[Lift] = LIFT_UP_POW;
-		encTarget = LIFT_MAX;
-		encCapModeOn = true;
+		desiredMotorVals->power[Lift] = 100;
+		encTarget = LIFT_MIN + LIFT_MAX;
+		encFlags = ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON;
 	} else if (joyButtonPressed(joyState, JOY2, BUTTON_RB)) { //lower
-		desiredMotorVals->power[Lift] = (-1 * 0.01 * LIFT_UP_POW);
-		encCapModeOn = true;
+		desiredMotorVals->power[Lift] = (-1);
 		encTarget = LIFT_MIN;
+		encFlags = ENCFLAGS_CAPMODE_ON;
 	} else {
 		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
 			if (abs(motorGetEncoder(Lift)) > abs(NINETY_GOAL)) {
-				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = -1;
 			} else {
-				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = 100;
 			}
-			encTarget = NINETY_GOAL;
+			encTarget = LIFT_MIN + NINETY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_E || joyGetTophat(joyState, JOY2) == TOPHAT_W) { //med goal
 			if (abs(motorGetEncoder(Lift)) > abs(SIXTY_GOAL)) {
-				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = -1;
 			} else {
-				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = 100;
 			}
-			encTarget = SIXTY_GOAL;
+			encTarget = LIFT_MIN + SIXTY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_S) { //low goal
 			if (abs(motorGetEncoder(Lift)) > abs(THIRTY_GOAL)) {
-				desiredMotorVals->power[Lift] = -1 * LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = -1;
 			} else {
-				desiredMotorVals->power[Lift] = LIFT_UP_POW;
+				desiredMotorVals->power[Lift] = 100;
 			}
-			encTarget = THIRTY_GOAL;
+			encTarget = LIFT_MIN + THIRTY_GOAL;
 		} else {
 			desiredMotorVals->power[Lift] = 0;
 			encTarget = ENC_OFF;
@@ -64,7 +58,8 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 		LIFT_MIN = motorGetEncoder(Lift);
 		encTarget = ENC_OFF;
 	}
-	motorSetEncoder(desiredEncVals, Lift, encTarget, encCapModeOn);
+
+	motorSetEncoder(desiredEncVals, Lift, encTarget, encFlags);
 }
 
 #define MAX_HARVESTMOVE_TIME_POS 800

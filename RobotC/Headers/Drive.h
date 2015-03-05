@@ -211,18 +211,26 @@ void driveZeroMecMotor(DesiredMotorVals *desiredMotorVals) {
 
 /* Set mec encoders */
 void driveSetMecEncoder(DesiredEncVals *desiredEncVals, long mecFL, long mecBL, long mecFR, long mecBR) {
-	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FL, mecFL, true);
-	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BL, mecBL, true);
-	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FR, mecFR, true);
-	motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BR, mecBR, true);
-}
-
-/* Reset encoders for all mecanum motors */
-void driveResetMecEncoder(DesiredEncVals *desiredEncVals) {
-	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FL);
-	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
-	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
-	motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
+	if (mecFL > 0) {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FL, mecFL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON ^ ENCFLAGS_RELATIVE_ON);
+	} else {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FL, mecFL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_RELATIVE_ON);
+	}
+	if (mecBL > 0) {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BL, mecBL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON ^ ENCFLAGS_RELATIVE_ON);
+	} else {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BL, mecBL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_RELATIVE_ON);
+	}
+	if (mecFR > 0) {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FR, mecFR, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON ^ ENCFLAGS_RELATIVE_ON);
+	} else {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_FR, mecFR, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_RELATIVE_ON);
+	}
+	if (mecBR > 0) {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BR, mecBR, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON ^ ENCFLAGS_RELATIVE_ON);
+	} else {
+		motorSetEncoder(desiredEncVals, (tMotor) MecMotor_BR, mecBR, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_RELATIVE_ON);
+	}
 }
 
 /*Sets desired motor values in order to orbit north (forwards).

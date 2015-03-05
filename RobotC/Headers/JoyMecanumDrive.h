@@ -106,10 +106,6 @@ void joymecdriveDebug(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desire
 		writeDebugStream("FR Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_FR));
 		writeDebugStream("BR Encoder: %d\n", motorGetEncoder((tMotor) MecMotor_BR));
 		writeDebugStream("Resetting drive encoders.");
-		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FL);
-		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_FR);
-		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BL);
-		motorResetEncoder(desiredEncVals, (tMotor) MecMotor_BR);
 	}/*
 	writeDebugStream("FL Motor: %d\n", motor[MecMotor_FL]);
 	writeDebugStream("BL Motor: %d\n", motor[MecMotor_BL]);

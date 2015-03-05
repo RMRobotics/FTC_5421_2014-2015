@@ -154,31 +154,6 @@ static int motorBoundPower(tMotor currentMotor, int power) {
 	}
 }
 
-/* Resets desired, real, and the MotorState encoder, for a specific tMotor */
-void motorResetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor) {
-	if (motorDefsInitialized) {
-		desiredEncVals->encoder[curMotor] = ENC_OFF;
-		motorStates[curMotor].encoder = 0;
-		motorStates[curMotor].lastRealEncoderPos = 0;
-		nMotorEncoder[curMotor] = 0;
-	} else {
-		writeDebugStream("Motors not initialized!\n");
-	}
-}
-
-/* Resets all encoders, desired and real.
-	 Use this function when you want reset the encoders to
-	 a fresh state, NOT to turn off targeting. */
-void motorResetAllEncoders(DesiredEncVals *desiredEncVals) {
-	if (motorDefsInitialized) {
-		for (int i=0;i<NUM_MOTORS;i++) {
-			motorResetEncoder(desiredEncVals, motorList[i]);
-		}
-	} else {
-		writeDebugStream("Motors not initialized!\n");
-	}
-}
-
 /* Returns MotorState time value */
 long motorGetTimePosMs(tMotor curMotor) {
 	return motorStates[curMotor].timePosMs;
@@ -194,25 +169,49 @@ long motorGetEncoder(tMotor curMotor) {
 	return motorStates[curMotor].encoder;
 }
 
+
+#define ENCFLAGS_CAPMODE_ON 0b00000001
+#define ENCFLAGS_CAPMAX_ON 0b00000010
+#define ENCFLAGS_RELATIVE_ON 0b0000100
+
+
 /* Sets encoder target for a specific tMotor. Checks
 	 to make sure the target is below the maximum target.
 	 Does NOT reset the encoder. */
-void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, long target, bool capModeOn) {
+void motorSetEncoder(DesiredEncVals *desiredEncVals, tMotor curMotor, long target, short encFlags) {
 	if (motorDefsInitialized) {
-		if (abs(target) > MAX_ENC_TARGET && (target != ENC_OFF)) {
-			writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
+		if (encFlags & ENCFLAGS_CAPMODE_ON) {
+			desiredEncVals->encoderCapEnabled[curMotor] = true;
 		} else {
-			if (capModeOn) {
-				desiredEncVals->encoderCapEnabled[curMotor] = true;
-				if (target > motorGetEncoder(curMotor)) {
-					desiredEncVals->encoderCapIsMax[curMotor] = true;
-				} else {
-					desiredEncVals->encoderCapIsMax[curMotor] = false;
-				}
+			desiredEncVals->encoderCapEnabled[curMotor] = false;
+		}
+		if (encFlags & ENCFLAGS_CAPMAX_ON) {
+			desiredEncVals->encoderCapIsMax[curMotor] = true;
+		} else {
+			desiredEncVals->encoderCapIsMax[curMotor] = false;
+		}
+
+
+		if (encFlags & ENCFLAGS_RELATIVE_ON) {
+			long totalTarget = 0;
+			if (desiredEncVals->encoder[curMotor] == ENC_OFF) {
+				totalTarget = target;
 			} else {
-				desiredEncVals->encoderCapEnabled[curMotor] = false;
+				totalTarget = desiredEncVals->encoder[curMotor] + target;
 			}
-			desiredEncVals->encoder[curMotor] = target;
+			if (abs(totalTarget) > MAX_ENC_TARGET) {
+				writeDebugStream("Encoder relative target value (%d) past maximum target value!\n", target);
+			} else if (totalTarget == ENC_OFF) {
+				writeDebugStream("Lucky (not)! Relative target value results in ENC_OFF. Use absolute to set ENC_OFF!\n", target);
+			} else {
+				desiredEncVals->encoder[curMotor] = totalTarget;
+			}
+		} else {
+			if (abs(target) > MAX_ENC_TARGET && target != ENC_OFF) {
+				writeDebugStream("Encoder target value (%d) past maximum target value!\n", target);
+			} else {
+				desiredEncVals->encoder[curMotor] = target;
+			}
 		}
 	} else {
 		writeDebugStream("Motors not initialized!\n");
@@ -275,7 +274,6 @@ bool motorAllHitEncoderTarget(DesiredEncVals *desiredEncVals) {
 			if (!motorHasHitEncoderTarget(desiredEncVals, motorList[i])) {
 				string motorName;
 				motorGetName(motorList[i], &motorName);
-				writeDebugStream("%s failed enc target check!\n", motorName);
 				return false;
 			}
 		}
@@ -493,8 +491,8 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	//Initialize enc vals to ENC_OFF
 	for (int i=0; i<motorListSize; i++) {
 		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
+		nMotorEncoder[motorList[i]] = 0;
 	}
-	motorResetAllEncoders(desiredEncVals);
 }
 
 

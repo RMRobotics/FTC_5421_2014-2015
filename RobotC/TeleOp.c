@@ -9,7 +9,7 @@
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C3_1,     HarvesterMove, tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S3_C3_2,     motor0,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder, reversed)
 #pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S2_C1_1,    servo1,        tServoNone)
 #pragma config(Servo,  srvo_S2_C1_2,    servo2,        tServoNone)
@@ -55,7 +55,6 @@ void initialize() {
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
 	motorInit(&desiredEncVals);
 	servoInit();
-	joyAuxInit(&desiredEncVals);
 }
 
 void callAuxiliaryMotors(){
@@ -92,7 +91,7 @@ task main() {
 		HTIRS2readAllDCStrength(HTIRS2, dcS1, dcS2, dcS3, dcS4, dcS5);
 		HTIRS2readAllACStrength(HTIRS2, acS1, acS2, acS3, acS4, acS5);
 		HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
-		writeDebugStream("IR reads: ");
+		/*writeDebugStream("IR reads: ");
 		writeDebugStream("DC: %d AC: %d\n", dirDC, dirAC);
 		writeDebugStream("D: %d %d %d %d %d\n", dcS1, dcS2, dcS3, dcS4, dcS5);
 		writeDebugStream("A: %d %d %d %d %d\n", acS1, acS2, acS3, acS4, acS5);
@@ -105,6 +104,6 @@ task main() {
 		writeDebugStream("Dist:  %3d cm\n", ultraDistance);
 
 		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
-		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);
+		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);*/
 	}
 }
