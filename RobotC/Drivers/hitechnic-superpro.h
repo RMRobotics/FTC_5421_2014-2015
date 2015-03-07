@@ -4,9 +4,6 @@
  * HiTechnic SuperPro Prototype Board
  * @{
  */
-/*
- * $Id: hitechnic-superpro.h 133 2013-03-10 15:15:38Z xander $
- */
 
 #ifndef __HTSPB_H__
 #define __HTSPB_H__
@@ -20,7 +17,7 @@
  *
  * License: You may use this code as you wish, provided you give credit where its due.
  *
- * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 3.59 AND HIGHER. 
+ * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 4.10 AND HIGHER
 
  * \author Gustav Jansson (gus_at_hitechnic.com)
  * \date 10 October 2011
@@ -62,7 +59,6 @@
 #define HTSPB_DACO0    0x10      /*!< Address of analog parameters output O0 */
 #define HTSPB_DACO1    0x15      /*!< Address of analog parameters output O1 */
 
-
 // SuperPro Analog output modes
 #define DAC_MODE_DCOUT        0 /*!< Steady (DC) voltage output. */
 #define DAC_MODE_SINEWAVE     1 /*!< Sine wave output. */
@@ -72,16 +68,14 @@
 #define DAC_MODE_TRIANGLEWAVE 5 /*!< Triangle wave output. */
 #define DAC_MODE_PWMVOLTAGE   6 /*!< PWM square wave output. */
 
-
-
 tByteArray HTSPB_I2CRequest;    /*!< Array to hold I2C command data */
 tByteArray HTSPB_I2CReply;      /*!< Array to hold I2C reply data */
 
 ubyte HTSPBreadIO(tSensors link, ubyte mask);
 bool HTSPBwriteIO(tSensors link, ubyte mask);
 bool HTSPBsetupIO(tSensors link, ubyte mask);
-int HTSPBreadADC(tSensors link, byte channel, byte width);
-bool HTSPBreadAllADC(tSensors link, int &adch0, int &adch1, int &adch2, int &adch3, int &adch4, byte width);
+short HTSPBreadADC(tSensors link, byte channel, byte width);
+bool HTSPBreadAllADC(tSensors link, short &adch0, short &adch1, short &adch2, short &adch3, short &adch4, byte width);
 bool HTSPBsetSamplingTime(tSensors link, byte interval);
 
 /**
@@ -103,7 +97,6 @@ ubyte HTSPBreadIO(tSensors link, ubyte mask) {
   return HTSPB_I2CReply[0] & mask;
 }
 
-
 /**
  * Write the values the digital outpus as specified by the mask.
  * @param link the HTSPB port number
@@ -118,10 +111,8 @@ bool HTSPBwriteIO(tSensors link, ubyte mask) {
   HTSPB_I2CRequest[2] = HTSPB_OFFSET + HTSPB_DIGOUT; // Start digital output read address
   HTSPB_I2CRequest[3] = mask;                      // The specified digital ports
 
-
   return writeI2C(link, HTSPB_I2CRequest);
 }
-
 
 /**
  * Configure the ports for input or output according to the mask.
@@ -140,7 +131,6 @@ bool HTSPBsetupIO(tSensors link, ubyte mask) {
   return writeI2C(link, HTSPB_I2CRequest);
 }
 
-
 /**
  * Read the value of the specified analogue channel.
  * @param link the HTSPB port number
@@ -148,10 +138,10 @@ bool HTSPBsetupIO(tSensors link, ubyte mask) {
  * @param width the bit width of the result, can be either 8 or 10
  * @return the value of the ADC channel, or -1 if an error occurred
  */
-int HTSPBreadADC(tSensors link, byte channel, byte width) {
+short HTSPBreadADC(tSensors link, byte channel, byte width) {
   memset(HTSPB_I2CRequest, 0, sizeof(tByteArray));
 
-  int _adcVal = 0;
+  short _adcVal = 0;
   HTSPB_I2CRequest[0] = 2;                                       // Message size
   HTSPB_I2CRequest[1] = HTSPB_I2C_ADDR;                           // I2C Address
   HTSPB_I2CRequest[2] = HTSPB_OFFSET + HTSPB_A0_U + (channel * 2); // Start digital output read address
@@ -159,7 +149,7 @@ int HTSPBreadADC(tSensors link, byte channel, byte width) {
   if (!writeI2C(link, HTSPB_I2CRequest, HTSPB_I2CReply, 2))
     return -1;
 
-  // Convert the bytes into and int
+  // Convert the bytes into and short
   // 1st byte contains bits 9-2 of the channel's value
   // 2nd byte contains bits 1-0 of the channel's value
   // We'll need to shift the 1st byte left by 2 and or 2nd byte onto it.
@@ -172,8 +162,6 @@ int HTSPBreadADC(tSensors link, byte channel, byte width) {
   return _adcVal;
 }
 
-
-
 /**
  * This function read the value of all of the analogue channels.
  * @param link the HTSPB port number
@@ -184,7 +172,7 @@ int HTSPBreadADC(tSensors link, byte channel, byte width) {
  * @param width the bit width of the result, can be either 8 or 10
  * @return true if no error occured, false if it did
  */
-bool HTSPBreadAllADC(tSensors link, int &adch0, int &adch1, int &adch2, int &adch3, byte width) {
+bool HTSPBreadAllADC(tSensors link, short &adch0, short &adch1, short &adch2, short &adch3, byte width) {
   memset(HTSPB_I2CRequest, 0, sizeof(tByteArray));
 
   HTSPB_I2CRequest[0] = 2;                       // Message size
@@ -194,26 +182,24 @@ bool HTSPBreadAllADC(tSensors link, int &adch0, int &adch1, int &adch2, int &adc
   if (!writeI2C(link, HTSPB_I2CRequest, HTSPB_I2CReply, 10))
     return false;
 
-  // Convert the bytes into and int
+  // Convert the bytes into and short
   // 1st byte contains bits 9-2 of the channel's value
   // 2nd byte contains bits 1-0 of the channel's value
   // We'll need to shift the 1st byte left by 2 and or 2nd byte onto it.
   // If 8 bits is all we want, we just return the first byte and be done with it.
   if (width == 8) {
-    adch0 = (int)HTSPB_I2CReply[0];
-    adch1 = (int)HTSPB_I2CReply[2];
-    adch2 = (int)HTSPB_I2CReply[4];
-    adch3 = (int)HTSPB_I2CReply[6];
+    adch0 = (short)HTSPB_I2CReply[0];
+    adch1 = (short)HTSPB_I2CReply[2];
+    adch2 = (short)HTSPB_I2CReply[4];
+    adch3 = (short)HTSPB_I2CReply[6];
   } else {
-    adch0 = ((int)HTSPB_I2CReply[0] << 2) + (int)HTSPB_I2CReply[1];
-    adch1 = ((int)HTSPB_I2CReply[2] << 2) + (int)HTSPB_I2CReply[3];
-    adch2 = ((int)HTSPB_I2CReply[4] << 2) + (int)HTSPB_I2CReply[5];
-    adch3 = ((int)HTSPB_I2CReply[6] << 2) + (int)HTSPB_I2CReply[7];
+    adch0 = ((short)HTSPB_I2CReply[0] << 2) + (short)HTSPB_I2CReply[1];
+    adch1 = ((short)HTSPB_I2CReply[2] << 2) + (short)HTSPB_I2CReply[3];
+    adch2 = ((short)HTSPB_I2CReply[4] << 2) + (short)HTSPB_I2CReply[5];
+    adch3 = ((short)HTSPB_I2CReply[6] << 2) + (short)HTSPB_I2CReply[7];
   }
   return true;
 }
-
-
 
 /**
  * Write to the analog output.
@@ -224,7 +210,7 @@ bool HTSPBreadAllADC(tSensors link, int &adch0, int &adch1, int &adch2, int &adc
  * @param volt the analog voltage from 0 to 1023 (for 0 to 3.3v)
  * @return true if no error occured, false if it did
  */
-bool HTSPBwriteAnalog(tSensors link, byte dac, byte mode, int freq, int volt) {
+bool HTSPBwriteAnalog(tSensors link, byte dac, byte mode, short freq, short volt) {
   memset(HTSPB_I2CRequest, 0, sizeof(tByteArray));
 
   HTSPB_I2CRequest[0] = 7;                          // Message size
@@ -239,12 +225,7 @@ bool HTSPBwriteAnalog(tSensors link, byte dac, byte mode, int freq, int volt) {
   return writeI2C(link, HTSPB_I2CRequest);
 }
 
-
-
 #endif // __HTSPB_H__
 
-/*
- * $Id: hitechnic-superpro.h 133 2013-03-10 15:15:38Z xander $
- */
 /* @} */
 /* @} */
