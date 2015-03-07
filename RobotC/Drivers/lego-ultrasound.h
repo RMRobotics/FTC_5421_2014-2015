@@ -5,10 +5,6 @@
  * @{
  */
 
-/*
- * $Id: lego-ultrasound.h 133 2013-03-10 15:15:38Z xander $
- */
-
 #ifndef __LEGOUS_H__
 #define __LEGOUS_H__
 /** \file lego-ultrasound.h
@@ -17,7 +13,7 @@
  * lego-ultrasound.h provides an API for the Lego US driver.
  *
  * License: You may use this code as you wish, provided you give credit where its due.
- * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 3.59 AND HIGHER.
+ * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 4.10 AND HIGHER
 
  *
  * Changelog:
@@ -47,7 +43,7 @@
 #define LEGOUS_CMD_RST    0x04      /*!< Command to request a warm reset */
 
 // Prototypes
-int USreadDist(tSensors link);
+short USreadDist(tSensors link);
 bool USreadDistances(tSensors link, tByteArray &distances);
 bool _USsendCmd(tSensors link, ubyte command);
 bool USsetSingleMode(tSensors link);
@@ -57,7 +53,7 @@ bool USsetEventCapture(tSensors link);
 bool USreset(tSensors link);
 
 #ifdef __HTSMUX_SUPPORT__
-int USreadDist(tMUXSensor muxsensor);
+short USreadDist(tMUXSensor muxsensor);
 
 tConfigParams LEGOUS_config = {HTSMUX_CHAN_I2C + HTSMUX_CHAN_9V + HTSMUX_CHAN_I2C_SLOW, 1, 0x02, 0x42}; /*!< Array to hold SMUX config data for sensor */
 #endif // __HTSMUX_SUPPORT__
@@ -71,27 +67,25 @@ tByteArray LEGOUS_I2CReply;
  * @return distance from the sensor or 255 if no valid range has been specified.
  */
 #ifdef __HTSMUX_SUPPORT__
-int USreadDist(tMUXSensor muxsensor) {
+short USreadDist(tMUXSensor muxsensor) {
 
   if (HTSMUXSensorTypes[muxsensor] != HTSMUXSensorCustom)
     HTSMUXconfigChannel(muxsensor, LEGOUS_config);
-
 
   if (!HTSMUXreadPort(muxsensor, LEGOUS_I2CReply, 1, 0)) {
     return 255;
   }
 
-  return (int)LEGOUS_I2CReply[0];
+  return (short)LEGOUS_I2CReply[0];
 }
 #endif
-
 
 /**
  * Get the distance values from the sensor
  * @param link the US port number
  * @return distance from the sensor or 255 if no valid range has been specified.
  */
-int USreadDist(tSensors link) {
+short USreadDist(tSensors link) {
   memset(LEGOUS_I2CRequest, 0, sizeof(tByteArray));
 
   LEGOUS_I2CRequest[0] = 2;                // Message size
@@ -103,7 +97,6 @@ int USreadDist(tSensors link) {
 
   return LEGOUS_I2CReply[0];
 }
-
 
 /**
  * Get the distance values from the sensor. The distances to the
@@ -126,7 +119,6 @@ bool USreadDistances(tSensors link, tByteArray &distances) {
   return true;
 }
 
-
 /**
  * Send a command to the US Sensor
  *
@@ -146,7 +138,6 @@ bool _USsendCmd(tSensors link, ubyte command) {
   return writeI2C(link, LEGOUS_I2CRequest);
 }
 
-
 /**
  * Configure the US sensor for Single Shot mode
  * @param link the US port number
@@ -155,7 +146,6 @@ bool _USsendCmd(tSensors link, ubyte command) {
 bool USsetSingleMode(tSensors link) {
   return _USsendCmd(link, LEGOUS_CMD_SSHOT);
 }
-
 
 /**
  * Configure the US sensor for Continuous Mode.  This is the default.
@@ -166,7 +156,6 @@ bool USsetContinuousMode(tSensors link) {
   return _USsendCmd(link, LEGOUS_CMD_CONT);
 }
 
-
 /**
  * Turn the sensor off.
  * @param link the US port number
@@ -176,7 +165,6 @@ bool USsetOff(tSensors link){
   return _USsendCmd(link, LEGOUS_CMD_OFF);
 }
 
-
 /**
  * Configure the US sensor for Event Capture mode
  * @param link the US port number
@@ -185,7 +173,6 @@ bool USsetOff(tSensors link){
 bool USsetEventCapture(tSensors link) {
   return _USsendCmd(link, LEGOUS_CMD_ECAPT);
 }
-
 
 /**
  * Request a warm reset of the sensor.
@@ -198,8 +185,5 @@ bool USreset(tSensors link) {
 
 #endif // __LEGOSNR_H__
 
-/*
- * $Id: lego-ultrasound.h 133 2013-03-10 15:15:38Z xander $
- */
 /* @} */
 /* @} */
