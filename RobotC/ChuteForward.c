@@ -9,7 +9,7 @@
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C3_1,     HarvesterMove, tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S3_C3_2,     motor0,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder, reversed)
 #pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S2_C1_1,    servo1,        tServoNone)
 #pragma config(Servo,  srvo_S2_C1_2,    servo2,        tServoNone)
@@ -25,16 +25,15 @@
 // were connected to 3rd port of the SMUX connected to the NXT port S4,
 // we would use msensor_S4_3
 
-#include "../drivers/hitechnic-sensormux.h"
-#include "../drivers/hitechnic-irseeker-v2.h"
-#include "../drivers/hitechnic-gyro.h"
-#include "../drivers/lego-ultrasound.h"
+#include "drivers/hitechnic-sensormux.h"
+#include "drivers/hitechnic-irseeker-v2.h"
+#include "drivers/hitechnic-gyro.h"
+#include "drivers/lego-ultrasound.h"
 
 // Give the sensor a nice easy to use name
 const tMUXSensor GYRO = msensor_S4_1;
 const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
-
 
 #include "..\Headers\Joystick.h"
 #include "..\Headers\Motor.h"
@@ -59,22 +58,17 @@ void initialize() {
 task main()
 {
 	initialize();
-	writeDebugStream("This is slides forward\n");
+	writeDebugStream("This is chute forward\n");
 	joyWaitForStart();
-	wait1Msec(5000);
 	time1[T1] = 0; //in ms
-	driveSetMecMotorN(&desiredMotorVals, 1.0);
+	driveSetMecMotorS(&desiredMotorVals, 1.0);
 	while (time1[T1] < 2500) {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Driving forward!\n");
 	}
 	driveZeroMecMotor(&desiredMotorVals);
-	while (time1[T1] < 10000) {
+	while (time1[T1] < 2500) {
 		motorSetActualPowerToDesired(&desiredMotorVals);
 		writeDebugStream("Stopping!\n");
-	}
-	//lower harvester
-	while (time1[T1] < 3000) {
-		servoSetCont(HarvesterWinch, 0);
 	}
 }

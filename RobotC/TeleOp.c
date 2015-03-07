@@ -35,11 +35,10 @@ const tMUXSensor GYRO = msensor_S4_1;
 const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
 
-
+#include "Headers\Global.h"
 #include "Headers\Motor.h"
 #include "Headers\Servo.h"
 #include "Headers\JoyMecanumDrive.h"
-#include "Headers\Global.h"
 #include "Headers\JoyAuxiliary.h"
 
 //Stores desired motor values

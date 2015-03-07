@@ -9,7 +9,7 @@
 #pragma config(Motor,  mtr_S3_C2_2,     Leonardo_BL,   tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S3_C3_1,     HarvesterMove, tmotorTetrix, openLoop, encoder)
 #pragma config(Motor,  mtr_S3_C3_2,     motor0,        tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder)
+#pragma config(Motor,  mtr_S3_C4_1,     Lift,					 tmotorTetrix, openLoop, encoder, reversed)
 #pragma config(Motor,  mtr_S3_C4_2,     Harvester,     tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S2_C1_1,    servo1,        tServoNone)
 #pragma config(Servo,  srvo_S2_C1_2,    servo2,        tServoNone)
@@ -34,8 +34,6 @@
 const tMUXSensor GYRO = msensor_S4_1;
 const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
-
-
 
 task main() {
 	while(true){
