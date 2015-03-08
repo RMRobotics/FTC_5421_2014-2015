@@ -5,6 +5,10 @@
  * @{
  */
 
+/*
+ * $Id: hitechnic-accelerometer.h 133 2013-03-10 15:15:38Z xander $
+ */
+
 #ifndef __HTAC_H__
 #define __HTAC_H__
 /** \file hitechnic-accelerometer.h
@@ -15,7 +19,7 @@
  * Changelog:
  * - 0.1: Initial release
  * - 0.2: Fixed bad registers<br>
- *        Added HTACreadAllAxes(tSensors link, short &x, short &y, short &z)<br>
+ *        Added HTACreadAllAxes(tSensors link, int &x, int &y, int &z)<br>
  *        Removed HTACreadAllAxes(tSensors link, tIntArray &data)<br>
  *        Changed HTACreadX, Y, Z to use by reference instead of as return value<br>
  * - 0.3: SMUX functions added.
@@ -30,7 +34,7 @@
  *
  * License: You may use this code as you wish, provided you give credit where its due.
  *
- * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 4.10 AND HIGHER
+ * THIS CODE WILL ONLY WORK WITH ROBOTC VERSION 3.59 AND HIGHER. 
 
  * \author Xander Soldaat (xander_at_botbench.com)
  * \date 20 February 2011
@@ -40,7 +44,6 @@
  */
 
 #pragma systemFile
-#include "hitechnic-sensormux.h"
 
 #ifndef __COMMON_H__
 #include "common.h"
@@ -55,118 +58,90 @@
 #define HTAC_Y_LOW     0x04      /*!< Y axis lower 2 bits */
 #define HTAC_Z_LOW     0x05      /*!< Z axis lower 2 bits */
 
-typedef struct
-{
-  tI2CData I2CData;
-  short x;
-  short y;
-  short z;
-  short axes[3];
-  bool smux;
-  tMUXSensor smuxport;
-} tHTAC, *tHTACPtr;
+bool HTACreadAllAxes(tSensors link, int &x, int &y, int &z);
 
-bool initSensor(tHTACPtr htacPtr, tSensors port);
-bool initSensor(tHTACPtr htacPtr, tMUXSensor muxsensor);
-bool readSensor(tHTACPtr htacPtr);
+#ifdef __HTSMUX_SUPPORT__
+bool HTACreadAllAxes(tMUXSensor muxsensor, int &x, int &y, int &z);
 
 tConfigParams HTAC_config = {HTSMUX_CHAN_I2C, 6, 0x02, 0x42}; /*!< Array to hold SMUX config data for sensor */
+#endif
+
+tByteArray HTAC_I2CRequest;    /*!< Array to hold I2C command data */
+tByteArray HTAC_I2CReply;      /*!< Array to hold I2C reply data */
 
 /**
- * Initialise the sensor's data struct and port
- *
- * @param htacPtr pointer to the sensor's data struct
- * @param port the sensor port
+ * Read the value of all the axes registers return by reference
+ * @param link the HTAC port number
+ * @param x x axis
+ * @param y y axis
+ * @param z z axis
  * @return true if no error occured, false if it did
  */
-bool initSensor(tHTACPtr htacPtr, tSensors port)
-{
-  memset(htacPtr, 0, sizeof(tHTACPtr));
-  htacPtr->I2CData.address = HTAC_I2C_ADDR;
-  htacPtr->I2CData.port = port;
-  htacPtr->I2CData.type = sensorI2CCustom;
+bool HTACreadAllAxes(tSensors link, int &x, int &y, int &z) {
+  memset(HTAC_I2CRequest, 0, sizeof(tByteArray));
 
-  htacPtr->smux = false;
+  HTAC_I2CRequest[0] = 2;                       // Message size
+  HTAC_I2CRequest[1] = HTAC_I2C_ADDR;           // I2C Address
+  HTAC_I2CRequest[2] = HTAC_OFFSET + HTAC_X_UP; // X axis upper 8 bits register
 
-  // Ensure the sensor is configured correctly
-  if (SensorType[htacPtr->I2CData.port] != htacPtr->I2CData.type)
-    SensorType[htacPtr->I2CData.port] = htacPtr->I2CData.type;
+  if (!writeI2C(link, HTAC_I2CRequest, HTAC_I2CReply, 6))
+    return false;
 
-  return true;
-}
-
-/**
- * Initialise the sensor's data struct and MUX port
- *
- * @param htacPtr pointer to the sensor's data struct
- * @param muxsensor the sensor MUX port
- * @return true if no error occured, false if it did
- */
-bool initSensor(tHTACPtr htacPtr, tMUXSensor muxsensor)
-{
-  memset(htacPtr, 0, sizeof(tHTACPtr));
-  htacPtr->I2CData.port = (tSensors)SPORT(muxsensor);
-  htacPtr->I2CData.address = HTAC_I2C_ADDR;
-  htacPtr->I2CData.type = sensorI2CCustom;
-  htacPtr->smux = true;
-  htacPtr->smuxport = muxsensor;
-
-  // Ensure the sensor is configured correctly
-  if (SensorType[htacPtr->I2CData.port] != htacPtr->I2CData.type)
-    SensorType[htacPtr->I2CData.port] = htacPtr->I2CData.type;
-
-  return HTSMUXconfigChannel(muxsensor, HTAC_config);
-}
-
-/**
- * Read all the sensor's data
- *
- * @param htacPtr pointer to the sensor's data struct
- * @return true if no error occured, false if it did
- */
-bool readSensor(tHTACPtr htacPtr)
-{
-  memset(htacPtr->I2CData.request, 0, sizeof(htacPtr->I2CData.request));
-
-  if (htacPtr->smux)
-  {
-    if (!HTSMUXreadPort(htacPtr->smuxport, htacPtr->I2CData.reply, 6, HTAC_X_UP))
-      return false;
-  }
-  else
-  {
-    // Read all of the data available on the sensor
-    htacPtr->I2CData.request[0] = 2;                    // Message size
-    htacPtr->I2CData.request[1] = htacPtr->I2CData.address; // I2C Address
-    htacPtr->I2CData.request[2] = HTAC_OFFSET + HTAC_X_UP;
-    htacPtr->I2CData.replyLen = 6;
-    htacPtr->I2CData.requestLen = 2;
-
-    if (!writeI2C(&htacPtr->I2CData))
-      return false;
-  }
-
-  // Populate the struct with the newly retrieved data
   // Convert 2 bytes into a signed 10 bit value.  If the 8 high bits are more than 127, make
   // it a signed value before combing it with the lower 2 bits.
   // Gotta love conditional assignments!
-  htacPtr->x = (htacPtr->I2CData.reply[0] > 127) ? (htacPtr->I2CData.reply[0] - 256) * 4 + htacPtr->I2CData.reply[3]
-                                   : htacPtr->I2CData.reply[0] * 4 + htacPtr->I2CData.reply[3];
+  x = (HTAC_I2CReply[0] > 127) ? (HTAC_I2CReply[0] - 256) * 4 + HTAC_I2CReply[3]
+                                   : HTAC_I2CReply[0] * 4 + HTAC_I2CReply[3];
 
-  htacPtr->y = (htacPtr->I2CData.reply[1] > 127) ? (htacPtr->I2CData.reply[1] - 256) * 4 + htacPtr->I2CData.reply[4]
-                                   : htacPtr->I2CData.reply[1] * 4 + htacPtr->I2CData.reply[4];
+  y = (HTAC_I2CReply[1] > 127) ? (HTAC_I2CReply[1] - 256) * 4 + HTAC_I2CReply[4]
+                                   : HTAC_I2CReply[1] * 4 + HTAC_I2CReply[4];
 
-  htacPtr->z = (htacPtr->I2CData.reply[2] > 127) ? (htacPtr->I2CData.reply[2] - 256) * 4 + htacPtr->I2CData.reply[5]
-                                   : htacPtr->I2CData.reply[2] * 4 + htacPtr->I2CData.reply[5];
-
-	htacPtr->axes[0] = htacPtr->x;
-	htacPtr->axes[1] = htacPtr->y;
-	htacPtr->axes[2] = htacPtr->z;
+  z = (HTAC_I2CReply[2] > 127) ? (HTAC_I2CReply[2] - 256) * 4 + HTAC_I2CReply[5]
+                                   : HTAC_I2CReply[2] * 4 + HTAC_I2CReply[5];
 
   return true;
 }
 
+
+/**
+ * Read the value of all the axes registers return by reference
+ * @param muxsensor the SMUX sensor port number
+ * @param x x axis
+ * @param y y axis
+ * @param z z axis
+ * @return true if no error occured, false if it did
+ */
+#ifdef __HTSMUX_SUPPORT__
+bool HTACreadAllAxes(tMUXSensor muxsensor, int &x, int &y, int &z) {
+  memset(HTAC_I2CReply, 0, sizeof(tByteArray));
+
+  if (HTSMUXSensorTypes[muxsensor] != HTSMUXSensorCustom)
+    HTSMUXconfigChannel(muxsensor, HTAC_config);
+
+  if (!HTSMUXreadPort(muxsensor, HTAC_I2CReply, 6, HTAC_X_UP)) {
+    return false;
+  }
+
+  // Convert 2 bytes into a signed 10 bit value.  If the 8 high bits are more than 127, make
+  // it a signed value before combing it with the lower 2 bits.
+  // Gotta love conditional assignments!
+  x = (HTAC_I2CReply[0] > 127) ? (HTAC_I2CReply[0] - 256) * 4 + HTAC_I2CReply[3]
+                                   : HTAC_I2CReply[0] * 4 + HTAC_I2CReply[3];
+
+  y = (HTAC_I2CReply[1] > 127) ? (HTAC_I2CReply[1] - 256) * 4 + HTAC_I2CReply[4]
+                                   : HTAC_I2CReply[1] * 4 + HTAC_I2CReply[4];
+
+  z = (HTAC_I2CReply[2] > 127) ? (HTAC_I2CReply[2] - 256) * 4 + HTAC_I2CReply[5]
+                                   : HTAC_I2CReply[2] * 4 + HTAC_I2CReply[5];
+
+  return true;
+}
+#endif // __HTSMUX_SUPPORT__
+
 #endif // __HTAC_H__
 
+/*
+ * $Id: hitechnic-accelerometer.h 133 2013-03-10 15:15:38Z xander $
+ */
 /* @} */
 /* @} */

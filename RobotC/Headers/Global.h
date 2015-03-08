@@ -2,28 +2,6 @@
 #define GLOBAL_H
 #pragma systemFile
 
-
-#include "drivers/hitechnic-sensormux.h"
-#include "drivers/hitechnic-irseeker-v2.h"
-#include "drivers/hitechnic-gyro.h"
-#include "drivers/lego-ultrasound.h"
-
-//Structs for sensors
-tHTIRS2 irSeeker;
-tHTGYRO gyroSensor;
-
-// The sensor is connected to the first port
-// of the SMUX which is connected to the NXT port S1.
-// To access that sensor, we must use msensor_S1_1.  If the sensor
-// were connected to 3rd port of the SMUX connected to the NXT port S4,
-// we would use msensor_S4_3
-
-// Give the sensor a nice easy to use name
-const tMUXSensor GYRO = msensor_S4_1;
-const tMUXSensor HTIRS2 = msensor_S4_4;
-const tMUXSensor LEGOUS = msensor_S4_3;
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 /*A note on array indexing:
 Arrays can be accessed by converting the tMotor enum to an int to get the array
