@@ -15,6 +15,10 @@ DesiredEncVals desiredEncVals;
 void initialize() {
 	clearDebugStream();
 	writeDebugStream("This is TeleOp.c\n");
+	initSensor(&irSeeker, HTIRS2);
+	initSensor(&gyroSensor, GYRO);
+	sensorCalibrate(&gyroSensor);
+
 	//Initialize to zeroes
 	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
@@ -47,20 +51,15 @@ task main() {
 
 
 		//IR code
-		int dcS1, dcS2, dcS3, dcS4, dcS5 = 0;
-		int acS1, acS2, acS3, acS4, acS5 = 0;
-		int dirEnh, strEnh = 0; //direction, strength enhanced
+		readSensor(&irSeeker);
 
-		int dirDC = HTIRS2readDCDir(HTIRS2);
-		int dirAC = HTIRS2readACDir(HTIRS2);
-		HTIRS2readAllDCStrength(HTIRS2, dcS1, dcS2, dcS3, dcS4, dcS5);
-		HTIRS2readAllACStrength(HTIRS2, acS1, acS2, acS3, acS4, acS5);
-		HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
-		/*writeDebugStream("IR reads: ");
-		writeDebugStream("DC: %d AC: %d\n", dirDC, dirAC);
-		writeDebugStream("D: %d %d %d %d %d\n", dcS1, dcS2, dcS3, dcS4, dcS5);
-		writeDebugStream("A: %d %d %d %d %d\n", acS1, acS2, acS3, acS4, acS5);
-		writeDebugStream("Enh Dir: %d Str %d\n", dirEnh, strEnh);
+		writeDebugStream("IR reads: ");
+		writeDebugStream("DC: %d AC: %d\n", irSeeker.dcDirection, irSeeker.acDirection);
+		writeDebugStream("D: %d %d %d %d %d\n", irSeeker.dcValues[0], irSeeker.dcValues[1],
+			irSeeker.dcValues[2], irSeeker.dcValues[3], irSeeker.dcValues[4]);
+		writeDebugStream("A: %d %d %d %d %d\n", irSeeker.acValues[0], irSeeker.acValues[1],
+			irSeeker.acValues[2], irSeeker.acValues[3], irSeeker.acValues[4]);
+		writeDebugStream("Enh Dir: %d Str %d\n", irSeeker.enhDirection, irSeeker.enhStrength);
 
 
 		//ULTRA code
@@ -68,7 +67,17 @@ task main() {
 		ultraDistance = USreadDist(LEGOUS);
 		writeDebugStream("Dist:  %3d cm\n", ultraDistance);
 
-		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
-		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);*/
+
+		//GYRO code
+		readSensor(&gyroSensor);
+    writeDebugStream("Offset: %4f", gyroSensor.offset);
+    writeDebugStream("Gyro:   %4f", gyroSensor.rotation);
+
+
+
+		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL],
+			desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
+		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);
+
 	}
 }
