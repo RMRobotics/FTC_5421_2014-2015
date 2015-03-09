@@ -45,26 +45,27 @@ const tMUXSensor LEGOUS = msensor_S4_3;
 #include "Headers\Data.h"
 
 //Stores desired motor values
-//DesiredMotorVals desiredMotorVals;
+DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
-//DesiredEncVals desiredEncVals;
+DesiredEncVals desiredEncVals;
 
 void initialize() {
 	clearDebugStream();
 	writeDebugStream("This is JoyRecord\n");
 	//Initialize to zeroes
-//	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-//	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-//	motorInit();
-//	servoInit();
+	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
+	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
+	motorInit(&desiredEncVals);
+	servoInit();
 
 }
 
-/*void callAuxiliaryMotors(){
-	joyLift(&desiredMotorVals, joyGetJoystickPointer());
+void callAuxiliaryMotors(){
+	joyLift(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
+	joyGrabber(&desiredMotorVals, joyGetJoystickPointer());
 	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
-}*/
+}
 
 task main()
 {
@@ -84,11 +85,12 @@ task main()
 
 	while ((nPgmTime - pgmStartTimeMs) < timeLengthMs) {
 		joyUpdateJoystickSettings();
-		//joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
-		//callAuxiliaryMotors();
-		//motorSetActualPowerToDesired(&desiredMotorVals);
+		joymecdriveSetDesiredPower(&desiredMotorVals, joyGetJoystickPointer());
+		callAuxiliaryMotors();
+		motorSetActualPowerToDesired(&desiredMotorVals);
+
 		TJoystick *joystickPtr = joyGetJoystickPointer();
-		joyplaymusicPlay(joystickPtr);
+		//joyplaymusicPlay(joystickPtr);
 
 		byte buffer[TJOY_SIZE];
 		memcpy(buffer, joystickPtr, TJOY_SIZE);

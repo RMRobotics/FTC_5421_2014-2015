@@ -54,26 +54,26 @@ static PlaybackStateNames currentState = STATE_BEGIN;
 
 
 //Stores desired motor values
-//DesiredMotorVals desiredMotorVals;
+DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
-//DesiredEncVals desiredEncVals;
+DesiredEncVals desiredEncVals;
 
 void initialize() {
 	clearDebugStream();
 	writeDebugStream("This is PlayRecorded\n");
 	//Initialize to zeroes
-	/*memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
+	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	motorInit();
-	servoInit();*/
+	motorInit(&desiredEncVals);
+	servoInit();
 }
-/*
+
 void callAuxiliaryMotors(){
-	joyLift(&desiredMotorVals, joyGetJoystickPointer());
-	joyWing(&desiredMotorVals, joyGetJoystickPointer());
+	joyLift(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
 	joyHarvester(&desiredMotorVals, joyGetJoystickPointer());
+	joyGrabber(&desiredMotorVals, joyGetJoystickPointer());
 	joyBucketDrop(&desiredMotorVals, joyGetJoystickPointer());
-}*/
+}
 
 task main()
 {
@@ -102,10 +102,10 @@ task main()
 			case STATE_RUN:
 				TJoystick *curJoy;
 				if (dataReadTJoystick(&fileHandle, curJoy)) {
-					/*joymecdriveSetDesiredPower(&desiredMotorVals, curJoy);
+					joymecdriveSetDesiredPower(&desiredMotorVals, curJoy);
 					callAuxiliaryMotors();
-					motorSetActualPowerToDesired(&desiredMotorVals);*/
-					joyplaymusicPlay(curJoy);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					//joyplaymusicPlay(curJoy);
 					wait1Msec(delay);
 					if ((nPgmTime - pgmStartTimeMs) > timeLengthMs) {
 						currentState = STATE_END;
