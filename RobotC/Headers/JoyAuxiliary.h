@@ -67,9 +67,9 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
-		desiredMotorVals->power[Harvester] = 100;
+		desiredMotorVals->power[Harvester] = 90;
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		desiredMotorVals->power[Harvester] = -100;
+		desiredMotorVals->power[Harvester] = -90;
 	} else {
 		desiredMotorVals->power[Harvester] = 0;
 	}

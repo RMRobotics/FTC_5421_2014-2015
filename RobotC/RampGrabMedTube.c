@@ -76,7 +76,6 @@ void initialize(){
 	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
 	servoInit();
 	motorInit(&desiredEncVals);
-	motorResetAllEncoders(&desiredEncVals);
 }
 
 #define LIFT_MAX 10500
@@ -93,7 +92,6 @@ bool end = false;
 bool grabbing = false;
 
 void restMecMotors() {
-	driveResetMecEncoder(&desiredEncVals);
 	driveZeroMecMotor(&desiredMotorVals);
 	motorSetActualPowerToDesired(&desiredMotorVals);
 	rest = true;
@@ -106,10 +104,10 @@ task main()
 	//SLIDE SIDE IS FACING DOWN THE RAMP
 	long tubeGrabStartTimeMs = 0;
 	long bucketStartTimeMs = 0;
+	bool init = false;
 
 	initialize();
 	waitForStart();
-	motorResetAllEncoders(&desiredEncVals);
 	while(!end){
 		long loopStartTimeMs = nPgmTime;
 		if (rest) {
@@ -125,11 +123,11 @@ task main()
 		} else {
 			switch(currentState){
 				case STATE_START:
-					driveSetEncoderW(&desiredEncVals, .15 * ENC_PER_REV);
 					currentState = STATE_ALIGNONRAMP;
 					break;
 				case STATE_ALIGNONRAMP:
 					writeDebugStream("State: AlignonRamp\n");
+					driveSetEncoderW(&desiredEncVals, .15 * ENC_PER_REV);
 					driveSetMecMotorW(&desiredMotorVals, 0.05);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -138,12 +136,12 @@ task main()
 
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
-						driveSetEncoderN(&desiredEncVals, 4.0 * ENC_PER_REV); //for next state
 						currentState = STATE_OFFRAMP;
 					}
 					break;
 				case STATE_OFFRAMP:
 					writeDebugStream("State: Offramp\n");
+					driveSetEncoderN(&desiredEncVals, 4.0 * ENC_PER_REV);
 					driveSetMecMotorN(&desiredMotorVals, 0.25);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -152,17 +150,12 @@ task main()
 
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
-						motorResetAllEncoders(&desiredEncVals);
-						motorZeroAllMotors(&desiredMotorVals);
-						//driveSetEncoderN(&desiredEncVals, 5.0 * ENC_PER_REV); //for next state
-						//motorSetEncoder(&desiredEncVals, Lift, -SIXTY_GOAL, true); //for next state
-						//driveSetEncoderRotateCW(&desiredEncVals, 0.5 * ENC_PER_REV); //for next state
-						//currentState = STATE_CORRECTIONTURN;
 						currentState = STATE_DRIVETOWARDTUBE;
 					}
 					break;
-				/*case STATE_CORRECTIONTURN:
+				case STATE_CORRECTIONTURN:
 					writeDebugStream("State: Correction turn\n");
+					driveSetEncoderRotateCW(&desiredMotorVals, 1000);
 					driveSetMecMotorRotateCW(&desiredMotorVals, 0.25);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -171,182 +164,136 @@ task main()
 
 					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
-						//driveSetEncoderN(&desiredEncVals, 1.6 * ENC_PER_REV); //for next state
-						//motorSetEncoder(&desiredEncVals, Lift, -SIXTY_GOAL, true); //for next state
 						currentState = STATE_DRIVETOWARDTUBE;
-					} */
+					}
 				case STATE_DRIVETOWARDTUBE:
 					writeDebugStream("State: Drive Toward Tube\n");
+					desiredMotorVals.power[Lift] = 100;
+					motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
 
-					motorUpdateState();
-
-					/*
-					desiredMotorVals.power[Lift] = -100;
-					driveSetMecMotorN(&desiredMotorVals, 0.5);
-
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-					motorSetActualPowerToDesired(&desiredMotorVals);
-					motorUpdateState(); */
-
-
-					motor[Lift] = -75;
-					//NEED TO LIMIT ONLY LIFT HERE
-
-					motor[MecMotor_FL] = 25;
-					motor[MecMotor_BL] = 25;
-					motor[MecMotor_FR] = 25;
-					motor[MecMotor_BR] = 25;
-
-					if (motorGetEncoder(Lift) < -(SIXTY_GOAL)) {
-						motor[Lift] = 0;
-					}
-
-					if (motorGetEncoder((tMotor) MecMotor_FL) > 4000) {
-						motor[MecMotor_FL] = 0;
-						motor[MecMotor_BL] = 0;
-						motor[MecMotor_FR] = 0;
-						motor[MecMotor_BR] = 0;
-						motor[Lift] = 0;
-						restMecMotors();
-						currentState = STATE_WAITFORLIFT;
-					} else if (motorGetEncoder((tMotor) MecMotor_FL) > 3600) {
-						servoSetNonCont(TubeGrabber, (servoDefinitions[TubeGrabber].maxValue*(.75)))
-					}
-
-					/*if(!grabbing) {
-						if(driveMecHasHitEncoderTarget(&desiredEncVals)) { //keep driving
+					if (!grabbing) {
+						driveSetEncoderN(&desiredMotorVals, 4000);
+						driveSetMecMotorN(&desiredMotorVals, 0.5);
+						if(driveMecHasHitEncoderTarget(&desiredEncVals)) {
 							writeDebugStream("Drive toward tube hit enc target!\n");
+							driveSetEncoderN(&desiredMotorVals, 750);
 							servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
 							grabbing = true;
-							tubeGrabStartTimeMs = nPgmTime;
+						}
+					} else {
+						if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
+							restMecMotors();
+							currentState = STATE_WAITFORLIFT;
 						}
 					}
 
-					if (((nPgmTime - tubeGrabStartTimeMs) > 500) && tubeGrabStartTimeMs != 0) {
-						motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-						restMecMotors();
-						currentState = STATE_WAITFORLIFT;
-					}
-					if(driveMecHasHitEncoderTarget(&desiredEncVals)){
-					} */
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					motorUpdateState();
+
 					break;
 				case STATE_WAITFORLIFT:
 					writeDebugStream("State: WAIT FOR LIFT\n");
+					desiredMotorVals.power[Lift] = 100;
+					motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
 
-					motor[Lift] = -75;
-					writeDebugStream("Lift enc: %d\n", motorGetEncoder(Lift));
-					if (motorGetEncoder(Lift) < -SIXTY_GOAL) {
-						motor[Lift] = 0;
+					if (motorHasHitEncoderTarget(&desiredEncVals, Lift)
 						restMecMotors();
 						currentState = STATE_DROPBUCKET;
 					}
-					writeDebugStream("Motor lift: %d\n", motor[Lift]);
 					break;
 				case STATE_DROPBUCKET:
-
 					writeDebugStream("State: Drop Bucket\n");
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
-					bucketStartTimeMs = nPgmTime;
-					restMecMotors();
-					currentState = STATE_CLOSEBUCKET;
+					if (!init) {
+						bucketStartTimeMs = nPgmTime;
+						servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
+						init = true;
+					} else {
+						if ((nPgmTime - bucketStartTimeMs) > 3000) { //balls need time to drop
+							restMecMotors();
+							init = false;
+							currentState = STATE_CLOSEBUCKET;
+						}
+					}
 					break;
 				case STATE_CLOSEBUCKET:
 					writeDebugStream("State: Close bucket\n");
-					writeDebugStream("Bucket start diff: %d\n", nPgmTime - bucketStartTimeMs);
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
-					if ((nPgmTime - bucketStartTimeMs) > 5000) {
-						restMecMotors();
-						currentState = STATE_ROTTOWARDPZONE;
+					if (!init) {
+						bucketStartTimeMs = nPgmTime;
+						servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
+						init = true;
+					} else {
+						if ((nPgmTime - bucketStartTimeMs) > 1000) {
+							restMecMotors();
+							init = false;
+							currentState = STATE_ROTTOWARDPZONE;
+						}
 					}
 				case STATE_ROTTOWARDPZONE:
 					writeDebugStream("State: Rotate Toward Parking Zone\n");
+					driveSetEncoderRotateCW(&desiredEncVals, 2700);
+					driveSetMecMotorRotateCW(&desiredMotorVals, 0.30);
+					desiredMotorVals.power[Lift] = -20;
+					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
-					/*
-					motor[Lift] = 15;
 
-					if (motorGetEncoder(Lift) >= -500) {
-						motor[Lift] = 0;
-					}*/
-
-					motor[MecMotor_FL] = 25;
-					motor[MecMotor_BL] = 25;
-					motor[MecMotor_FR] = -25;
-					motor[MecMotor_BR] = -25;
-
-					if (motorGetEncoder((tMotor) MecMotor_FL) > 2700) {
-						motor[Lift] = 0;
+					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						currentState = STATE_DRIVETOWARDPZONE;
 					}
-
 					break;
 				case STATE_DRIVETOWARDPZONE:
 					writeDebugStream("State: Drive Toward Zone\n");
+					driveSetEncoderN(&desiredEncVals, 7500);
+					driveSetMecMotorN(&desiredMotorVals, 0.30);
+					desiredMotorVals.power[Lift] = -20;
+					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
-					/*
-					motor[Lift] = 15;
 
-					if (motorGetEncoder(Lift) >= -500) {
-						motor[Lift] = 0;
-					}*/
-
-					motor[MecMotor_FL] = 100;
-					motor[MecMotor_BL] = 100;
-					motor[MecMotor_FR] = 100;
-					motor[MecMotor_BR] = 100;
-
-
-					if (motorGetEncoder((tMotor)MecMotor_FL) > 7500) {
-						motor[MecMotor_FL] = 0;
-						motor[MecMotor_BL] = 0;
-						motor[MecMotor_FR] = 0;
-						motor[MecMotor_BR] = 0;
-						motor[Lift] = 0;
+					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						currentState = STATE_END;//STATE_ROTATETUBE;
 					}
-
 					break;
 				case STATE_ROTATETUBE:
 					writeDebugStream("State: Rotate Tube\n");
 
+					driveSetEncoderRotateCW(&desiredEncVals, 2000);
+					driveSetMecMotorRotateCW(&desiredMotorVals, 0.30);
+					desiredMotorVals.power[Lift] = -20;
+					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
+
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
-					/*
-					motor[Lift] = 100;
 
-					if (motorGetEncoder(Lift) >= -500) {
-						motor[Lift] = 0;
-					}*/
-
-					motor[MecMotor_FL] = 25;
-					motor[MecMotor_BL] = 25;
-					motor[MecMotor_FR] = -25;
-					motor[MecMotor_BR] = -25;
-
-					if (motorGetEncoder((tMotor)MecMotor_FL) > 2000) {
-						motor[MecMotor_FL] = 0;
-						motor[MecMotor_BL] = 0;
-						motor[MecMotor_FR] = 0;
-						motor[MecMotor_BR] = 0;
-						motor[Lift] = 0;
+					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						currentState = STATE_END;
 					}
 					break;
 				case STATE_END:
-					//motor[Lift] = 15;
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
+					desiredMotorVals.power[Lift] = -20;
+					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
-					//if (motorGetEncoder(Lift) >= -500) {
-						motor[Lift] = 0;
+					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					motorUpdateState();
+
+					if(motorHasHitEncoderTarget(&desiredEncVals, Lift)) {
 						restMecMotors();
-						motorResetAllEncoders(desiredEncVals);
 						end = true;
-					//}
-
+					}
 					break;
 			}
 		}

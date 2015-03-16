@@ -81,7 +81,7 @@ task main() {
 
 
 		//IR code
-		int dcS1, dcS2, dcS3, dcS4, dcS5 = 0;
+		/*int dcS1, dcS2, dcS3, dcS4, dcS5 = 0;
 		int acS1, acS2, acS3, acS4, acS5 = 0;
 		int dirEnh, strEnh = 0; //direction, strength enhanced
 
@@ -102,7 +102,7 @@ task main() {
 		ultraDistance = USreadDist(LEGOUS);
 		writeDebugStream("Dist:  %3d cm\n", ultraDistance);
 
-		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
-		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);*/
+		writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);*/
+		writeDebugStream("Full teleop loop took: %d ms\n", nPgmTime - loopStartTimeMs);
 	}
 }
