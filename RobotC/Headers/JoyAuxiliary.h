@@ -80,13 +80,13 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 
 	if (joyButtonPressed(joyState, JOY2, BUTTON_X)) { //down
 		if ((motorGetTimePosMs(HarvesterMove) < MAX_HARVESTMOVE_TIME_POS) || joyButtonPressed(joyState, JOY2, BUTTON_START)) {
-			desiredMotorVals->power[HarvesterMove] = 50;
+			desiredMotorVals->power[HarvesterMove] = 20;
 		} else {
 			desiredMotorVals->power[HarvesterMove] = 0;
 		}
 	}else if (joyButtonPressed(joyState, JOY2, BUTTON_Y)) {
 		if ((motorGetTimePosMs(HarvesterMove) >= MIN_HARVESTMOVE_TIME_POS) || joyButtonPressed(joyState, JOY2, BUTTON_START)) {
-			desiredMotorVals->power[HarvesterMove] = -50;
+			desiredMotorVals->power[HarvesterMove] = -20;
 		} else {
 			desiredMotorVals->power[HarvesterMove] = 0;
 		}
@@ -109,7 +109,7 @@ void joyGrabber(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_B)) {
 		servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].maxValue);
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_X)) {
-		servoSetNonCont(TubeGrabber, (servoDefinitions[TubeGrabber].maxValue*(.75)));
+		servoSetNonCont(TubeGrabber, (servoDefinitions[TubeGrabber].maxValue*(.66)));
 	}
 }
 
