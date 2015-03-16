@@ -438,26 +438,33 @@ void motorUpdateState() {
 
 		motorStates[curMotor].lastUpdateTimeMs = nPgmTime;
 
+		long sum = 0;
+
 		//Update motor encoders
-		//Check for sporadic encoder values as documented by Cougar Robotics #623
-		int checkEnc = nMotorEncoder[curMotor];
-		int knownGoodEnc = motorStates[curMotor].lastRealEncoderPos;
-		int curEnc;
+		for (int i=0; i<5; i++) {
+			//Check for sporadic encoder values as documented by Cougar Robotics #623
+			int checkEnc = nMotorEncoder[curMotor];
+			int knownGoodEnc = motorStates[curMotor].lastRealEncoderPos;
 
-		if (abs(checkEnc - knownGoodEnc) > ENC_ERROR_THRESHOLD) {
-			string motorName;
-			motorGetName(curMotor, &motorName);
-			writeDebugStream("Bad encoder val! Compare: %d with (bad) %d for motor: %s\n", knownGoodEnc, checkEnc, motorName);
-			//do nothing because enc val is bad
-		} else {
-			curEnc = checkEnc; //enc val is good
-			motorStates[curMotor].encoder += (curEnc - motorStates[curMotor].lastRealEncoderPos);
-			motorStates[curMotor].lastRealEncoderPos = curEnc;
-
-			if (abs(curEnc) > 30000) { //reset real encoder when it overflows
-				motorStates[curMotor].lastRealEncoderPos = 0;
-				nMotorEncoder[curMotor] = 0;
+			if (abs(checkEnc - knownGoodEnc) > ENC_ERROR_THRESHOLD) {
+				string motorName;
+				motorGetName(curMotor, &motorName);
+				writeDebugStream("Bad encoder val! Compare: %d with (bad) %d for motor: %s\n", knownGoodEnc, checkEnc, motorName);
+				i--;//redo this loop
+			} else {
+				sum += checkEnc; //enc val is good
+				//encList[i] = curEnc;
 			}
+		}
+
+		long avgEnc = sum / 5;
+
+		motorStates[curMotor].encoder += (avgEnc - motorStates[curMotor].lastRealEncoderPos);
+		motorStates[curMotor].lastRealEncoderPos = avgEnc;
+
+		if (abs(avgEnc) > 30000) { //reset real encoder when it overflows
+			motorStates[curMotor].lastRealEncoderPos = 0;
+			nMotorEncoder[curMotor] = 0;
 		}
 	}
 }
