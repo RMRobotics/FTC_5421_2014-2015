@@ -93,8 +93,8 @@ void servoInit() {
 		servoDefinitions[i].minValue = 0;
 		servoDefinitions[i].maxValue = MAX_NONCONT_ANGLE;
 	}
-	servoDefinitions[Bucket].minValue = 135; //down
-	servoDefinitions[Bucket].maxValue = 234; //up
+	servoDefinitions[Bucket].minValue = 126; //down
+	servoDefinitions[Bucket].maxValue = 242; //up
 	servoDefinitions[TubeGrabber].minValue = 34; //down
 	servoDefinitions[TubeGrabber].maxValue = 150; //up
 
