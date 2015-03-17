@@ -65,12 +65,30 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 #define MAX_HARVESTMOVE_TIME_POS 800
 #define MIN_HARVESTMOVE_TIME_POS 0
 
+long harvestTimer = nPgmTime;
+long lastHarvestTime = 0;
+long harvestRunTime = 0;
+
+
+
 void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
+	harvestTimer = nPgmTime;
+	harvestRunTime = harvestTimer - lastHarvestTime;
+	writeDebugStreamLine("%d %d %d",harvestTimer,harvestRunTime,lastHarvestTime);
 	if (joyButtonPressed(joyState, JOY1, BUTTON_LT)) {
-		desiredMotorVals->power[Harvester] = 90;
+		if(harvestRunTime < 500){
+			desiredMotorVals->power[Harvester] = 90;
+		}else if(harvestRunTime>1000){
+			lastHarvestTime = harvestTimer;
+		}
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
-		desiredMotorVals->power[Harvester] = -90;
+		if(harvestRunTime < 500){
+			desiredMotorVals->power[Harvester] = 90;
+		}else if(harvestRunTime>1000){
+			lastHarvestTime = harvestTimer;
+		}
 	} else {
+		lastHarvestTime = harvestTimer;
 		desiredMotorVals->power[Harvester] = 0;
 	}
 
