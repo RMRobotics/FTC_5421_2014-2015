@@ -80,12 +80,14 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 			desiredMotorVals->power[Harvester] = 90;
 		}else if(harvestRunTime>1000){
 			lastHarvestTime = harvestTimer;
+			desiredMotorVals->power[Harvester] = 0;
 		}
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
 		if(harvestRunTime < 500){
 			desiredMotorVals->power[Harvester] = 90;
 		}else if(harvestRunTime>1000){
 			lastHarvestTime = harvestTimer;
+			desiredMotorVals->power[Harvester] = 0;
 		}
 	} else {
 		lastHarvestTime = harvestTimer;
