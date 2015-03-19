@@ -82,7 +82,7 @@ task main()
 
 	long pgmStartTimeMs = nPgmTime;
 
-	int timeLengthMs = 5 * 1000;
+	int timeLengthMs = 25 * 1000;
 	int delay = 50; //ms delay between joystick updates
 
 	short fileSize = 0;

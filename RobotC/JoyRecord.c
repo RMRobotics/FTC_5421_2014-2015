@@ -73,7 +73,7 @@ task main()
 	joyWaitForStart();
 	long pgmStartTimeMs = nPgmTime;
 
-	int timeLengthMs = 5 * 1000; //leave time to close file at the end
+	int timeLengthMs = 25 * 1000; //leave time to close file at the end
 	int delay = 50; //ms delay between joystick updates
 	int numTJoy = timeLengthMs / delay; //Number of tJoysticks in history
 
