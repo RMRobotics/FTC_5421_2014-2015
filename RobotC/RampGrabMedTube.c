@@ -149,6 +149,7 @@ task main()
 						currentState = STATE_DRIVETOWARDTUBE;
 						init = true;
 					}
+					break;
 				case STATE_DRIVETOWARDTUBE:
 					writeDebugStream("State: Drive Toward Tube\n");
 					if (init) {
@@ -228,6 +229,7 @@ task main()
 							init = true;
 						}
 					}
+					break;
 				case STATE_ROTTOWARDPZONE:
 					writeDebugStream("State: Rotate Toward Parking Zone\n");
 					if (init) {
