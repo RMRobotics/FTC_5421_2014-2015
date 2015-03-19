@@ -40,11 +40,7 @@ const tMUXSensor LEGOUS = msensor_S4_3;
 #include "Headers\Servo.h"
 #include "Headers\Global.h"
 #include "Headers\Drive.h"
-
-//Stores desired motor values
-DesiredMotorVals desiredMotorVals;
-//Stores desired encoder values
-DesiredEncVals desiredEncVals;
+#include "Auton\Auton.h"
 
 //ALl states for Grab Medium Tube Autonomous
 typedef enum GrabMedTubeStates {
@@ -69,34 +65,6 @@ typedef enum GrabMedTubeStates {
 
 static GrabMedTubeStates currentState = STATE_START;
 
-void initialize(){
-	clearDebugStream();
-	writeDebugStream("This is RampGrabMedTube\n");
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	servoInit();
-	motorInit(&desiredEncVals);
-}
-
-#define LIFT_MAX 10500
-#define NINETY_GOAL 7800
-#define SIXTY_GOAL 4600
-#define THIRTY_GOAL 2000
-#define LIFT_MIN 0
-
-#define ENC_PER_REV 1110
-
-long restStartTimeMs = 0;
-bool rest = false;
-
-void restMecMotors() {
-	driveZeroMecMotor(&desiredMotorVals);
-	motorSetActualPowerToDesired(&desiredMotorVals);
-	rest = true;
-	restStartTimeMs = nPgmTime;
-}
-
-
 task main()
 {
 	//SLIDE SIDE IS FACING DOWN THE RAMP
@@ -106,6 +74,7 @@ task main()
 	bool grabbing = false;
 
 	initialize();
+	writeDebugStream("This is RampGrabMedTube\n");
 	waitForStart();
 
 	while(!end){
@@ -187,7 +156,7 @@ task main()
 						init = false;
 					}
 
-					desiredMotorVals.power[Lift] = 100;
+					desiredMotorVals.power[Lift] = LIFT_UP;
 					motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
 
 					//We limit ONLY the lift during the first part where grabbing = false
@@ -219,7 +188,7 @@ task main()
 					break;
 				case STATE_WAITFORLIFT:
 					writeDebugStream("State: WAIT FOR LIFT\n");
-					desiredMotorVals.power[Lift] = 100;
+					desiredMotorVals.power[Lift] = LIFT_UP;
 					motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -267,7 +236,7 @@ task main()
 					}
 
 					driveSetMecMotorRotateCW(&desiredMotorVals, 0.30);
-					desiredMotorVals.power[Lift] = -1;
+					desiredMotorVals.power[Lift] = LIFT_DOWN;
 					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -288,7 +257,7 @@ task main()
 					}
 
 					driveSetMecMotorN(&desiredMotorVals, 0.30);
-					desiredMotorVals.power[Lift] = -1;
+					desiredMotorVals.power[Lift] = LIFT_DOWN;
 					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -309,7 +278,7 @@ task main()
 					}
 
 					driveSetMecMotorRotateCW(&desiredMotorVals, 0.30);
-					desiredMotorVals.power[Lift] = -1;
+					desiredMotorVals.power[Lift] = LIFT_DOWN;
 					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -323,7 +292,7 @@ task main()
 					}
 					break;
 				case STATE_END:
-					desiredMotorVals.power[Lift] = -1;
+					desiredMotorVals.power[Lift] = LIFT_DOWN;
 					motorSetEncoder(&desiredEncVals, Lift, LIFT_MIN, ENCFLAGS_CAPMODE_ON);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
