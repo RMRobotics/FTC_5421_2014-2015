@@ -41,4 +41,11 @@ typedef struct DesiredMotorVals {
 } DesiredMotorVals;
 
 
+//ROBOT SPECIFIC
+long LIFT_MIN = 0; //cannot declare long constants!
+#define LIFT_MAX 10500 //high goal
+#define NINETY_GOAL 7800
+#define SIXTY_GOAL 4600
+#define THIRTY_GOAL 2000
+
 #endif

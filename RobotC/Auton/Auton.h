@@ -7,12 +7,6 @@ DesiredMotorVals desiredMotorVals;
 //Stores desired encoder values
 DesiredEncVals desiredEncVals;
 
-#define LIFT_MAX 10500
-#define NINETY_GOAL 7800
-#define SIXTY_GOAL 4600
-#define THIRTY_GOAL 2000
-#define LIFT_MIN 0
-
 #define LIFT_UP 100
 #define LIFT_DOWN -1
 

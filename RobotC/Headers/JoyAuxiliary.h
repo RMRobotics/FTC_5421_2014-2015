@@ -7,12 +7,6 @@
 #include "Drive.h"
 
 
-#define LIFT_MAX (10500) //high goal
-#define NINETY_GOAL (7800)
-#define SIXTY_GOAL (4600)
-#define THIRTY_GOAL (2000)
-long LIFT_MIN = 0;
-
 void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals, TJoystick *joyState){
 	long encTarget = ENC_OFF;
 	short encFlags = 0;
