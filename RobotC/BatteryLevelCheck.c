@@ -89,22 +89,21 @@ task main(){
 
 		writeDebugStream("NXT batteries: Voltage: %f\n", nBatActualVolts);
 		writeDebugStream("Ext batteries: Voltage: %f\n", extBatActualVolts);
-		nxtDisplayTextLine(2, "NXT bat (V) %f\n", nBatActualVolts);
-		nxtDisplayTextLine(5, "Ext bat (V) %f\n", extBatActualVolts);
+		nxtDisplayTextLine(2, "NXT bat %f\n", nBatActualVolts);
+		nxtDisplayTextLine(5, "Ext bat %f\n", extBatActualVolts);
 		if(nBatAvgVolts < lowNxtPower && nBatActualVolts < lowNxtPower){
 			writeDebugStream("Change NXT bat!: V: %f\n", nBatActualVolts);
-			nxtDisplayTextLine(2, "Repl NXT bat! (V): %f\n", nBatActualVolts);
+			nxtDisplayTextLine(2, "NXT bat! %f\n", nBatActualVolts);
 			//. -..- .--. .-.. --- -.. .. -. --.
 			explodingSound();
 		}
 		if(extBatAvgVolts < lowExternalPower && extBatActualVolts < lowExternalPower){
 			writeDebugStream("Replace external batteries!: Voltage: %f\n", extBatActualVolts);
-			nxtDisplayTextLine(5, "Repl ext bat! (V): %f\n", extBatActualVolts);
+			nxtDisplayTextLine(5, "Ext bat! %f\n", extBatActualVolts);
 			//. -..- .--. .-.. --- -.. .. -. --.
 			explodingSound();
 
 		}
-	wait10MSec(1000);
-	clearDebugStream();
+		wait10Msec(1000);
 	}
 }
