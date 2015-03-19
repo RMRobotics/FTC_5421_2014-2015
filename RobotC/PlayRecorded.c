@@ -42,6 +42,7 @@ const tMUXSensor LEGOUS = msensor_S4_3;
 #include "Headers\JoyMecanumDrive.h"
 #include "Headers\JoyPlayMusic.h"
 #include "Headers\Data.h"
+#include "Auton\Auton.h"
 
 //Enumerates all states in this autonomous program
 typedef enum PlaybackStateNames {
@@ -51,22 +52,6 @@ typedef enum PlaybackStateNames {
 } PlaybackStateNames;
 
 static PlaybackStateNames currentState = STATE_BEGIN;
-
-
-//Stores desired motor values
-DesiredMotorVals desiredMotorVals;
-//Stores desired encoder values
-DesiredEncVals desiredEncVals;
-
-void initialize() {
-	clearDebugStream();
-	writeDebugStream("This is PlayRecorded\n");
-	//Initialize to zeroes
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	motorInit(&desiredEncVals);
-	servoInit();
-}
 
 void callAuxiliaryMotors(){
 	joyLift(&desiredMotorVals, &desiredEncVals, joyGetJoystickPointer());
@@ -78,6 +63,7 @@ void callAuxiliaryMotors(){
 task main()
 {
 	initialize();
+	writeDebugStream("This is PlayRecorded\n");
 	joyWaitForStart();
 
 	long pgmStartTimeMs = nPgmTime;
