@@ -52,21 +52,24 @@ void initialize() {
 
 //define variables
 
-int block = 0;
-int onRamp = 0;
-int teamDelay = 0;
-int centerTube = 0;
-int medTube = 0;
 
-int startVar[5]; //startVar[0-4]
+bool startVar[5]; //startVar[0-4] only 5 functions
 string autoActions[5]; //autoActions[0-4]
 
+typedef enum Chooser{
+	BLOCK,
+	RAMP,
+	DELAY,
+	CENTER,
+	MEDIUM,
+}Chooser;
+
 void programChooserInit(){
-	startVar[0] = block;
-	startVar[1] = onRamp;
-	startVar[2] = teamDelay;
-	startVar[3] = centerTube;
-	startVar[4] = medTube;
+	startVar[BLOCK] = false;
+	startVar[RAMP] = false;
+	startVar[DELAY] = false;
+	startVar[CENTER] = false;
+	startVar[MEDIUM] = false;
 	autoActions[0] = "block";
 	autoActions[1] = "on ramp";
 	autoActions[2] = "delay";
@@ -74,19 +77,17 @@ void programChooserInit(){
 	autoActions[4] = "medTube";
 }
 
-int changeState(int addVar,string action){
-	int moveOn = 0;
-	while(moveOn == 0){
-		nxtDisplayString(2, "%s: %d", action,addVar);
+bool changeState(bool addVar,string action){
+	bool moveOn = false;
+	while(!moveOn){
+		nxtDisplayString(2, "%s: %b", action,addVar);
 		if (nNxtButtonPressed == 1){      //right arrow
-					addVar++;
-					addVar = addVar%2;
+					addVar = !addVar;
 				}else if (nNxtButtonPressed == 2){ //left arrow
-					addVar++;
-					addVar = addVar%2;
+					addVar = !addVar;
 				}
 			if (nNxtButtonPressed == 3){  //orange button
-				moveOn++;
+				moveOn = !moveOn;
 			}
 		}
 		return addVar;
@@ -101,132 +102,132 @@ task main()
 	programChooserInit();
 	initialize();
 	eraseDisplay();
-	for(int i = 0; i<5;i++){
+	for(int i = 0; i<sizeof(Chooser)/2;i++){
 		startVar[i] = changeState(startVar[i], autoActions[i]);
 		nxtDisplayClearTextLine(2);
 		wait10Msec(50);
 	}
 	nxtDisplayString(2, "IT WORKS");
 	//wait10Msec(5000);
-	if (startVar[0] == 0){	// no block
-		if (startVar[1] == 0){	//no block, not on ramp
-			if (startVar[2] == 0){	//no block, not on ramp, no delay
-				if (startVar[3] == 0){	//no block, not on ramp, no delay, no center tube
-					if (startVar[4] == 0){	//no block, not on ramp, no delay, no center tube, no medium tube
+	if (startVar[BLOCK] == 0){	// no block
+		if (startVar[RAMP] == 0){	//no block, not on ramp
+			if (startVar[DELAY] == 0){	//no block, not on ramp, no delay
+				if (startVar[CENTER] == 0){	//no block, not on ramp, no delay, no center tube
+					if (startVar[MEDIUM] == 0){	//no block, not on ramp, no delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, not on ramp, no delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, not on ramp, no delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){
-					if (startVar[4] == 0){	//no block, not on ramp, no delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){
+					if (startVar[MEDIUM] == 0){	//no block, not on ramp, no delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, not on ramp, no delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, not on ramp, no delay, center tube, medium tube
 
 					}
 				}
-			}else if(startVar[2] == 1){ //delay
-				if (startVar[3] == 0){	//center tube
-					if (startVar[4] == 0){	//no block, not on ramp, delay, no center tube, no medium tube
+			}else if(startVar[DELAY] == 1){ //delay
+				if (startVar[CENTER] == 0){	//center tube
+					if (startVar[MEDIUM] == 0){	//no block, not on ramp, delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){//no block, not on ramp, delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){//no block, not on ramp, delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){ //center tube
-					if (startVar[4] == 0){	//no block, not on ramp, delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){ //center tube
+					if (startVar[MEDIUM] == 0){	//no block, not on ramp, delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, not on ramp, delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, not on ramp, delay, center tube, medium tube
 
 					}
 				}
 			}
-		}else if(startVar[1] == 1){ //onramp
-			if (startVar[2] == 0){	//no block, on ramp, no delay
-				if (startVar[3] == 0){	//no block, on ramp, no delay, no center tube
-					if (startVar[4] == 0){	//no block, on ramp, no delay, no center tube, no medium tube
+		}else if(startVar[RAMP] == 1){ //onramp
+			if (startVar[DELAY] == 0){	//no block, on ramp, no delay
+				if (startVar[CENTER] == 0){	//no block, on ramp, no delay, no center tube
+					if (startVar[MEDIUM] == 0){	//no block, on ramp, no delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, on ramp, no delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, on ramp, no delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){
-					if (startVar[4] == 0){	//no block, on ramp, no delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){
+					if (startVar[MEDIUM] == 0){	//no block, on ramp, no delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, on ramp, no delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, on ramp, no delay, center tube, medium tube
 
 					}
 				}
-			}else if(startVar[2] == 1){ //delay
-				if (startVar[3] == 0){	//center tube
-					if (startVar[4] == 0){	//no block, on ramp, delay, no center tube, no medium tube
+			}else if(startVar[DELAY] == 1){ //delay
+				if (startVar[CENTER] == 0){	//center tube
+					if (startVar[MEDIUM] == 0){	//no block, on ramp, delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){//no block, on ramp, delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){//no block, on ramp, delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){ //center tube
-					if (startVar[4] == 0){	//no block, on ramp, delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){ //center tube
+					if (startVar[MEDIUM] == 0){	//no block, on ramp, delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //no block, on ramp, delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //no block, on ramp, delay, center tube, medium tube
 
 					}
 				}
 			}
 		}
-	}else if(startVar[0] == 1){	//block
-		if (startVar[1] == 0){	//block, not on ramp
-			if (startVar[2] == 0){	//block, not on ramp, no delay
-				if (startVar[3] == 0){	//block, not on ramp, no delay, no center tube
-					if (startVar[4] == 0){	//block, not on ramp, no delay, no center tube, no medium tube
+	}else if(startVar[BLOCK] == 1){	//block
+		if (startVar[RAMP] == 0){	//block, not on ramp
+			if (startVar[DELAY] == 0){	//block, not on ramp, no delay
+				if (startVar[CENTER] == 0){	//block, not on ramp, no delay, no center tube
+					if (startVar[MEDIUM] == 0){	//block, not on ramp, no delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //block, not on ramp, no delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, not on ramp, no delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){
-					if (startVar[4] == 0){	//block, not on ramp, no delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){
+					if (startVar[MEDIUM] == 0){	//block, not on ramp, no delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //block, not on ramp, no delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, not on ramp, no delay, center tube, medium tube
 
 					}
 				}
-			}else if(startVar[2] == 1){ //delay
-				if (startVar[3] == 0){	//center tube
-					if (startVar[4] == 0){	//block, not on ramp, delay, no center tube, no medium tube
+			}else if(startVar[DELAY] == 1){ //delay
+				if (startVar[CENTER] == 0){	//center tube
+					if (startVar[MEDIUM] == 0){	//block, not on ramp, delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){//block, not on ramp, delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){//block, not on ramp, delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){ //center tube
-					if (startVar[4] == 0){	//block, not on ramp, delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){ //center tube
+					if (startVar[MEDIUM] == 0){	//block, not on ramp, delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //block, not on ramp, delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, not on ramp, delay, center tube, medium tube
 
 					}
 				}
 			}
-		}else if(startVar[1] == 1){ //onramp
-			if (startVar[2] == 0){	//block, on ramp, no delay
-				if (startVar[3] == 0){	//block, on ramp, no delay, no center tube
-					if (startVar[4] == 0){	//block, on ramp, no delay, no center tube, no medium tube
+		}else if(startVar[RAMP] == 1){ //onramp
+			if (startVar[DELAY] == 0){	//block, on ramp, no delay
+				if (startVar[CENTER] == 0){	//block, on ramp, no delay, no center tube
+					if (startVar[MEDIUM] == 0){	//block, on ramp, no delay, no center tube, no medium tube
 						BlockCubix(&desiredMotorVals, &desiredEncVals);
-					}else if(startVar[4] == 1){ //block, on ramp, no delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, on ramp, no delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){
-					if (startVar[4] == 0){	//block, on ramp, no delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){
+					if (startVar[MEDIUM] == 0){	//block, on ramp, no delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //block, on ramp, no delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, on ramp, no delay, center tube, medium tube
 
 					}
 				}
-			}else if(startVar[2] == 1){ //delay
-				if (startVar[3] == 0){	//center tube
-					if (startVar[4] == 0){	//block, on ramp, delay, no center tube, no medium tube
+			}else if(startVar[DELAY] == 1){ //delay
+				if (startVar[CENTER] == 0){	//center tube
+					if (startVar[MEDIUM] == 0){	//block, on ramp, delay, no center tube, no medium tube
 
-					}else if(startVar[4] == 1){//block, on ramp, delay, no center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){//block, on ramp, delay, no center tube, medium tube
 
 					}
-				}else if(startVar[3] == 1){ //center tube
-					if (startVar[4] == 0){	//block, on ramp, delay, center tube, no medium tube
+				}else if(startVar[CENTER] == 1){ //center tube
+					if (startVar[MEDIUM] == 0){	//block, on ramp, delay, center tube, no medium tube
 
-					}else if(startVar[4] == 1){ //block, on ramp, delay, center tube, medium tube
+					}else if(startVar[MEDIUM] == 1){ //block, on ramp, delay, center tube, medium tube
 
 					}
 				}
