@@ -304,8 +304,8 @@ task main()
 						end = true;
 					}
 					break;
-			}
-		}
+			} //switch
+		} //if
 	//writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
 	//writeDebugStream("DEV: %d %d %d %d\n", desiredEncVals.encoder[MecMotor_FL], desiredEncVals.encoder[MecMotor_BL], desiredEncVals.encoder[MecMotor_FR], desiredEncVals.encoder[MecMotor_BR]);
 	//writeDebugStream("VIRTENC: %d %d %d %d\n", motorGetEncoder((tMotor) MecMotor_FL), motorGetEncoder((tMotor) MecMotor_BL), motorGetEncoder((tMotor) MecMotor_FR), motorGetEncoder((tMotor) MecMotor_BR));
@@ -314,7 +314,7 @@ task main()
 	//writeDebugStream("Lift target: %d\n", desiredEncVals.encoder[Lift]);
 	//writeDebugStream("Lift enc: %d\n", motorGetEncoder(Lift));
 	writeDebugStream("Full auton loop took: %d ms\n", nPgmTime - loopStartTimeMs);
-	}
+	} //while
 
 /*	driveSetEncoderN(&desiredEncVals, ######);
 	driveSetEncoderW(&desiredEncVals, ######);
