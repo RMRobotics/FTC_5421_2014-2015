@@ -35,16 +35,12 @@ const tMUXSensor GYRO = msensor_S4_1;
 const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
 
-#include "..\Headers\joystick.h"
-#include "..\Headers\Motor.h"
-#include "..\Headers\Servo.h"
-#include "..\Headers\Global.h"
-#include "..\Headers\Drive.h"
-
-//Stores desired motor values
-DesiredMotorVals desiredMotorVals;
-//Stores desired encoder values
-DesiredEncVals desiredEncVals;
+#include "Headers\Joystick.h"
+#include "Headers\Motor.h"
+#include "Headers\Servo.h"
+#include "Headers\Global.h"
+#include "Headers\Drive.h"
+#include "Auton\Auton.h"
 
 //ALL states for center Tube Autonomous
 typedef enum CenterTubeStates {
@@ -70,54 +66,28 @@ typedef enum CenterPos {
 	VERT_TO_PARK,
 } CenterPos;
 
-void initialize(){
-	clearDebugStream();
-	writeDebugStream("This is CenterTubeIR\n");
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	servoInit();
-	motorInit(&desiredEncVals);
-	motorResetAllEncoders(&desiredEncVals);
-}
-
-#define LIFT_MAX 10500
-#define NINETY_GOAL 7800
-#define SIXTY_GOAL 4600
-#define THIRTY_GOAL 2000
-#define LIFT_MIN 0
-
-#define ENC_PER_REV 1110
-
 //IR Sensor
 int dirEnh, strEnh = 0; //direction, strength enhanced
-
-long restStartTimeMs = 0;
-bool rest = false;
-bool end = false;
-
-void restMecMotors() {
-	driveResetMecEncoder(&desiredEncVals);
-	driveZeroMecMotor(&desiredMotorVals);
-	motorSetActualPowerToDesired(&desiredMotorVals);
-	rest = true;
-	restStartTimeMs = nPgmTime;
-}
-
 
 task main()
 {
 	//SLIDE SIDE IS FACING DOWN THE RAMP
 	CenterPos centerPos;
+	bool end = false;
+	bool init = true;
+
 	initialize();
+	writeDebugStream("This is CenterTubeIR\n");
 	waitForStart();
 
 	while(!end){
+		long loopStartTimeMs = nPgmTime;
 		if (rest) {
-			writeDebugStream("resting!\n");
+			writeDebugStream("Resting!\n");
 			motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 			motorSetActualPowerToDesired(&desiredMotorVals);
 			motorUpdateState();
-			if (nPgmTime - restStartTimeMs > 1000) {
+			if (nPgmTime - restStartTimeMs > 2000) {
 				rest = false;
 				restStartTimeMs = 0;
 			}
@@ -128,10 +98,10 @@ task main()
 					break;
 				case STATE_DRIVETOWARDCENTERPIECE:
 					writeDebugStream("State: Drive Toward Centerpiece\n");
-
+					/*
 					motorUpdateState();
 
-					motor[Lift] = -100;
+					motor[Lift] = LIFT_DOWN;
 
 					if (motorGetEncoder(Lift) <= -SIXTY_GOAL) {
 						motor[Lift] = 0;
@@ -146,17 +116,25 @@ task main()
 						motor[Lift] = 0;
 						restMecMotors();
 						currentState = STATE_DETECTIR;
-					}
+					}*/
 
 					break;
 				case STATE_DETECTIR:
 					writeDebugStream("State: Detect IR\n");
-					HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
+					//Read average of 10 values
+					long sum = 0;
+					for (int i=0; i<10; i++) {
+						HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
+						sum += strEnh;
+					}
+					long avgStrEnh = sum / 10;
 
-					if (strEnh > 30) {
+					writeDebugStream("IR Str Enh: %d\n", avgStrEnh);
+
+					if (avgStrEnh > 90) {
 						writeDebugStream("Detected vertical to park\n");
 						centerPos = VERT_TO_PARK;
-					} else if (strEnh > 10) {
+					} else if (avgStrEnh > 40) {
 						writeDebugStream("Detected angle to park\n");
 						centerPos = ANGLE_TO_PARK;
 					} else {
@@ -172,7 +150,7 @@ task main()
 					break;
 			case STATE_ORBITTOCENTERGOAL:
 					writeDebugStream("State: Orbit to center goal\n");
-
+					/*
 					motorUpdateState();
 
 					motor[Lift] = -100;
@@ -197,39 +175,40 @@ task main()
 							restMecMotors();
 							currentState = STATE_WAITFORLIFT;
 						}
-					}
+					}*/
 					break;
 				case STATE_WAITFORLIFT:
 					writeDebugStream("State: WAIT FOR LIFT\n");
-
+					/*
 					motorUpdateState();
 
-					motor[Lift] = -100;
+					motor[Lift] = LIFT_DOWN;
 
 					if (motorGetEncoder(Lift) <= -LIFT_MAX) {
 						motor[Lift] = 0;
 						restMecMotors();
 						currentState = STATE_DROPBUCKET;
-					}
+					}*/
 					break;
 				case STATE_DROPBUCKET:
 					writeDebugStream("State: Drop Bucket\n");
-
+					/*
 					servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 
 					restMecMotors();
-					currentState = STATE_CLOSEBUCKET;
+					currentState = STATE_CLOSEBUCKET;*/
 					break;
 				case STATE_CLOSEBUCKET:
 					writeDebugStream("State: Close bucket\n");
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
+					/*servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
 
 					restMecMotors();
 
-					currentState = STATE_DRIVERIGHT;
+					currentState = STATE_DRIVERIGHT;*/
+					break;
 				case STATE_DRIVERIGHT:
 					writeDebugStream("State: Drive Right Toward Kickstand\n");
-
+					/*
 					motorUpdateState();
 
 					motor[Lift] = 15;
@@ -246,12 +225,12 @@ task main()
 					if (motorGetEncoder((tMotor) MecMotor_FL) > 2000) {
 						restMecMotors();
 						currentState = STATE_KICKSTAND;
-					}
+					}*/
 
 					break;
 				case STATE_KICKSTAND:
 					writeDebugStream("State: Drive Kickstand\n");
-					motor[Lift] = 15;
+					/*motor[Lift] = 15;
 
 					if (motorGetEncoder(Lift) >= 500) {
 						motor[Lift] = 0;
@@ -262,27 +241,27 @@ task main()
 					motor[MecMotor_FR] = 100;
 					motor[MecMotor_BR] = 100;
 
-					if (motorGetEncoder(MecMotor_FL) > 2000) {
+					if (motorGetEncoder((tMotor)MecMotor_FL) > 2000) {
 						restMecMotors();
 						currentState = STATE_END;
-					}
+					}*/
 
 					break;
 				case STATE_END:
-					motor[Lift] = 15;
+					/*motor[Lift] = 15;
 
 					if (motorGetEncoder(Lift) >= 500) {
 						motor[Lift] = 0;
 						end = true;
-						motorResetAllEncoders(&desiredEncVals);
-					}
+					}*/
 					break;
-			}
-		}
-	writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
-	writeDebugStream("VIRTENC: %d %d %d %d\n", motorGetEncoder((tMotor) MecMotor_FL), motorGetEncoder((tMotor) MecMotor_BL), motorGetEncoder((tMotor) MecMotor_FR), motorGetEncoder((tMotor) MecMotor_BR);
-	writeDebugStream("REALENC: %d %d %d %d\n", nMotorEncoder[Donatello_FL], nMotorEncoder[Leonardo_BL], nMotorEncoder[Michelangelo_FR], nMotorEncoder[Raphael_BR]);
-	}
+			} //switch
+		} //if
+	//writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
+	//writeDebugStream("VIRTENC: %d %d %d %d\n", motorGetEncoder((tMotor) MecMotor_FL), motorGetEncoder((tMotor) MecMotor_BL), motorGetEncoder((tMotor) MecMotor_FR), motorGetEncoder((tMotor) MecMotor_BR);
+	//writeDebugStream("REALENC: %d %d %d %d\n", nMotorEncoder[Donatello_FL], nMotorEncoder[Leonardo_BL], nMotorEncoder[Michelangelo_FR], nMotorEncoder[Raphael_BR]);
+	//writeDebugStream("Full auton loop took: %d ms\n", nPgmTime - loopStartTimeMs);
+	} //while
 
 /*	driveSetEncoderN(&desiredEncVals, ######);
 	driveSetEncoderW(&desiredEncVals, ######);

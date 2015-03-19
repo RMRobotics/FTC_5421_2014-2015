@@ -35,16 +35,12 @@ const tMUXSensor GYRO = msensor_S4_1;
 const tMUXSensor HTIRS2 = msensor_S4_4;
 const tMUXSensor LEGOUS = msensor_S4_3;
 
-#include "..\Headers\joystick.h"
-#include "..\Headers\Motor.h"
-#include "..\Headers\Servo.h"
-#include "..\Headers\Global.h"
-#include "..\Headers\Drive.h"
-
-//Stores desired motor values
-DesiredMotorVals desiredMotorVals;
-//Stores desired encoder values
-DesiredEncVals desiredEncVals;
+#include "Headers\Joystick.h"
+#include "Headers\Motor.h"
+#include "Headers\Servo.h"
+#include "Headers\Global.h"
+#include "Headers\Drive.h"
+#include "Auton\Auton.h"
 
 //ALl states for Grab Medium Tube Autonomous
 typedef enum PGrabMedTubeStates {
@@ -66,66 +62,37 @@ typedef enum PGrabMedTubeStates {
 
 static PGrabMedTubeStates currentState = STATE_START;
 
-void initialize(){
-	clearDebugStream();
-	writeDebugStream("This is ParkGrabMedTube\n");
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	servoInit();
-	motorInit(&desiredEncVals);
-	motorResetAllEncoders(&desiredEncVals);
-}
-
-
-#define LIFT_MAX 10500
-#define NINETY_GOAL 7800
-#define SIXTY_GOAL 4600
-#define THIRTY_GOAL 2000
-#define LIFT_MIN 0
-
-#define ENC_PER_REV 1110
-
-long restStartTimeMs = 0;
-bool rest = false;
-bool end = false;
-
-void restMecMotors() {
-	driveResetMecEncoder(&desiredEncVals);
-	driveZeroMecMotor(&desiredMotorVals);
-	motorSetActualPowerToDesired(&desiredMotorVals);
-	rest = true;
-	restStartTimeMs = nPgmTime;
-}
-
-
 task main()
 {
 	//SLIDE SIDE IS FACING TOWARD THE CENTERPIECE
 	long tubeGrabStartTimeMs = 0;
+	bool end = false;
+	bool init = true;
 
 	initialize();
+	writeDebugStream("This is ParkGrabMedTube\n");
 	waitForStart();
 
 	while(!end){
 		long loopStartTimeMs = nPgmTime;
 		if (rest) {
-			writeDebugStream("resting!\n");
+			writeDebugStream("Resting!\n");
 			motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 			motorSetActualPowerToDesired(&desiredMotorVals);
 			motorUpdateState();
-			if (nPgmTime - restStartTimeMs > 1000) {
+			if (nPgmTime - restStartTimeMs > 2000) {
 				rest = false;
 				restStartTimeMs = 0;
 			}
 		} else {
 			switch(currentState){
 				case STATE_START:
-					driveSetEncoderRotateCW(&desiredEncVals, 0.10 * ENC_PER_REV);
-					currentState = STATE_TURNTOWARDTUBE;
+					/*driveSetEncoderRotateCW(&desiredEncVals, 0.10 * ENC_PER_REV);
+					currentState = STATE_TURNTOWARDTUBE;*/
 					break;
 				case STATE_TURNTOWARDTUBE:
 					writeDebugStream("State: Turn Toward Tube\n");
-					driveSetMecMotorRotateCW(&desiredMotorVals, 11.0);
+					/*driveSetMecMotorRotateCW(&desiredMotorVals, 11.0);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
@@ -136,11 +103,11 @@ task main()
 						driveSetEncoderN(&desiredEncVals, 6.0 * ENC_PER_REV); //for next state
 						motorSetEncoder(&desiredEncVals, Lift, -SIXTY_GOAL, true); //for next state
 						currentState = STATE_DRIVETOWARDTUBE;
-					}
+					}*/
 					break;
 				case STATE_DRIVETOWARDTUBE:
 					writeDebugStream("State: Drive Toward Tube\n");
-
+					/*
 					//ONLY LIMIT LIFT
 					desiredMotorVals.power[Lift] = -100;
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -159,11 +126,11 @@ task main()
 						motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals); //cut drive
 						restMecMotors();
 						currentState = STATE_WAITFORLIFT;
-					}
+					}*/
 					break;
 				case STATE_WAITFORLIFT:
 					writeDebugStream("State: WAIT FOR LIFT\n");
-
+					/*
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
@@ -171,26 +138,26 @@ task main()
 					if(motorAllHitEncoderTarget(&desiredEncVals)) { //wait for lift
 						restMecMotors();
 						currentState = STATE_DROPBUCKET;
-					}
+					}*/
 					break;
 				case STATE_DROPBUCKET:
 					writeDebugStream("State: Drop Bucket\n");
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
+					/*servoSetNonCont(Bucket, servoDefinitions[Bucket].minValue);
 
 					restMecMotors();
-					currentState = STATE_CLOSEBUCKET;
+					currentState = STATE_CLOSEBUCKET;*/
 					break;
 				case STATE_CLOSEBUCKET:
 					writeDebugStream("State: Close bucket\n");
-					servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
+					/*servoSetNonCont(Bucket, servoDefinitions[Bucket].maxValue);
 
 					restMecMotors();
 					driveSetEncoderS(&desiredEncVals, 6.0 * ENC_PER_REV); //for next state
-					motorSetEncoder(&desiredEncVals, Lift, 0, true); //for next state
+					motorSetEncoder(&desiredEncVals, Lift, 0, true); //for next state*/
 					currentState = STATE_DRIVETOWARDPZONE;
 				case STATE_DRIVETOWARDPZONE:
 					writeDebugStream("State: Drive toward Pzone\n");
-					desiredMotorVals.power[Lift] = 100;
+					/*desiredMotorVals.power[Lift] = 100;
 					driveSetMecMotorS(&desiredMotorVals, 0.75);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
@@ -201,11 +168,11 @@ task main()
 						restMecMotors();
 						driveSetEncoderRotateCW(&desiredEncVals, 1.25 * ENC_PER_REV);
 						currentState = STATE_ROTTOWARDPZONE;
-					}
+					}*/
 					break;
 				case STATE_ROTATETUBE:
 					writeDebugStream("State: Rotate Tube\n");
-					driveSetMecMotorRotateCW(&desiredMotorVals, -1.0);
+					/*driveSetMecMotorRotateCW(&desiredMotorVals, -1.0);
 
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
@@ -214,26 +181,25 @@ task main()
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
 						currentState = STATE_END;
-					}
+					}*/
 					break;
 				case STATE_END:
-					if(motorAllHitEncoderTarget(&desiredEncVals)){
+					/*if(motorAllHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
-						motorResetAllEncoders(desiredEncVals);
 						end = true;
-					}
+					}*/
 					break;
-			}
-		}
+			} //switch
+		} //if
 	//writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
 	//writeDebugStream("DEV: %d %d %d %d\n", desiredEncVals.encoder[MecMotor_FL], desiredEncVals.encoder[MecMotor_BL], desiredEncVals.encoder[MecMotor_FR], desiredEncVals.encoder[MecMotor_BR]);
 	//writeDebugStream("VIRTENC: %d %d %d %d\n", motorGetEncoder((tMotor) MecMotor_FL), motorGetEncoder((tMotor) MecMotor_BL), motorGetEncoder((tMotor) MecMotor_FR), motorGetEncoder((tMotor) MecMotor_BR));
 	//writeDebugStream("REALENC: %d %d %d %d\n", nMotorEncoder[Donatello_FL], nMotorEncoder[Leonardo_BL], nMotorEncoder[Michelangelo_FR], nMotorEncoder[Raphael_BR]);
 	//writeDebugStream("REALMOTOR: %d %d %d %d\n", motor[MecMotor_FL], motor[MecMotor_BL], motor[MecMotor_FR], motor[MecMotor_BR]);
-		writeDebugStream("Lift target: %d\n", desiredEncVals.encoder[Lift]);
-		writeDebugStream("Lift enc: %d\n", motorGetEncoder(Lift));
+	//writeDebugStream("Lift target: %d\n", desiredEncVals.encoder[Lift]);
+	//writeDebugStream("Lift enc: %d\n", motorGetEncoder(Lift));
 	writeDebugStream("Full auton loop took: %d ms\n", nPgmTime - loopStartTimeMs);
-	}
+	} //while
 
 /*	driveSetEncoderN(&desiredEncVals, ######);
 	driveSetEncoderW(&desiredEncVals, ######);
