@@ -35,24 +35,9 @@ const tMUXSensor LEGOUS = msensor_S4_3;
 #include "Headers\Global.h"
 #include "Headers\Drive.h"
 #include "AutonFxn\test.h"
-
-//Stores desired motor values
-DesiredMotorVals desiredMotorVals;
-//Stores desired encoder values
-DesiredEncVals desiredEncVals;
-
-void initialize() {
-	servoInit();
-	motorInit(&desiredEncVals);
-	//Initialize to zeroes
-	memset(&desiredMotorVals, 0, sizeof(desiredMotorVals));
-	memset(&desiredEncVals, 0, sizeof(desiredEncVals));
-	clearDebugStream();
-}
+#include "Auton\Auton.h"
 
 //define variables
-
-
 bool startVar[5]; //startVar[0-4] only 5 functions
 string autoActions[5]; //autoActions[0-4]
 
@@ -99,6 +84,7 @@ bool changeState(bool addVar,string action){
 
 task main()
 {
+	writeDebugStream("This is ProgramChooser\n");
 	programChooserInit();
 	initialize();
 	eraseDisplay();
