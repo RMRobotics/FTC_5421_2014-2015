@@ -158,6 +158,8 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
 		nMotorEncoder[motorList[i]] = 0;
 	}
+	//Reset fake lift encoder
+	nMotorEncoder[LiftEncoder] = 0;
 }
 
 
@@ -441,9 +443,13 @@ void motorUpdateState() {
 		long sum = 0;
 
 		//Update motor encoders
+		tMotor curEncMotor = curMotor;
+		if (curMotor == Lift) {
+			curEncMotor = LiftEncoder;
+		}
 		for (int i=0; i<5; i++) {
 			//Check for sporadic encoder values as documented by Cougar Robotics #623
-			int checkEnc = nMotorEncoder[curMotor];
+			int checkEnc = nMotorEncoder[curEncMotor];
 			int knownGoodEnc = motorStates[curMotor].lastRealEncoderPos;
 
 			if (abs(checkEnc - knownGoodEnc) > ENC_ERROR_THRESHOLD) {
@@ -464,7 +470,7 @@ void motorUpdateState() {
 
 		if (abs(avgEnc) > 30000) { //reset real encoder when it overflows
 			motorStates[curMotor].lastRealEncoderPos = 0;
-			nMotorEncoder[curMotor] = 0;
+			nMotorEncoder[curEncMotor] = 0;
 		}
 	}
 }
