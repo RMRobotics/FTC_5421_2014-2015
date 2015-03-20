@@ -24,22 +24,28 @@ void joyLift(DesiredMotorVals *desiredMotorVals, DesiredEncVals *desiredEncVals,
 		if (joyGetTophat(joyState, JOY2) == TOPHAT_N) { //high goal
 			if (abs(motorGetEncoder(Lift)) > abs(NINETY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1;
+				encFlags = ENCFLAGS_CAPMODE_ON;
 			} else {
 				desiredMotorVals->power[Lift] = 100;
+				encFlags = ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON;
 			}
 			encTarget = LIFT_MIN + NINETY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_E || joyGetTophat(joyState, JOY2) == TOPHAT_W) { //med goal
 			if (abs(motorGetEncoder(Lift)) > abs(SIXTY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1;
+				encFlags = ENCFLAGS_CAPMODE_ON;
 			} else {
 				desiredMotorVals->power[Lift] = 100;
+				encFlags = ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON;
 			}
 			encTarget = LIFT_MIN + SIXTY_GOAL;
 		} else if (joyGetTophat(joyState, JOY2) == TOPHAT_S) { //low goal
 			if (abs(motorGetEncoder(Lift)) > abs(THIRTY_GOAL)) {
 				desiredMotorVals->power[Lift] = -1;
+				encFlags = ENCFLAGS_CAPMODE_ON;
 			} else {
 				desiredMotorVals->power[Lift] = 100;
+				encFlags = ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON;
 			}
 			encTarget = LIFT_MIN + THIRTY_GOAL;
 		} else {
