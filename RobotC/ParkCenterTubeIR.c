@@ -150,7 +150,7 @@ task main()
 			case STATE_ORBITTOCENTERGOAL:
 					writeDebugStream("State: Orbit to center goal\n");
 					if (init) {
-						driveSetEncoderOrbitN(&desiredMotorVals, 0.3);
+						driveSetEncoderOrbitN(&desiredEncVals, 0.3);
 						init = false;
 					}
 
@@ -175,7 +175,7 @@ task main()
 					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
 
-					if (motorHasHitEncoderTarget(&desiredEncVals, Lift) {
+					if (motorHasHitEncoderTarget(&desiredEncVals, Lift)) {
 						restMecMotors();
 						currentState = STATE_DROPBUCKET;
 						init = true;
