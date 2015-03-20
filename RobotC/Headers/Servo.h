@@ -95,8 +95,8 @@ void servoInit() {
 	}
 	servoDefinitions[Bucket].minValue = 128; //down
 	servoDefinitions[Bucket].maxValue = 242; //up
-	servoDefinitions[TubeGrabber].minValue = 34; //down
-	servoDefinitions[TubeGrabber].maxValue = 150; //up
+	servoDefinitions[TubeGrabber].minValue = 113; //down
+	servoDefinitions[TubeGrabber].maxValue = 223; //up
 
 	servoDefsInitialized = true;
 
