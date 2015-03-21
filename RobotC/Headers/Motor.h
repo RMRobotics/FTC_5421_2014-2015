@@ -69,7 +69,7 @@ static MotorState motorStates[MAX_NUM_MOTORS];
 bool motorDefsInitialized = false;
 
 
-#define NUM_MOTORS 7
+#define NUM_MOTORS 8
 //Array for storing all motor enums that we use (this way we can loop through)
 tMotor motorList[NUM_MOTORS];
 
@@ -91,6 +91,8 @@ static void motorGetName(tMotor curMotor, string *motorName) {
 		*motorName = "Harvester";
 	} else if (curMotor == HarvesterMove) {
 		*motorName = "HarvesterMove";
+	} else if(curMotor == HarvesterDuo) {
+		*motorName = "HarvesterDuo";
 	}
 }
 
@@ -110,6 +112,7 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 	motorList[4] = Lift;
 	motorList[5] = Harvester;
 	motorList[6] = HarvesterMove;
+	motorList[7] = HarvesterDuo;
 
 	//init maxPower to MAX_NORMAL_POWER and minPower to MIN_NORMAL_POWER
 	//init motor state encoder data to 0
@@ -158,8 +161,6 @@ void motorInit(DesiredEncVals *desiredEncVals) {
 		desiredEncVals->encoder[motorList[i]] = ENC_OFF;
 		nMotorEncoder[motorList[i]] = 0;
 	}
-	//Reset fake lift encoder
-	nMotorEncoder[LiftEncoder] = 0;
 }
 
 
@@ -444,9 +445,6 @@ void motorUpdateState() {
 
 		//Update motor encoders
 		tMotor curEncMotor = curMotor;
-		if (curMotor == Lift) {
-			curEncMotor = LiftEncoder;
-		}
 		for (int i=0; i<5; i++) {
 			//Check for sporadic encoder values as documented by Cougar Robotics #623
 			int checkEnc = nMotorEncoder[curEncMotor];

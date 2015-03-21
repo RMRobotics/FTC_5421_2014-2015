@@ -82,7 +82,8 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 			lastHarvestTime = harvestTimer;
 			desiredMotorVals->power[Harvester] = 0;
 		}*/
-		desiredMotorVals->power[Harvester] = 90;
+		desiredMotorVals->power[Harvester] = 25;
+		desiredMotorVals->power[HarvesterDuo] = 100;
 	} else if (joyButtonPressed(joyState, JOY1, BUTTON_RT)) {
 		/*if(harvestRunTime < 500){
 			desiredMotorVals->power[Harvester] = 90;
@@ -90,10 +91,12 @@ void joyHarvester(DesiredMotorVals *desiredMotorVals, TJoystick *joyState) {
 			lastHarvestTime = harvestTimer;
 			desiredMotorVals->power[Harvester] = 0;
 		}*/
-		desiredMotorVals->power[Harvester] = -90;
+		desiredMotorVals->power[Harvester] = -25;
+		desiredMotorVals->power[HarvesterDuo] = -100;
 	} else {
 		//lastHarvestTime = harvestTimer;
 		desiredMotorVals->power[Harvester] = 0;
+		desiredMotorVals->power[HarvesterDuo] = 0;
 	}
 
 	if (joyButtonPressed(joyState, JOY2, BUTTON_START)) {
