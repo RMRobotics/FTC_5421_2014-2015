@@ -191,14 +191,22 @@ float powerRatio, float rotationRatio) {
 
 /* Check if all mecmotors have hit encoder target */
 bool driveMecHasHitEncoderTarget(DesiredEncVals *desiredEncVals) {
-	if (motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FL) &&
+	if (motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FL) ||
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BL) ||
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FR) ||
+			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BR)) {
+		return true;
+	} else {
+		return false;
+	}
+	/*if (motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FL) &&
 			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BL) &&
 			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_FR) &&
 			motorHasHitEncoderTarget(desiredEncVals, (tMotor) MecMotor_BR)) {
 		return true;
 	} else {
 		return false;
-	}
+	}*/
 }
 
 /* Zero all mecanum motors */
