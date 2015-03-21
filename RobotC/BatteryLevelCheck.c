@@ -73,6 +73,8 @@ void explodingSound(){
 }
 
 task main(){
+	clearDebugStream();
+	writeDebugStream("This is BatteryLevelCheck\n");
 	while(true){
 		int nBatteryAverage = nAvgBatteryLevel; //Is an average of nxt reading from last 20 checks
 		float nBatAvgVolts = ((float) nBatteryAverage)/1000.0; //convert from milivolts to volts
