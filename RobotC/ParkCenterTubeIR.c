@@ -150,7 +150,7 @@ task main()
 			case STATE_ORBITTOCENTERGOAL:
 					writeDebugStream("State: Orbit to center goal\n");
 					if (init) {
-						driveSetEncoderOrbitN(&desiredEncVals, 0.3);
+						driveSetEncoderOrbitN(&desiredEncVals, 0.3, 0.3 * ENC_PER_REV);
 						init = false;
 					}
 

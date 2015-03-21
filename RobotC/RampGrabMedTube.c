@@ -91,6 +91,7 @@ task main()
 		} else {
 			switch(currentState){
 				case STATE_START:
+					writeDebugStream("%d %d %d %d\n", nMotorEncoder[MecMotor_FL], nMotorEncoder[MecMotor_BL], nMotorEncoder[MecMotor_FR], nMotorEncoder[MecMotor_BR]);
 					currentState = STATE_ALIGNONRAMP;
 					break;
 				case STATE_ALIGNONRAMP:
@@ -115,7 +116,8 @@ task main()
 				case STATE_OFFRAMP:
 					writeDebugStream("State: Offramp\n");
 					if (init) {
-						driveSetEncoderN(&desiredEncVals, 4.0 * ENC_PER_REV);
+						writeDebugStream("Offramp enc set!\n");
+						driveSetEncoderN(&desiredEncVals, 3.5 * ENC_PER_REV);
 						init = false;
 					}
 
@@ -124,7 +126,7 @@ task main()
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
-
+					writeDebugStream("Desired: %d Actual: %d", desiredMotorVals.power[MecMotor_FL], motor[MecMotor_FL]);
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)){
 						restMecMotors();
 						currentState = STATE_DRIVETOWARDTUBE; //STATE_CORRECTIONTURN
@@ -153,18 +155,18 @@ task main()
 				case STATE_DRIVETOWARDTUBE:
 					writeDebugStream("State: Drive Toward Tube\n");
 					if (init) {
-						driveSetEncoderN(&desiredEncVals, 4000);
+						driveSetEncoderN(&desiredEncVals, 2.0 * ENC_PER_REV);
 						init = false;
 					}
 
-					desiredMotorVals.power[Lift] = LIFT_UP;
-					motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
+					//desiredMotorVals.power[Lift] = LIFT_UP;
+					//motorSetEncoder(&desiredEncVals, Lift, SIXTY_GOAL, ENCFLAGS_CAPMODE_ON ^ ENCFLAGS_CAPMAX_ON);
 
-					//We limit ONLY the lift during the first part where grabbing = false
-					//This will limit drive motors during second part where grabbing = true
+					//We only limit drive motors during second part where grabbing = true
 					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
-
+					writeDebugStream("DMV.lift: %d\n", desiredMotorVals.power[Lift]);
 					if (!grabbing) {
+						writeDebugStream("Not grabbing!\n");
 						//This overrides limit on drive motors so we don't stop during first part where
 					  //grabbing = false.
 					  //This also initializes second part where grabbing will be set to true in the next
@@ -176,6 +178,7 @@ task main()
 							grabbing = true;
 						}
 					} else {
+						writeDebugStream("Grabbing!\n");
 						if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 							restMecMotors();
 							currentState = STATE_WAITFORLIFT;
