@@ -69,7 +69,7 @@ task main()
 {
 	//SLIDE SIDE IS FACING DOWN THE RAMP
 	long bucketStartTimeMs = 0;
-	bool init = false;
+	bool init = true;
 	bool end = false;
 	bool grabbing = false;
 
@@ -97,7 +97,7 @@ task main()
 				case STATE_ALIGNONRAMP:
 					writeDebugStream("State: AlignonRamp\n");
 					if (init) {
-						driveSetEncoderW(&desiredEncVals, .10 * ENC_PER_REV);
+						driveSetEncoderW(&desiredEncVals, 0.10 * ENC_PER_REV);
 						init = false;
 					}
 
@@ -171,7 +171,7 @@ task main()
 					  //grabbing = false.
 					  //This also initializes second part where grabbing will be set to true in the next
 						//if statement.
-						driveSetMecMotorN(&desiredMotorVals, 0.5);
+						driveSetMecMotorN(&desiredMotorVals, 0.25);
 						if(driveMecHasHitEncoderTarget(&desiredEncVals)) {
 							driveSetEncoderN(&desiredEncVals, 1.75*ENC_PER_REV);
 							servoSetNonCont(TubeGrabber, servoDefinitions[TubeGrabber].minValue);
