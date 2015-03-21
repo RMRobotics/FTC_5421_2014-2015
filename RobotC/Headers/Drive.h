@@ -244,30 +244,30 @@ void driveSetMecEncoder(DesiredEncVals *desiredEncVals, long mecFL, long mecBL, 
 /*Sets desired motor values in order to orbit north (forwards).
 	The center of rotation is in front of the robot.
 	powerRatio: float value from 0 to 1 */
-void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio) {
-	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, -powerRatio);
+void driveSetMecMotorOrbitN(DesiredMotorVals *desiredMotorVals, float powerRatio, float rotationRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, -rotationRatio);
 }
 
 /*Sets desired encoder values in order to orbit north.
   The center of rotation is in front of the robot. */
-void driveSetEncoderOrbitN(DesiredEncVals *desiredEncVals, float powerRatio, long encoderDistance) {
+void driveSetEncoderOrbitN(DesiredEncVals *desiredEncVals, float powerRatio, float rotationRatio, long encoderDistance) {
 	long mecFL, mecBL, mecFR, mecBR = 0;
-	driveCalcMecPolarDegrees(90, powerRatio, -powerRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveCalcMecPolarDegrees(90, powerRatio, -rotationRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
 
 }
 
 /*Sets desired motor values in order to orbit south (backwards).
   The center of rotation is behind the robot.
   powerRatio: float value from 0 to 1 */
-void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio) {
-	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, powerRatio);
+void driveSetMecMotorOrbitS(DesiredMotorVals *desiredMotorVals, float powerRatio, float rotationRatio) {
+	driveSetMecMotorPolarDegrees(desiredMotorVals, 90, powerRatio, rotationRatio);
 }
 
 /*Sets desired encoder values in order to orbit south.
   The center of rotation is behind the robot. */
-void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, float powerRatio, long encoderDistance) {
+void driveSetEncoderOrbitS(DesiredEncVals *desiredEncVals, float powerRatio, float rotationRatio, long encoderDistance) {
 	long mecFL, mecBL, mecFR, mecBR = 0;
-	driveCalcMecPolarDegrees(90, powerRatio, powerRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
+	driveCalcMecPolarDegrees(90, powerRatio, rotationRatio, encoderDistance, &mecFL, &mecBL, &mecFR, &mecBR);
 	driveSetMecEncoder(desiredEncVals, mecFL, mecBL, mecFR, mecBR);
 }
 

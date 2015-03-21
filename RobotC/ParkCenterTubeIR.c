@@ -53,6 +53,7 @@ typedef enum CenterTubeStates {
 	STATE_KICKSTAND, //
 	STATE_WAITFORLIFT,
 	STATE_END,
+	STATE_MOVETOWARDGOAL,
 	STATE_SHORTBUCKET,
 	STATE_CLOSEBUCKET,
 } CenterTubeStates;
@@ -68,6 +69,7 @@ typedef enum CenterPos {
 
 //IR Sensor
 int dirEnh, strEnh = 0; //direction, strength enhanced
+#define IR_LIMIT 85
 
 task main()
 {
@@ -76,9 +78,12 @@ task main()
 	bool end = false;
 	bool init = true;
 	long bucketStartTimeMs = 0;
+	long IRsum = 0;
+	long IRavg = 0;
+	long prevIRavg = 0;
 
 	initialize();
-	writeDebugStream("This is CenterTubeIR\n");
+	writeDebugStream("This is ParkCenterTubeIR\n");
 	waitForStart();
 
 	while(!end){
@@ -100,7 +105,7 @@ task main()
 				case STATE_DRIVETOWARDCENTERPIECE:
 					writeDebugStream("State: Drive Toward Centerpiece\n");
 					if (init) {
-						driveSetEncoderN(&desiredEncVals, 1.0 * ENC_PER_REV);
+						driveSetEncoderN(&desiredEncVals, 1.8 * ENC_PER_REV);
 						init = false;
 					}
 
@@ -112,60 +117,59 @@ task main()
 
 					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
 						restMecMotors();
-						currentState = STATE_DETECTIR;
-						init = true;
-					}
-					break;
-				case STATE_DETECTIR:
-					writeDebugStream("State: Detect IR\n");
-					//Read average of 10 values
-					long sum = 0;
-					for (int i=0; i<10; i++) {
-						HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
-						sum += strEnh;
-					}
-					long avgStrEnh = sum / 10;
-
-					writeDebugStream("IR Str Enh: %d\n", avgStrEnh);
-
-					if (avgStrEnh > 90) {
-						writeDebugStream("Detected vertical to park\n");
-						centerPos = VERT_TO_PARK;
-					} else if (avgStrEnh > 40) {
-						writeDebugStream("Detected angle to park\n");
-						centerPos = ANGLE_TO_PARK;
-					} else {
-						writeDebugStream("Detected horizontal to park\n");
-						centerPos = HORIZ_TO_PARK;
-					}
-
-					if (centerPos == VERT_TO_PARK) {
-						currentState = STATE_WAITFORLIFT;
-						init = true;
-					} else {
 						currentState = STATE_ORBITTOCENTERGOAL;
 						init = true;
 					}
 					break;
 			case STATE_ORBITTOCENTERGOAL:
 					writeDebugStream("State: Orbit to center goal\n");
-					if (init) {
-						driveSetEncoderOrbitN(&desiredEncVals, 0.3, 0.3 * ENC_PER_REV);
-						init = false;
-					}
 
-					driveSetMecMotorOrbitN(&desiredMotorVals, 0.3);
+					driveSetMecMotorOrbitS(&desiredMotorVals, -0.8, -0.2);
 
-					motorLimitDesiredPowerToEncoder(&desiredMotorVals, &desiredEncVals);
 					motorSetActualPowerToDesired(&desiredMotorVals);
 					motorUpdateState();
 
-					if (driveMecHasHitEncoderTarget(&desiredEncVals)) {
+					//Read average of 5 values
+					IRsum = 0;
+					for (int i=0; i<5; i++) {
+						HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
+						IRsum += strEnh;
+					}
+					IRavg = IRsum / 10;
+
+					writeDebugStream("IR Str Enh: %d\n", IRavg);
+					writeDebugStream("Prev IR str: %d\n", prevIRavg);
+
+					if ((IRavg - prevIRavg) < 0) {
+						writeDebugStream("Stopping!\n");
+						restMecMotors();
+						currentState = STATE_MOVETOWARDGOAL;
+						init = true;
+					}
+					prevIRavg = IRavg;
+					break;
+				case STATE_MOVETOWARDGOAL:
+					writeDebugStream("State: MOVE TOWARD GOAL\n");
+
+					driveSetMecMotorN(&desiredMotorVals, 0.3);
+
+					motorSetActualPowerToDesired(&desiredMotorVals);
+					motorUpdateState();
+
+					//Read average of 5 values
+					for (int i=0; i<5; i++) {
+						HTIRS2readEnhanced(HTIRS2, dirEnh, strEnh);
+						IRsum += strEnh;
+					}
+					IRavg = IRsum / 10;
+
+					writeDebugStream("IR Str Enh: %d\n", IRavg);
+
+					if (IRavg > IR_LIMIT) {
 						restMecMotors();
 						currentState = STATE_WAITFORLIFT;
 						init = true;
 					}
-					break;
 				case STATE_WAITFORLIFT:
 					writeDebugStream("State: WAIT FOR LIFT\n");
 					desiredMotorVals.power[Lift] = LIFT_UP;
@@ -269,7 +273,7 @@ task main()
 	//writeDebugStream("DMV: %d %d %d %d\n", desiredMotorVals.power[MecMotor_FL], desiredMotorVals.power[MecMotor_BL], desiredMotorVals.power[MecMotor_FR], desiredMotorVals.power[MecMotor_BR]);
 	//writeDebugStream("VIRTENC: %d %d %d %d\n", motorGetEncoder((tMotor) MecMotor_FL), motorGetEncoder((tMotor) MecMotor_BL), motorGetEncoder((tMotor) MecMotor_FR), motorGetEncoder((tMotor) MecMotor_BR);
 	//writeDebugStream("REALENC: %d %d %d %d\n", nMotorEncoder[Donatello_FL], nMotorEncoder[Leonardo_BL], nMotorEncoder[Michelangelo_FR], nMotorEncoder[Raphael_BR]);
-	//writeDebugStream("Full auton loop took: %d ms\n", nPgmTime - loopStartTimeMs);
+	writeDebugStream("Full auton loop took: %d ms\n", nPgmTime - loopStartTimeMs);
 	} //while
 
 /*	driveSetEncoderN(&desiredEncVals, ######);
